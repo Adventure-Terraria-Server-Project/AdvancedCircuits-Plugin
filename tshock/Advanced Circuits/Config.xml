@@ -1,0 +1,227 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+
+<AdvancedCircuitsConfiguration>
+  <!-- 
+    Sets whether usual Terraria circuits are overriden by this plugin so their functionalities can be extended or not.
+    
+    NOTE: If you configure custom Dart Traps, Statues etc., they will behave differently in Advanced Circuits, but not in Vanilla Circuits if this setting is turned off.
+  -->
+  <OverrideVanillaCircuits>0</OverrideVanillaCircuits>
+
+  <!--
+    Sets whether Advanced Circuits can be executed at all.
+  -->
+  <AdvancedCircuitsEnabled>1</AdvancedCircuitsEnabled>
+
+  <!--
+    The maximum of Dart Traps / Statues and Pumps that can be triggered by one single circuit. 
+    For example: If you configure a maximum of 5 Dart Traps and 6 are connected in a circuit, only 5 of them will shoot.
+  -->
+  <MaxDartTrapsPerCircuit>10</MaxDartTrapsPerCircuit>
+  <MaxStatuesPerCircuit>10</MaxStatuesPerCircuit>
+  <MaxPumpsPerCircuit>4</MaxPumpsPerCircuit>
+
+  <!--
+    The maximum amount of wires, a signal can travel through until it disappears. 
+    Terrarias default is 1000. Recommended for Advanced Circuits is a maximum of 250 though, since
+    a signal can be repeated by using Timers.
+  -->
+  <MaxCircuitLength>250</MaxCircuitLength>
+
+  <!-- The default setting of the Dart Trap is equal with Terraria's default Dart Trap. -->
+  <DartTrap>
+    <ProjectileType>98</ProjectileType>
+    <ProjectileDamage>20</ProjectileDamage>
+    <ProjectileSpeed>12</ProjectileSpeed>
+    <ProjectileOffset>8</ProjectileOffset>
+    <Cooldown>180</Cooldown>
+  </DartTrap>
+
+  <!--
+    Add or remove a configuration of a statue as you please here. Make sure no statue type is defined two times though.
+    
+    Available Statue Types:
+      Armor, Angel, Star, Sword, Slime, Goblin, Shield, Bat, Fish, Bunny, Skeleton, Reaper, Woman, Imp, Gargoyle, Gloom,
+      Hornet, Bomb, Crab, Hammer, Potion, Spear, Cross, Jellyfish, Bow, Boomerang, Boot, Chest, Bird, Axe, Corrupt,
+      Tree, Anvil, Pickaxe, Mushroom, Eyeball, Pillar, Heart, Pot, Sunflower, King, Queen, Piranha
+    
+    Available Action Types:
+      MoveNPC
+        ActionParam
+          One of these npc groups:
+            0 - Random NPC
+            1 - Random Female NPC
+            2 - Random Male NPC
+            3 - Specific NPC
+        ActionParam2
+          The specific NPC id if ActionParam is set to 3.
+      
+      SpawnMob
+        ActionParam
+          The mob's id.
+        ActionParam2
+          Optional. The maximum mobs which can be in range of the statue. The statue will not continue spawning if this 
+          amount is reached.
+        ActionParam3
+          Optional. The range in blocks with the statue as center to check for already spawned mobs.
+      
+      SpawnItem
+        ActionParam
+          The items's id.
+        ActionParam2
+          Optional. The maximum items which can be in range of the statue. The statue will not continue spawning if this 
+          amount is reached.
+        ActionParam3
+          Optional. The range in blocks with the statue as center to check for already spawned items.
+          
+    
+    You can also define a "RequiredPermission" node for each statue. Only players in a group having this permission can than wire
+    up this Statue. Statues can always be placed by anyone, the "RequiredPermission" only controls if a player can WIRE it up.
+  -->
+  <StatueConfigs>
+    <!-- These Statues are configured like Terraria's defaults. Change them if you want. -->
+    <StatueConfigItem StatueType="Star">
+      <StatueConfig>
+        <ActionType>SpawnItem</ActionType>
+        <ActionParam>184</ActionParam>
+        <ActionParam2>3</ActionParam2>
+        <ActionParam3>15</ActionParam3>
+        <Cooldown>600</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Slime">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>1</ActionParam>
+        <ActionParam2>4</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Bat">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>49</ActionParam>
+        <ActionParam2>4</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Fish">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>55</ActionParam>
+        <ActionParam2>4</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Bunny">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>46</ActionParam>
+        <ActionParam2>4</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Skeleton">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>21</ActionParam>
+        <ActionParam2>4</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Bomb">
+      <StatueConfig>
+        <ActionType>SpawnItem</ActionType>
+        <ActionParam>28</ActionParam>
+        <ActionParam2>3</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>600</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Crab">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>67</ActionParam>
+        <ActionParam2>3</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Jellyfish">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>63</ActionParam>
+        <ActionParam2>4</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Chest">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>85</ActionParam>
+        <ActionParam2>3</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Bird">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>74</ActionParam>
+        <ActionParam2>4</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Heart">
+      <StatueConfig>
+        <ActionType>SpawnItem</ActionType>
+        <ActionParam>58</ActionParam>
+        <ActionParam2>3</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>600</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="King">
+      <StatueConfig>
+        <ActionType>MoveNPC</ActionType>
+        <ActionParam>2</ActionParam>
+        <Cooldown>300</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Queen">
+      <StatueConfig>
+        <ActionType>MoveNPC</ActionType>
+        <ActionParam>1</ActionParam>
+        <Cooldown>300</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Piranha">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>58</ActionParam>
+        <ActionParam2>4</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>30</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+
+    <!-- Example of a Custom Statue -->
+    <StatueConfigItem StatueType="Goblin">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>26</ActionParam>
+        <ActionParam2>4</ActionParam2>
+        <ActionParam3>25</ActionParam3>
+        <Cooldown>80</Cooldown>
+        <RequiredPermission>usecustomstatues</RequiredPermission>
+      </StatueConfig>
+    </StatueConfigItem>
+  </StatueConfigs>
+</AdvancedCircuitsConfiguration>

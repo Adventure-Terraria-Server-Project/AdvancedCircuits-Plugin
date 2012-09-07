@@ -1,2 +1,4 @@
-AdvancedCircuits-Plugin
-=======================
+AdvancedCircuitsPlugin
+======================
+
+Advanced Circuits Plugin for Terraria
