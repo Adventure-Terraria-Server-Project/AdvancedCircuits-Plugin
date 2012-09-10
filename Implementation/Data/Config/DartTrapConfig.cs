@@ -70,9 +70,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #region [Methods: Constructor]
     public DartTrapConfig() {
       this.cooldown = 180;
-      this.projectileOffset = 8; //2;
+      this.projectileOffset = 8;
       this.projectileSpeed = 12;
       this.projectileType = 98;
+      this.projectileDamage = 20;
       this.projectileLifeTime = 80;
     }
     #endregion

@@ -116,8 +116,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       // Safe looping a dictionary requires quite a bit of performance, so we try to do it only when necessary.
       bool safeLoopRequired = false;
       foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in this.WorldMetadata.ActiveTimers) {
-        if (activeTimer.Value.FramesLeft <= 0)
+        if (activeTimer.Value.FramesLeft <= 0) {
           safeLoopRequired = true;
+          continue;
+        }
 
         activeTimer.Value.FramesLeft -= CircuitProcessor.TimerUpdateFrameRate;
       }
@@ -181,6 +183,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       bool isAdvancedCircuit;
       Terraria.SpriteMeasureData? measureData = null;
+      // Does the turned switch have any wires on it?
       if (hitTile.type == Terraria.TileId_Lever) {
         if (!Terraria.MeasureSprite(tileLocation, out measureData) || measureData == null)
           return;
@@ -195,7 +198,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       } else {
         isAdvancedCircuit = !hitTile.wire;
       }
-
+       
       if (isAdvancedCircuit) {
         if (!this.Config.AdvancedCircuitsEnabled)
           return;
@@ -220,7 +223,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               signal = !measureData.Value.HasActiveFrame;
               
               // Turn the lever / switch / timer
-              this.SignalizeSprite(tileLocation, signal);
+              this.SignalizeSprite(tileLocation, signal, null, true);
             } else {
               signal = measureData.Value.HasActiveFrame;
             }
@@ -235,7 +238,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             if (measureData == null && (!Terraria.MeasureSprite(tileLocation, out measureData) || measureData == null))
               return;
 
-            this.SignalizeSprite(tileLocation, !measureData.Value.HasActiveFrame);
+            this.SignalizeSprite(tileLocation, !measureData.Value.HasActiveFrame, null, true);
           }
         } else {
           WorldGen.hitSwitch(tileLocation.X, tileLocation.Y);
@@ -391,9 +394,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
       if (stripData.ProcessedWires.Count == this.Config.MaxCircuitLength) {
         AdvancedCircuitsPlugin.Trace.WriteLineInfo(
-          "Stripping the Advanced Circuit at [{0}] was cancelled because the signal reached the maximum transfer length of {1} wires.",
+          "Stripping the Advanced Circuit at {0} was cancelled because the signal reached the maximum transfer length of {1} wires.",
           stripData.SenderLocation, this.Config.MaxCircuitLength
         );
+        if (stripData.SendingPlayer != TSPlayer.Server) {
+          stripData.SendingPlayer.SendMessage(
+            string.Format("This circuit exceeds the maxmium size of {0} wires.", this.Config.MaxCircuitLength), Color.Red
+          );
+        }
         stripData.IsCancelled = true;
         
         return;
@@ -402,8 +410,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
       
       if (tile.active && !stripData.IgnoredTiles.Contains(tileLocation)) {
-        if (this.SignalizeSprite(tileLocation, signal, stripData))
-          stripData.SignaledSpritesCounter++;
+        if (stripData.IsAdvancedCircuit || tileLocation != stripData.SenderLocation) {
+          if (this.SignalizeSprite(tileLocation, signal, stripData))
+            stripData.SignaledSpritesCounter++;
+        } else {
+          // The sender who started the circuit shouldn't signalize itself.
+          Terraria.SpriteMeasureData? measureData;
+          if (Terraria.MeasureSprite(tileLocation, out measureData) || measureData == null)
+            this.AddSpriteToIgnoreList(measureData.Value, stripData);
+        }
       }
 
       stripData.ProcessedWires.Add(tileLocation);
@@ -429,10 +444,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     ///   The <see cref="CircuitStripData" /> describing the current circuit's state, set to <c>null</c> to indicate
     ///   that a sprite should be simply signaled as it were in an advanced circuit.
     /// </param>
+    /// <param name="localOnly">
+    ///   Indicates whether the tile data are changed locally, but not remotely by not sending clients the updated tiles.
+    /// </param>
     /// <returns>
     ///   The size of the unit. Null if the tile at the given location is no terraria unit at all.
     /// </returns>
-    private bool SignalizeSprite(DPoint anyTileLocation, bool signal, CircuitStripData stripData = null) {
+    private bool SignalizeSprite(DPoint anyTileLocation, bool signal, CircuitStripData stripData = null, bool localOnly = false) {
       int x = anyTileLocation.X;
       int y = anyTileLocation.Y;
       Tile tile = Main.tile[anyTileLocation.X, anyTileLocation.Y];
@@ -493,35 +511,37 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             signal = measureData.Value.HasActiveFrame;
           }
 
-          this.SetSpriteActiveFrame(measureData.Value, signal, stripData);
+          this.SetSpriteActiveFrame(measureData.Value, signal, stripData, localOnly);
 
           return true;
         }
         case Terraria.TileId_XSecondTimer:
-          // A sending timer shall not toggle itself. (In an Advanced Circuit this would work through a port though.)
-          //if (stripData == null || anyTileLocation != stripData.SenderLocation) {
-            if (!isAdvancedCircuit)
-              signal = !measureData.Value.HasActiveFrame;
-
-            this.SetSpriteActiveFrame(measureData.Value, signal, stripData);
-
-            if (tile.type == Terraria.TileId_XSecondTimer) {
-              // If a timer receives true while it is already activated, reset its frame time.
-              if (isAdvancedCircuit && signal == measureData.Value.HasActiveFrame) {
-                if (signal)
-                  this.WorldMetadata.ActiveTimers[anyTileLocation].FramesLeft = this.MeasureTimersExpirationTime(x, y);
-              
-                return true;
+          if (!isAdvancedCircuit)
+            signal = !measureData.Value.HasActiveFrame;
+            
+          this.SetSpriteActiveFrame(measureData.Value, signal, stripData, localOnly);
+            
+          if (tile.type == Terraria.TileId_XSecondTimer) {
+            // If a timer receives true while it is already activated, reset its frame time.
+            if (isAdvancedCircuit && signal == measureData.Value.HasActiveFrame) {
+              if (signal) {
+                ActiveTimerMetadata activeTimer;
+                if (this.WorldMetadata.ActiveTimers.TryGetValue(anyTileLocation, out activeTimer))
+                  activeTimer.FramesLeft = this.MeasureTimersExpirationTime(x, y);
               }
+              
+              return true;
+            }
 
-              if (signal)
+            bool alreadyActive = this.WorldMetadata.ActiveTimers.ContainsKey(anyTileLocation);
+            if (signal) {
+              if (!alreadyActive)
                 this.WorldMetadata.ActiveTimers.Add(anyTileLocation, new ActiveTimerMetadata(this.MeasureTimersExpirationTime(x, y)));
-              else
+            } else {
+              if (alreadyActive)
                 this.WorldMetadata.ActiveTimers.Remove(anyTileLocation);
             }
-          //} else if (stripData != null) {
-//            stripData.IgnoredTiles.Add(anyTileLocation);
-          //}
+          }
 
           return true;
         case Terraria.TileId_ActiveStone:
@@ -598,7 +618,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!isAdvancedCircuit)
             signal = !measureData.Value.HasActiveFrame;
 
-          if (signal != measureData.Value.HasActiveFrame)
+          if (localOnly && signal != measureData.Value.HasActiveFrame)
             WorldGen.SwitchMB(x, y);
 
           if (stripData != null) {
@@ -652,9 +672,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return true;
         }
         case Terraria.TileId_DartTrap: {
-          DartTrapConfig config = this.Config.DartTrapConfig;
+          DartTrapConfig config;
 
-          if ((!isAdvancedCircuit || signal) && WorldGen.checkMech(x, y, config.Cooldown)) {
+          if (
+            this.Config.DartTrapConfigs.TryGetValue(DartTrapType.Default, out config) && 
+            (!isAdvancedCircuit || signal) && WorldGen.checkMech(x, y, config.Cooldown)
+          ) {
             if (stripData == null || stripData.SignaledDartTraps < this.Config.MaxDartTrapsPerCircuit) {
               bool isPointingLeft = (Main.tile[x, y].frameX == 0);
               DPoint projectileSpawn = new DPoint((x * 16), (y * 16 + 9));
@@ -806,10 +829,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case Terraria.TileId_Lever:
         case Terraria.TileId_XSecondTimer:
           // A component can not signalize itself if the signal didn't travel at least over one wire.
-          if (!(portLocation == stripData.FirstWireLocation && componentLocation == stripData.SenderLocation))
+          if (!(portLocation == stripData.FirstWireLocation && componentLocation == stripData.SenderLocation)) {
             this.SignalizeSprite(componentLocation, signal, stripData);
+            return true;
+          }
 
-          return true;
+          return false;
       }
 
       switch (componentTile.type) {
@@ -938,8 +963,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Methods: SetSpriteActiveFrame]
-    protected void SetSpriteActiveFrame(Terraria.SpriteMeasureData measureData, bool signal, CircuitStripData stripData = null) {
+    #region [Methods: SetSpriteActiveFrame, AddSpriteToIgnoreList]
+    protected void SetSpriteActiveFrame(
+      Terraria.SpriteMeasureData measureData, bool signal, CircuitStripData stripData = null, bool localOnly = false
+    ) {
       int originX = measureData.OriginTileLocation.X;
       int originY = measureData.OriginTileLocation.Y;
       int frameXOffsetAdd = measureData.FrameXOffsetAdd;
@@ -978,14 +1005,31 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             Main.tile[absoluteX, absoluteY].frameX += newFrameXOffset;
             Main.tile[absoluteX, absoluteY].frameY += newFrameYOffset;
           }
-                
+          
           if (stripData != null)
             stripData.IgnoredTiles.Add(new DPoint(absoluteX, absoluteY));
         }
       }
             
-      if (needsFrameUpdate)
+      if (needsFrameUpdate && !localOnly)
         TSPlayer.All.SendTileSquareEx(originX, originY, Math.Max(spriteWidth, spriteHeight));
+    }
+
+    private void AddSpriteToIgnoreList(Terraria.SpriteMeasureData measureData, CircuitStripData stripData) {
+      int originX = measureData.OriginTileLocation.X;
+      int originY = measureData.OriginTileLocation.Y;
+      int spriteWidth = measureData.Size.X;
+      int spriteHeight = measureData.Size.Y;
+
+      for (int tx = 0; tx < spriteWidth; tx++) {
+        for (int ty = 0; ty < spriteHeight; ty++) {
+          int absoluteX = originX + tx;
+          int absoluteY = originY + ty;
+
+          if (stripData != null)
+            stripData.IgnoredTiles.Add(new DPoint(absoluteX, absoluteY));
+        }
+      }
     }
     #endregion
 

@@ -53,7 +53,7 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CCPluginsCommon">
+    <Reference Include="CCPluginsCommon, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>References\CCPluginsCommon.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -76,6 +76,7 @@
     <Compile Include="Implementation\Data\Config\Configuration.cs" />
     <Compile Include="Implementation\CircuitProcessor.cs" />
     <Compile Include="Implementation\Data\Config\DartTrapConfig.cs" />
+    <Compile Include="Implementation\Data\DartTrapType.cs" />
     <Compile Include="Implementation\Data\World\GateStateMetadata.cs" />
     <Compile Include="Implementation\Data\StatueActionType.cs" />
     <Compile Include="Implementation\Data\Config\StatueConfig.cs" />
@@ -90,7 +91,9 @@
     <Content Include="tshock\Advanced Circuits\Config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="tshock\Advanced Circuits\License.txt" />
+    <Content Include="tshock\Advanced Circuits\License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="tshock\Advanced Circuits\ReadMe.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

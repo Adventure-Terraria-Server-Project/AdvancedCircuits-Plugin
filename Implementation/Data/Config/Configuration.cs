@@ -5,6 +5,7 @@
 // Written by CoderCow
 
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Xml;
@@ -13,6 +14,9 @@ using System.Xml.Serialization;
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class StatueConfigsDictionary: SerializableDictionary<StatueType,StatueConfig> {
     public StatueConfigsDictionary(): base("StatueConfigItem", "StatueType") {} 
+  }
+  public class DartTrapConfigsDictionary: SerializableDictionary<DartTrapType,DartTrapConfig> {
+    public DartTrapConfigsDictionary(): base("DartTrapConfigItem", "DartTrapType") {} 
   }
 
   [XmlRoot("AdvancedCircuitsConfiguration")]
@@ -71,12 +75,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: DartTrapConfig]
-    private DartTrapConfig dartTrapConfig;
+    #region [Property: DartTrapConfigs]
+    private DartTrapConfigsDictionary dartTrapConfigs;
 
-    public DartTrapConfig DartTrapConfig {
-      get { return this.dartTrapConfig; }
-      set { this.dartTrapConfig = value; }
+    public DartTrapConfigsDictionary DartTrapConfigs {
+      get { return this.dartTrapConfigs; }
+      set { this.dartTrapConfigs = value; }
     }
     #endregion
 
@@ -92,10 +96,23 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     #region [Methods: Static Read]
     public static Configuration Read(string filePath) {
-      XmlSerializer configSerializer = new XmlSerializer(typeof(Configuration));
+      XmlSerializer configSerializer = Configuration.GetSerializer();
       using (XmlReader xmlReader = XmlReader.Create(filePath)) {
         return (Configuration)configSerializer.Deserialize(xmlReader);
       }
+    }
+
+    private static XmlSerializer cachedSerializer;
+    private static XmlSerializer GetSerializer() {
+      if (Configuration.cachedSerializer == null) {
+        Configuration.cachedSerializer = new XmlSerializer(
+          typeof(Configuration), new[] {
+            typeof(StatueConfigsDictionary), typeof(DartTrapConfigsDictionary), typeof(StatueConfig), typeof(DartTrapConfig)
+          }
+        );
+      }
+
+      return Configuration.cachedSerializer;
     }
     #endregion
 
@@ -108,7 +125,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.maxPumpsPerCircuit = 4;
       this.maxCircuitLength = 500;
 
-      this.dartTrapConfig = new DartTrapConfig();
+      this.dartTrapConfigs = new DartTrapConfigsDictionary();
       this.statueConfigs = new StatueConfigsDictionary();
     }
     #endregion

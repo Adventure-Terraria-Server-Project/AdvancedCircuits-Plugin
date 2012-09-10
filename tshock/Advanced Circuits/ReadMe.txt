@@ -7,23 +7,22 @@ The Revolutionized Wiring
 --------------------------------------------------------------
 
 Advanced Circuits is the long awaited revolution of the 
-Terraria wiring mechanism, adding a completely rewritten 
-and extended wiring engine to TerrariaAPI and TShock driven 
-Terraria servers. 
+Terraria wiring mechanism, adding a completely rewritten and 
+extended wiring engine to TerrariaAPI and TShock driven 
+Terraria servers.
 
-Beside keeping and extending Terraria's Vanilla Circuits 
-and components, a new type of circuit is added called 
+Beside keeping and extending Terraria's Vanilla Circuits and 
+components, a new type of circuit is added called 
 "Advanced Circuit" giving players the freedom of building 
-complex systems using binary logic a new types of 
-components.
+complex systems using binary logic and new types of components.
 
-Several configuration settings give the server's owner
-control of wiring limits and capabilities. This also 
-includes a mighty configuration mechanism of Statues and 
-their performed actions when powered.
+Several configuration settings give the server's owner control 
+of wiring limits and capabilities. This also includes a mighty 
+configuration mechanism of Statues and their performed actions
+when powered.
 
-NOTE: Before installing the plugin, read the "Known Problems"
-section first!
+NOTE: Before installing and configuring the plugin, read the 
+"Known Problems" section first!
 
 
 Features
@@ -54,24 +53,48 @@ The Plugin is currently unable to fully override Terraria's
 wiring mechanism because I couldn't find a way to hook into 
 the handling of npc / mob movement using the current ServerAPI. 
 This means that Pressure Plates which are triggered by mobs or 
-npcs will still behave as usual. They will neither trigger an 
-Advanced Circuit nor will any configuration options or 
-extensions take any effect on the Vanilla Circuit they execute.
+npcs will still behave as usual even if you enabled the 
+configuration setting OverrideVanillaCircuits. They will 
+neither trigger an Advanced Circuit nor will any configuration 
+options or extensions take any effect on the Vanilla Circuit 
+they execute.
+
+Beside that, note that this plugin had never been tested under 
+Linux and Mono before. 
+Please report any success or problem - I'm curious about this.
 
 
 A Quickstart to Advanced Circuits
 --------------------------------------------------------------
-Because this stuff is far easier explained and understood if
-you see it in action, you should download the testworld.
+Because this stuff is far easier explained and understood 
+if you see it in action, you should download this pre-configured 
+testserver. Just extract it, run "Run Server.bat" and use the
+game to connect to your localhost: 127.0.0.1
 
 I'll try to write a detailed textual guide on how to use 
 Advanced Circuits later, though I'm too busy with plugin 
-development right now. If they can spare some free-time
-I would very appreciate a community member writing a guide 
-instead though.
+development right now. If they can spare some free-time I would 
+very appreciate a community member writing a guide instead.
 
 Changelog
 --------------------------------------------------------------
+Version 1.1 Beta [10.09.2012]
+  -Recommended maximum circuit length is now 400.
+  -Overriding of Vanilla Circuits is now enabled by default.
+  -Players triggering a circuit which exceeds the maximum 
+   length are now notified about that.
+  -Timers which became invalid due to a server crash will no 
+   longer throw exceptions.
+  -Fixed Timers in overriden vanilla circuits turning themselfes 
+   off.
+  -Fixed Timers sometimes not updating their state for other 
+   players than the switching player.
+  -Fixed Dart Traps causing to have no damage when no configuration 
+   was present.
+  -Fixed Dart Traps not being read properly from the configuration.
+  -Implemented a work-around of a Mono configuration issue 
+   causing configuration files not to be reloaded successfully.
+  -Updated for Plugins Common Lib 1.1
 
-Version 1.0 [07.09.2012]
+Version 1.0 Beta [07.09.2012]
   -Initial release by CoderCow

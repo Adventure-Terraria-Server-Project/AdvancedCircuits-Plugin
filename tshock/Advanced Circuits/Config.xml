@@ -6,7 +6,7 @@
     
     NOTE: If you configure custom Dart Traps, Statues etc., they will behave differently in Advanced Circuits, but not in Vanilla Circuits if this setting is turned off.
   -->
-  <OverrideVanillaCircuits>0</OverrideVanillaCircuits>
+  <OverrideVanillaCircuits>1</OverrideVanillaCircuits>
 
   <!--
     Sets whether Advanced Circuits can be executed at all.
@@ -17,25 +17,34 @@
     The maximum of Dart Traps / Statues and Pumps that can be triggered by one single circuit. 
     For example: If you configure a maximum of 5 Dart Traps and 6 are connected in a circuit, only 5 of them will shoot.
   -->
-  <MaxDartTrapsPerCircuit>10</MaxDartTrapsPerCircuit>
+  <MaxDartTrapConfigssPerCircuit>10</MaxDartTrapConfigssPerCircuit>
   <MaxStatuesPerCircuit>10</MaxStatuesPerCircuit>
   <MaxPumpsPerCircuit>4</MaxPumpsPerCircuit>
 
   <!--
     The maximum amount of wires, a signal can travel through until it disappears. 
-    Terrarias default is 1000. Recommended for Advanced Circuits is a maximum of 250 though, since
-    a signal can be repeated by using Timers.
+    Terrarias default is 1000. Recommended for Advanced Circuits is a maximum of 400 though, because
+    a signal can be repeated by using Timers and as longer circuits become, as more performance is required
+    to execute them for the server.
   -->
-  <MaxCircuitLength>250</MaxCircuitLength>
+  <MaxCircuitLength>400</MaxCircuitLength>
 
-  <!-- The default setting of the Dart Trap is equal with Terraria's default Dart Trap. -->
-  <DartTrap>
-    <ProjectileType>98</ProjectileType>
-    <ProjectileDamage>20</ProjectileDamage>
-    <ProjectileSpeed>12</ProjectileSpeed>
-    <ProjectileOffset>8</ProjectileOffset>
-    <Cooldown>180</Cooldown>
-  </DartTrap>
+  <!-- 
+    The default setting of the Dart Trap is equal with Terraria's default Dart Trap. 
+    
+    Note: Future versions will support multiple Dart Trap configurations. The current version supports only one though.
+  -->
+  <DartTrapConfigs>
+    <DartTrapConfigItem DartTrapType="Default">
+      <DartTrapConfig>
+        <ProjectileType>98</ProjectileType>
+        <ProjectileDamage>20</ProjectileDamage>
+        <ProjectileSpeed>12</ProjectileSpeed>
+        <ProjectileOffset>8</ProjectileOffset>
+        <Cooldown>180</Cooldown>
+      </DartTrapConfig>
+    </DartTrapConfigItem>
+  </DartTrapConfigs>
 
   <!--
     Add or remove a configuration of a statue as you please here. Make sure no statue type is defined two times though.
