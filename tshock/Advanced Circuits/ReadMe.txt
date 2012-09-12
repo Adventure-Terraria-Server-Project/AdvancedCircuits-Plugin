@@ -78,10 +78,12 @@ very appreciate a community member writing a guide instead.
 
 Changelog
 --------------------------------------------------------------
-Version 1.0.2 Beta [10.09.2012]
+Version 1.0.2 Beta [12.09.2012]
+  -Triggering players are now notified if a circuit exceed the
+   maximum amount of Pumps, Dart Traps or Statues.
+  -World Metadata are now written in JSON format.
   -Fixed a bug causing no entries being written into the TShock 
    log file.
-  -World Metadata are now written in JSON format.
 
 Version 1.0.1 Beta [10.09.2012]
   -Recommended maximum circuit length is now 400.

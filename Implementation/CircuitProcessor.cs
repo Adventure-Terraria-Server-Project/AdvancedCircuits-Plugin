@@ -653,6 +653,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                     WorldGen.outPumpY[pumpCounter] = absoluteY;
                   }
                   pumpCounter++;
+                } else {
+                  if (stripData.SendingPlayer != TSPlayer.Server)
+                    stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of pumps.", Color.Red);
                 }
               }
 
@@ -701,6 +704,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               Main.projectile[projectileIndex].timeLeft = config.ProjectileLifeTime;
 
               stripData.SignaledDartTraps++;
+            } else {
+              if (stripData.SendingPlayer != TSPlayer.Server)
+                stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of Dart Traps.", Color.Red);
             }
           }
 
@@ -793,6 +799,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
                     break;
                 }
+              } else {
+                if (stripData.SendingPlayer != TSPlayer.Server)
+                  stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of Statues.", Color.Red);
               }
 
               stripData.SignaledStatues++;
