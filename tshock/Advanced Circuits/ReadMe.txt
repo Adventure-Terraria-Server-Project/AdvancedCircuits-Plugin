@@ -85,6 +85,8 @@ Version 1.0.2 Beta [12.09.2012]
   -World Metadata are now written in JSON format.
   -Grandfather Clock will no longer signalize a Vanilla Circuit
    and thus works only in Advanced Circuits.
+  -Fixed a bug introduced with 1.0.1 where a Music Box could not
+   be switched by signals.
   -Fixed a bug causing wrong NPCs to be moved by statues - this
    could also have lead to exceptions.
   -Fixed a bug causing some configuration settings not to be

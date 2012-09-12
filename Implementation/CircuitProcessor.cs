@@ -622,7 +622,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!isAdvancedCircuit)
             signal = !measureData.Value.HasActiveFrame;
 
-          if (localOnly && signal != measureData.Value.HasActiveFrame)
+          if (!localOnly && signal != measureData.Value.HasActiveFrame)
             WorldGen.SwitchMB(x, y);
 
           if (stripData != null) {
