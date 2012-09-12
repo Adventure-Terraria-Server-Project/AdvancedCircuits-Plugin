@@ -79,6 +79,8 @@ very appreciate a community member writing a guide instead.
 Changelog
 --------------------------------------------------------------
 Version 1.0.2 Beta [10.09.2012]
+  -Fixed a bug causing no entries being written into the TShock 
+   log file.
   -World Metadata are now written in JSON format.
 
 Version 1.0.1 Beta [10.09.2012]
