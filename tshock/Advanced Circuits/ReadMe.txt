@@ -93,6 +93,7 @@ Version 1.0.2 Beta [12.09.2012]
    applied when reloaded using /ac reloadcfg.
   -Fixed a bug causing no entries being written into the TShock 
    log file.
+  -Updated for Plugins Common Lib 1.2.
 
 Version 1.0.1 Beta [10.09.2012]
   -Recommended maximum circuit length is now 400.
