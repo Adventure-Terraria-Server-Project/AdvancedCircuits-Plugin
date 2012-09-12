@@ -134,7 +134,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.circuitProcessor = new CircuitProcessor(this.Config, this.WorldMetadataHandler.Metadata);
 
       Action reloadConfiguration = () => {
+        if (this.isDisposed)
+          return;
+
         this.config = Configuration.Read(AdvancedCircuitsPlugin.ConfigFilePath);
+        if (this.circuitProcessor != null)
+          this.circuitProcessor = new CircuitProcessor(this.Config, this.WorldMetadataHandler.Metadata);
       };
       this.userInteractionHandler = new UserInteractionHandler(this.PluginInfo, this.Config, reloadConfiguration);
 

@@ -76,12 +76,16 @@ Advanced Circuits later, though I'm too busy with plugin
 development right now. If they can spare some free-time I would 
 very appreciate a community member writing a guide instead.
 
+
 Changelog
 --------------------------------------------------------------
 Version 1.0.2 Beta [12.09.2012]
   -Triggering players are now notified if a circuit exceed the
    maximum amount of Pumps, Dart Traps or Statues.
   -World Metadata are now written in JSON format.
+  -Fixed a bug causing wrong NPCs to be moved by statues.
+  -Fixed a bug causing some configuration settings not to be
+   applied when reloaded using /ac reloadcfg.
   -Fixed a bug causing no entries being written into the TShock 
    log file.
 

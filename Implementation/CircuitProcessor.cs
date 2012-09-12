@@ -767,7 +767,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
                     if (npcIndexes != null && npcIndexes.Count > 0) {
                       Random rnd = new Random();
-                      int pickedIndex = rnd.Next(npcIndexes.Count);
+                      int pickedIndex = npcIndexes[rnd.Next(npcIndexes.Count)];
                       Main.npc[pickedIndex].position.X = (spawnX - (Main.npc[pickedIndex].width / 2));
                       Main.npc[pickedIndex].position.Y = (spawnY - (Main.npc[pickedIndex].height - 1));
 
