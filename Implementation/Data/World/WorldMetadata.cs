@@ -5,36 +5,31 @@
 // Written by CoderCow
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Xml;
-using System.Xml.Serialization;
+using System.IO;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  public class GateStatesDictionary: SerializableDictionary<DPoint,GateStateMetadata> {
-    public GateStatesDictionary(): base("GateState", "Location") {}
-  }
-  public class ActiveTimersDictionary: SerializableDictionary<DPoint,ActiveTimerMetadata> {
-    public ActiveTimersDictionary(): base("ActiveTimer", "Location") {}
-  }
+using Newtonsoft.Json;
+using Formatting = Newtonsoft.Json.Formatting;
 
-  [XmlRoot("AdvancedCircuitsMetadata")]
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class WorldMetadata: IWorldMetadata {
     #region [Property: GateStates]
-    private GateStatesDictionary gateStates;
+    private Dictionary<DPoint,GateStateMetadata> gateStates;
 
-    public GateStatesDictionary GateStates {
+    public Dictionary<DPoint,GateStateMetadata> GateStates {
       get { return this.gateStates; }
       set { this.gateStates = value; }
     }
     #endregion
 
     #region [Property: ActiveTimers]
-    private ActiveTimersDictionary activeTimers;
+    private Dictionary<DPoint,ActiveTimerMetadata> activeTimers;
 
-    public ActiveTimersDictionary ActiveTimers {
+    public Dictionary<DPoint,ActiveTimerMetadata> ActiveTimers {
       get { return this.activeTimers; }
       set { this.activeTimers = value; }
     }
@@ -61,38 +56,22 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     #region [Methods: Static Read, Write]
     public static WorldMetadata Read(string filePath) {
-      using (XmlReader xmlReader = XmlReader.Create(filePath)) {
-        return (WorldMetadata)WorldMetadata.GetSerializer().Deserialize(xmlReader);
+      using (StreamReader fileReader = new StreamReader(filePath)) {
+        return JsonConvert.DeserializeObject<WorldMetadata>(fileReader.ReadToEnd());
       }
     }
 
     public void Write(string filePath) {
-      XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
-      xmlWriterSettings.Indent = true;
-      using (XmlWriter xmlWriter = XmlWriter.Create(filePath, xmlWriterSettings)) {
-        WorldMetadata.GetSerializer().Serialize(xmlWriter, this);
+      using (StreamWriter fileWriter = new StreamWriter(filePath)) {
+        fileWriter.Write(JsonConvert.SerializeObject(this, Formatting.Indented));
       }
-    }
-
-    private static XmlSerializer cachedSerializer;
-    private static XmlSerializer GetSerializer() {
-      if (WorldMetadata.cachedSerializer == null) {
-        WorldMetadata.cachedSerializer = new XmlSerializer(
-          typeof(WorldMetadata), new[] {
-            typeof(GateStatesDictionary), typeof(ActiveTimersDictionary), typeof(GateStateMetadata), typeof(ActiveTimerMetadata),
-            typeof(Collection<DPoint>)
-          }
-        );
-      }
-
-      return WorldMetadata.cachedSerializer;
     }
     #endregion
 
     #region [Method: Constructor]
     public WorldMetadata() {
-      this.gateStates = new GateStatesDictionary();
-      this.activeTimers = new ActiveTimersDictionary();
+      this.gateStates = new Dictionary<DPoint,GateStateMetadata>();
+      this.activeTimers = new Dictionary<DPoint,ActiveTimerMetadata>();
       this.clockLocations = new Collection<DPoint>();
       this.activeSwapperLocations = new Collection<DPoint>();
     }

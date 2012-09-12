@@ -14,9 +14,6 @@ using TShockAPI;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class WorldMetadataHandler: WorldMetadataHandlerBase {
-    #region [Property: MetadataFilePath]
-    #endregion
-
     #region [Property: Metadata]
     public new WorldMetadata Metadata {
       get { return (WorldMetadata)base.Metadata; }

@@ -78,19 +78,21 @@ very appreciate a community member writing a guide instead.
 
 Changelog
 --------------------------------------------------------------
-Version 1.1 Beta [10.09.2012]
+Version 1.0.2 Beta [10.09.2012]
+  -World Metadata are now written in JSON format.
+
+Version 1.0.1 Beta [10.09.2012]
   -Recommended maximum circuit length is now 400.
   -Overriding of Vanilla Circuits is now enabled by default.
   -Players triggering a circuit which exceeds the maximum 
    length are now notified about that.
   -Timers which became invalid due to a server crash will no 
    longer throw exceptions.
-  -Fixed Timers in overriden vanilla circuits turning themselfes 
-   off.
+  -Fixed Timers turning themselfes off in overridden vanilla 
+   circuits.
   -Fixed Timers sometimes not updating their state for other 
-   players than the switching player.
-  -Fixed Dart Traps causing to have no damage when no configuration 
-   was present.
+   players when being directly switched.
+  -Fixed Dart Traps doing no damage when no configuration was present.
   -Fixed Dart Traps not being read properly from the configuration.
   -Implemented a work-around of a Mono configuration issue 
    causing configuration files not to be reloaded successfully.
