@@ -184,7 +184,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       bool isAdvancedCircuit;
       Terraria.SpriteMeasureData? measureData = null;
       // Does the turned switch have any wires on it?
-      if (hitTile.type == Terraria.TileId_Lever) {
+      if (hitTile.type == Terraria.TileId_Lever || hitTile.type == Terraria.TileId_GrandfatherClock) {
         if (!Terraria.MeasureSprite(tileLocation, out measureData) || measureData == null)
           return;
 
@@ -232,7 +232,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           default:
             return;
         }
-      } else { 
+      } else {
+        // Grandfather Clock is an Advanced Circuit component and thus wont work in Vanilla Circuits.
+        if (hitTile.type == Terraria.TileId_GrandfatherClock)
+          return;
+
         if (this.Config.OverrideVanillaCircuits) {
           if (hitTile.type == Terraria.TileId_XSecondTimer && !stripOnly) {
             if (measureData == null && (!Terraria.MeasureSprite(tileLocation, out measureData) || measureData == null))
