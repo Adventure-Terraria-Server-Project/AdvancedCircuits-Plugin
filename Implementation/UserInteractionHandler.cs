@@ -130,7 +130,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Method: HandleTilePlacing, HandleWirePlacing]
+    #region [Methods: HandleTilePlacing, HandleWirePlacing]
     public bool HandleTilePlacing(TSPlayer player, int tileId, int x, int y, int tileStyle) {
       if (this.IsDisposed)
         return false;

@@ -110,60 +110,59 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public void HandleGameUpdate() {
       this.frameCounter++;
 
-      if (this.frameCounter % CircuitProcessor.TimerUpdateFrameRate != 0)
-        return;
-
-      // Safe looping a dictionary requires quite a bit of performance, so we try to do it only when necessary.
-      bool safeLoopRequired = false;
-      foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in this.WorldMetadata.ActiveTimers) {
-        if (activeTimer.Value.FramesLeft <= 0) {
-          safeLoopRequired = true;
-          continue;
-        }
-
-        activeTimer.Value.FramesLeft -= CircuitProcessor.TimerUpdateFrameRate;
-      }
-      
-      if (safeLoopRequired) {
-        List<DPoint> activeTimerLocations = new List<DPoint>(this.WorldMetadata.ActiveTimers.Keys);
-        foreach (DPoint activeTimerLocation in activeTimerLocations) {
-          ActiveTimerMetadata activeActiveTimer;
-          if (!this.WorldMetadata.ActiveTimers.TryGetValue(activeTimerLocation, out activeActiveTimer))
+      if (this.frameCounter % CircuitProcessor.TimerUpdateFrameRate != 0) {
+        // Deleting multiple items from a dictionary in one loop requires quite a bit of performance, so we try to do 
+        // it only when necessary.
+        bool safeLoopRequired = false;
+        foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in this.WorldMetadata.ActiveTimers) {
+          if (activeTimer.Value.FramesLeft <= 0) {
+            safeLoopRequired = true;
             continue;
+          }
 
-          if (activeActiveTimer.FramesLeft <= 0) {
-            int x = activeTimerLocation.X;
-            int y = activeTimerLocation.Y;
-            if (!Main.tile[x, y].active || Main.tile[x, y].type != Terraria.TileId_XSecondTimer) {
-              this.WorldMetadata.ActiveTimers.Remove(activeTimerLocation);
+          activeTimer.Value.FramesLeft -= CircuitProcessor.TimerUpdateFrameRate;
+        }
+      
+        if (safeLoopRequired) {
+          List<DPoint> activeTimerLocations = new List<DPoint>(this.WorldMetadata.ActiveTimers.Keys);
+          foreach (DPoint activeTimerLocation in activeTimerLocations) {
+            ActiveTimerMetadata activeActiveTimer;
+            if (!this.WorldMetadata.ActiveTimers.TryGetValue(activeTimerLocation, out activeActiveTimer))
               continue;
-            }
+
+            if (activeActiveTimer.FramesLeft <= 0) {
+              int x = activeTimerLocation.X;
+              int y = activeTimerLocation.Y;
+              if (!Main.tile[x, y].active || Main.tile[x, y].type != Terraria.TileId_XSecondTimer) {
+                this.WorldMetadata.ActiveTimers.Remove(activeTimerLocation);
+                continue;
+              }
           
-            this.HitSwitch(TSPlayer.Server, new DPoint(x, y), true);
-            activeActiveTimer.FramesLeft = this.MeasureTimersExpirationTime(x, y);
+              this.HitSwitch(TSPlayer.Server, new DPoint(x, y), true);
+              activeActiveTimer.FramesLeft = this.MeasureTimersExpirationTime(x, y);
+            }
           }
         }
       }
 
-      if (this.frameCounter % CircuitProcessor.ClockUpdateFrameRate != 0)
-        return;
+      if (this.frameCounter % CircuitProcessor.ClockUpdateFrameRate != 0) {
+        if (Main.dayTime != this.isDayTime) {
+          for (int i = 0; i < this.WorldMetadata.ClockLocations.Count; i++) {
+            DPoint clockLocation = this.WorldMetadata.ClockLocations[i];
+            if (Main.tile[clockLocation.X, clockLocation.Y].type != Terraria.TileId_GrandfatherClock) {
+              this.WorldMetadata.ClockLocations.RemoveAt(i);
+              i--;
+            }
 
-      if (Main.dayTime != this.isDayTime) {
-        for (int i = 0; i < this.WorldMetadata.ClockLocations.Count; i++) {
-          DPoint clockLocation = this.WorldMetadata.ClockLocations[i];
-          if (Main.tile[clockLocation.X, clockLocation.Y].type != Terraria.TileId_GrandfatherClock) {
-            this.WorldMetadata.ClockLocations.RemoveAt(i);
-            i--;
+            this.HitSwitch(TSPlayer.Server, clockLocation, true, !Main.dayTime);
           }
 
-          this.HitSwitch(TSPlayer.Server, clockLocation, true, !Main.dayTime);
+          this.isDayTime = Main.dayTime;
         }
 
-        this.isDayTime = Main.dayTime;
+        if (this.frameCounter >= 100000)
+          this.frameCounter = 0;
       }
-
-      if (this.frameCounter == 100000)
-        this.frameCounter = 0;
     }
 
     public bool HandleHitSwitch(TSPlayer player, int x, int y) {
@@ -344,11 +343,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       Tile tile = Main.tile[stripData.FirstWireLocation.X, stripData.FirstWireLocation.Y];
       if (!tile.wire)
         return;
+
       // Input Ports are not meant to send signals.
       if (stripData.IsAdvancedCircuit && tile.active && tile.type == CircuitProcessor.TileId_InputPort)
         return;
 
-      #if Verbose
       if (stripData.IsAdvancedCircuit) {
         AdvancedCircuitsPlugin.Trace.WriteLineVerbose(
           "Started stripping Advanced Circuit at {0} with signal {1}.", stripData.SenderLocation, signal.ToString()
@@ -358,7 +357,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           "Started stripping Vanilla Circuit at {0} with signal {1}.", stripData.SenderLocation, signal.ToString()
         );
       }
-      #endif
 
       WorldGen.numWire = 0;
       WorldGen.numNoWire = 0;
@@ -403,7 +401,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         );
         if (stripData.SendingPlayer != TSPlayer.Server) {
           stripData.SendingPlayer.SendMessage(
-            string.Format("This circuit exceeds the maxmium size of {0} wires.", this.Config.MaxCircuitLength), Color.Red
+            string.Format("This circuit exceeds the maxmium length of {0} wires.", this.Config.MaxCircuitLength), Color.Red
           );
         }
         stripData.IsCancelled = true;
