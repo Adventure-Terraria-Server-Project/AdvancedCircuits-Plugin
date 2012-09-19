@@ -457,6 +457,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       int y = anyTileLocation.Y;
       Tile tile = Main.tile[anyTileLocation.X, anyTileLocation.Y];
 
+      // TODO: Caused an error for a server owner, probably cuz dynamic sprite measuring failed.
       Terraria.SpriteMeasureData? measureData;
       if (!Terraria.MeasureSprite(anyTileLocation, out measureData) || measureData == null)
         return false;
