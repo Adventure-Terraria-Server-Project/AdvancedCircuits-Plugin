@@ -52,6 +52,23 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Testrun|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Testrun\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;Testrun</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\Advanced Circuits Plugin.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CCPluginsCommon, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -77,22 +94,25 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Implementation\Data\CircuitStripData.cs" />
-    <Compile Include="Implementation\Data\Config\Configuration.cs" />
+    <Compile Include="Implementation\#Data\CircuitStripData.cs" />
+    <Compile Include="Implementation\#Data\#Config\Configuration.cs" />
+    <Compile Include="Implementation\ACUtils.cs" />
+    <Compile Include="Implementation\Test\TestRunner.cs" />
     <Compile Include="Implementation\CircuitProcessor.cs" />
-    <Compile Include="Implementation\Data\Config\DartTrapConfig.cs" />
-    <Compile Include="Implementation\Data\DartTrapType.cs" />
-    <Compile Include="Implementation\Data\World\GateStateMetadata.cs" />
-    <Compile Include="Implementation\Data\StatueActionType.cs" />
-    <Compile Include="Implementation\Data\Config\StatueConfig.cs" />
-    <Compile Include="Implementation\Data\World\ActiveTimerMetadata.cs" />
+    <Compile Include="Implementation\#Data\#Config\DartTrapConfig.cs" />
+    <Compile Include="Implementation\#Data\DartTrapType.cs" />
+    <Compile Include="Implementation\#Data\#World\GateStateMetadata.cs" />
+    <Compile Include="Implementation\#Data\StatueActionType.cs" />
+    <Compile Include="Implementation\#Data\#Config\StatueConfig.cs" />
+    <Compile Include="Implementation\#Data\#World\ActiveTimerMetadata.cs" />
     <Compile Include="Implementation\UserInteractionHandler.cs" />
     <Compile Include="Implementation\AdvancedCircuitsPlugin.cs" />
-    <Compile Include="Implementation\Data\World\WorldMetadata.cs" />
+    <Compile Include="Implementation\#Data\#World\WorldMetadata.cs" />
     <Compile Include="Implementation\WorldMetadataHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Implementation\Test\Test Data\Default Config.xml" />
     <Content Include="tshock\Advanced Circuits\Config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -103,7 +123,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Implementation\Test\Test Data\World Data\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF "$(ConfigurationName)" == "Release" (

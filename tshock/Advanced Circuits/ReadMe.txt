@@ -59,10 +59,6 @@ neither trigger an Advanced Circuit nor will any configuration
 options or extensions take any effect on the Vanilla Circuit 
 they execute.
 
-Beside that, note that this plugin had never been tested under 
-Linux and Mono before. 
-Please report any success or problem - I'm curious about this.
-
 
 A Quickstart to Advanced Circuits
 --------------------------------------------------------------
@@ -79,6 +75,11 @@ very appreciate a community member writing a guide instead.
 
 Changelog
 --------------------------------------------------------------
+Version 1.0.3 Beta [23.09.2012]
+  -Added some unit tests to ensure that no further bugs are 
+   introduced with new updates.
+  -Updated for Plugins Common Lib 1.3.
+
 Version 1.0.2 Beta [12.09.2012]
   -Triggering players are now notified if a circuit exceeds the
    maximum amount of Pumps, Dart Traps or Statues.

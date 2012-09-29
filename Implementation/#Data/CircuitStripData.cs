@@ -80,21 +80,21 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: SignaledSpritesCounter]
-    private int signaledSpritesCounter;
-
-    public int SignaledSpritesCounter {
-      get { return this.signaledSpritesCounter; }
-      set { this.signaledSpritesCounter = value; }
-    }
-    #endregion
-
     #region [Property: SignaledComponentsCounter]
     private int signaledComponentsCounter;
 
     public int SignaledComponentsCounter {
       get { return this.signaledComponentsCounter; }
       set { this.signaledComponentsCounter = value; }
+    }
+    #endregion
+
+    #region [Property: SignaledACComponentsCounter]
+    private int signaledAcComponentsCounter;
+
+    public int SignaledACComponentsCounter {
+      get { return this.signaledAcComponentsCounter; }
+      set { this.signaledAcComponentsCounter = value; }
     }
     #endregion
 

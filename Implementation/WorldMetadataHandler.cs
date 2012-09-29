@@ -48,13 +48,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               break;
             }
             case Terraria.TileId_GrandfatherClock: {
-              Terraria.SpriteMeasureData? measureData;
-              if (!Terraria.MeasureSprite(tileLocation, out measureData) || measureData == null)
-                continue;
+              Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(tileLocation);
 
-              metadata.ClockLocations.Add(measureData.Value.OriginTileLocation);
-              for (int sx = 0; sx < measureData.Value.Size.X; sx++) {
-                for (int sy = 0; sy < measureData.Value.Size.Y; sy++) {
+              metadata.ClockLocations.Add(measureData.OriginTileLocation);
+              for (int sx = 0; sx < measureData.Size.X; sx++) {
+                for (int sy = 0; sy < measureData.Size.Y; sy++) {
                   ignoredTiles.Add(new DPoint(x + sx, y + sy));
                 }
               }
@@ -83,6 +81,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public void HandleTileDestroying(TSPlayer player, int x, int y) {
+      if (!Main.tile[x, y].active)
+        return;
+
       switch (Main.tile[x, y].type) {
         case Terraria.TileId_XSecondTimer: {
           DPoint location = new DPoint(x, y);
@@ -93,11 +94,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
         case Terraria.TileId_GrandfatherClock: {
           DPoint location = new DPoint(x, y);
-          Terraria.SpriteMeasureData? measureData;
-          if (!Terraria.MeasureSprite(location, out measureData) || measureData == null)
-            return;
 
-          int clockIndex = this.Metadata.ClockLocations.IndexOf(measureData.Value.OriginTileLocation);
+          Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(location);
+          int clockIndex = this.Metadata.ClockLocations.IndexOf(measureData.OriginTileLocation);
           if (clockIndex != -1)
             this.Metadata.ClockLocations.RemoveAt(clockIndex);
 

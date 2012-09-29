@@ -11,6 +11,8 @@ using System.Diagnostics.Contracts;
 using System.Xml;
 using System.Xml.Serialization;
 
+using Terraria.Plugins.CoderCow.Collections;
+
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class StatueConfigsDictionary: SerializableDictionary<StatueType,StatueConfig> {
     public StatueConfigsDictionary(): base("StatueConfigItem", "StatueType") {} 

@@ -10,4 +10,9 @@
     <StartWorkingDirectory>P:\C#\Open Source\TShock\TestPlugin\Debug Server</StartWorkingDirectory>
     <StartAction>Program</StartAction>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Testrun|AnyCPU'">
+    <StartProgram>P:\C#\Open Source\TShock\TestPlugin\Debug Server\TerrariaServer.exe</StartProgram>
+    <StartWorkingDirectory>P:\C#\Open Source\TShock\TestPlugin\Debug Server</StartWorkingDirectory>
+    <StartAction>Program</StartAction>
+  </PropertyGroup>
 </Project>

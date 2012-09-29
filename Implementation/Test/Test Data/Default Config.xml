@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+
+<AdvancedCircuitsConfiguration>
+  <OverrideVanillaCircuits>1</OverrideVanillaCircuits>
+  <AdvancedCircuitsEnabled>1</AdvancedCircuitsEnabled>
+  <MaxDartTrapConfigssPerCircuit>10</MaxDartTrapConfigssPerCircuit>
+  <MaxStatuesPerCircuit>10</MaxStatuesPerCircuit>
+  <MaxPumpsPerCircuit>4</MaxPumpsPerCircuit>
+  <MaxCircuitLength>400</MaxCircuitLength>
+
+  <DartTrapConfigs>
+    <DartTrapConfigItem DartTrapType="Default">
+      <DartTrapConfig>
+        <ProjectileType>98</ProjectileType>
+        <ProjectileDamage>20</ProjectileDamage>
+        <ProjectileSpeed>12</ProjectileSpeed>
+        <ProjectileOffset>8</ProjectileOffset>
+        <Cooldown>180</Cooldown>
+      </DartTrapConfig>
+    </DartTrapConfigItem>
+  </DartTrapConfigs>
+
+  <StatueConfigs>
+    <StatueConfigItem StatueType="Star">
+      <StatueConfig>
+        <ActionType>MoveNPC</ActionType>
+        <ActionParam>22</ActionParam>
+        <ActionParam2>3</ActionParam2>
+        <ActionParam3>15</ActionParam3>
+        <Cooldown>0</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Bat">
+      <StatueConfig>
+        <ActionType>SpawnItem</ActionType>
+        <ActionParam>0</ActionParam>
+        <ActionParam2>3</ActionParam2>
+        <ActionParam3>15</ActionParam3>
+        <Cooldown>0</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+    <StatueConfigItem StatueType="Slime">
+      <StatueConfig>
+        <ActionType>SpawnMob</ActionType>
+        <ActionParam>0</ActionParam>
+        <ActionParam2>3</ActionParam2>
+        <ActionParam3>15</ActionParam3>
+        <Cooldown>0</Cooldown>
+      </StatueConfig>
+    </StatueConfigItem>
+  </StatueConfigs>
+</AdvancedCircuitsConfiguration>

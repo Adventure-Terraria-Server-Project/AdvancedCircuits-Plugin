@@ -14,6 +14,8 @@ using DPoint = System.Drawing.Point;
 using Hooks;
 using TShockAPI;
 
+using Terraria.Plugins.CoderCow.AdvancedCircuits.Test;
+
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   [APIVersion(1, 12)]
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
@@ -94,6 +96,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    #if Testrun
+    private TestRunner testRunner = new TestRunner();
+    #endif
+
 
     #region [Method: Constructor]
     public AdvancedCircuitsPlugin(Main game): base(game) {
@@ -148,6 +154,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       WorldHooks.SaveWorld += this.World_SaveWorld;
 
       GameHooks.PostInitialize -= this.Game_PostInitialize;
+
+      #if Testrun
+      this.testRunner.RunAllTests();
+      #endif
     }
     #endregion
 
@@ -218,6 +228,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
 
       this.CircuitProcessor.HandleGameUpdate();
+      #if Testrun
+      this.testRunner.HandleGameUpdate();
+      #endif
     }
 
     protected virtual bool OnTileEdit(TSPlayer player, TileEditType editType, int x, int y, int tileId, int tileStyle) {
@@ -247,11 +260,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           #if DEBUG
           player.SendMessage(string.Format("X: {0}, Y: {1}", x, y), Color.Aqua);
 
-          Terraria.SpriteMeasureData? measureData;
-          if (Terraria.MeasureSprite(new DPoint(x, y), out measureData)) {
-            player.SendMessage(string.Format(
-              "Origin X: {0}, Origin Y: {1}", measureData.Value.OriginTileLocation.X, measureData.Value.OriginTileLocation.Y));
-          }
+          if (!Main.tile[x, y].active)
+            break;
+
+          Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(new DPoint(x, y));
+          player.SendMessage(string.Format(
+            "Origin X: {0}, Origin Y: {1}", measureData.OriginTileLocation.X, measureData.OriginTileLocation.Y));
           #endif
           break;
       }
