@@ -75,7 +75,10 @@ very appreciate a community member writing a guide instead.
 
 Changelog
 --------------------------------------------------------------
-Version 1.0.3 Beta [23.09.2012]
+Version 1.0.3 Beta [29.09.2012]
+  -Fixed a bug causing Port Defining Components sometimes not 
+   being signalized  when a wire was "looping through" on of 
+   their Input Ports.
   -Added some unit tests to ensure that no further bugs are 
    introduced with new updates.
   -Updated for Plugins Common Lib 1.3.
