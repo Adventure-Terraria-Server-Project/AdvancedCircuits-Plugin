@@ -40,7 +40,7 @@
         <ProjectileType>98</ProjectileType>
         <ProjectileDamage>20</ProjectileDamage>
         <ProjectileSpeed>12</ProjectileSpeed>
-        <ProjectileOffset>8</ProjectileOffset>
+        <ProjectileOffset>2</ProjectileOffset>
         <Cooldown>180</Cooldown>
       </DartTrapConfig>
     </DartTrapConfigItem>

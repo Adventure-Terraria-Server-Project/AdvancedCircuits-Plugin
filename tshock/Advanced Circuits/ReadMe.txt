@@ -75,19 +75,26 @@ very appreciate a community member writing a guide instead.
 
 Changelog
 --------------------------------------------------------------
-Version 1.0.3 Beta [29.09.2012]
-  -Fixed a bug causing doors not to try to open to the opposite
-   direction if blocked.
+Version 1.0.3 Beta [30.09.2012]
+  -Added some unit tests to ensure that no further bugs are 
+   introduced with new updates.
+  -Improved general plugin stability.
   -Timers that were enabled during a world save will now be 
    re-enabled when a world is loaded.
+  -Fixed a bug causing doors not to try to open to the opposite
+   direction if blocked.
   -Fixed a bug causing Timers in an AC to be signalized when
    connected directly.
   -Fixed a bug causing Port Defining Components sometimes not 
-   being signalized  when a wire was "looping through" on of 
+   being signalized  when a wire was "looping through" one of 
    their Input Ports.
-  -Added some unit tests to ensure that no further bugs are 
-   introduced with new updates.
+  -Fixed the default ProjectileOffset value of DartTraps. It did 
+   not reflect the Terraria default value (2), causing objects 
+   right infront of them not to be hit.
   -Updated for Plugins Common Lib 1.3.
+  -The Plugin Common Library will now carry its version number 
+   in its file name. The old "CCPluginsCommon.dll" can be 
+   safely removed.
 
 Version 1.0.2 Beta [12.09.2012]
   -Triggering players are now notified if a circuit exceeds the

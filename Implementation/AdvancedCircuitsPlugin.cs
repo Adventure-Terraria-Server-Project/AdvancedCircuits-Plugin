@@ -167,13 +167,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
 
       TSPlayer player = TShock.Players[e.Msg.whoAmI];
-      if (player == null || !player.ConnectionAlive || player.RequiresPassword)
+      if (player == null || !player.ConnectionAlive || player.RequiresPassword || player.Dead || player.State < 10)
         return;
       
       switch (e.MsgID) {
         // Why not the TShock TileEdit handler? Because it doesn't read the style value from the data packet...
         case PacketTypes.Tile: {
-          if (e.Msg.readBuffer.Length < 11)
+          if (e.Msg.readBuffer.Length - e.Index < 11)
             break;
 
           byte editType = e.Msg.readBuffer[e.Index];
@@ -184,18 +184,26 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           if (!Terraria.IsValidCoord(x, y) || editType < 0 || editType > 6)
             return;
+          if (TShock.CheckIgnores(player))
+            return;
+          if (TShock.CheckRangePermission(player, x, y, 32))
+            return;
 
           e.Handled = this.OnTileEdit(player, (TileEditType)editType, x, y, tileId, tileStyle);
           break;
         }
         case PacketTypes.HitSwitch: {
-          if (e.Msg.readBuffer.Length < 5)
+          if (e.Msg.readBuffer.Length - e.Index < 5)
             break;
 
           int x = BitConverter.ToInt32(e.Msg.readBuffer, e.Index);
           int y = BitConverter.ToInt32(e.Msg.readBuffer, e.Index + 4);
-      
+          
           if (!Terraria.IsValidCoord(x, y) || !Main.tile[x, y].active)
+            return;
+          if (TShock.CheckIgnores(player))
+            return;
+          if (TShock.CheckRangePermission(player, x, y, 32))
             return;
       
           e.Handled = this.OnHitSwitch(player, x, y);
@@ -220,62 +228,79 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.isDisposed)
         return false;
 
-      return this.CircuitProcessor.HandleHitSwitch(player, x, y);
+      try {
+        return this.CircuitProcessor.HandleHitSwitch(player, x, y);
+      } catch (Exception ex) {
+        AdvancedCircuitsPlugin.Trace.WriteLineError("A HitSwitch Handler caused an exception.\n{0}", ex.ToString());
+        return false;
+      }
     }
 
     protected virtual void OnGameUpdate() {
       if (this.isDisposed)
         return;
 
-      this.CircuitProcessor.HandleGameUpdate();
-      #if Testrun
-      this.testRunner.HandleGameUpdate();
-      #endif
+      try {
+        this.CircuitProcessor.HandleGameUpdate();
+        #if Testrun
+        this.testRunner.HandleGameUpdate();
+        #endif
+      } catch (Exception ex) {
+        AdvancedCircuitsPlugin.Trace.WriteLineError("A Game Update Handler caused an exception.\n{0}", ex.ToString());
+      }
     }
 
     protected virtual bool OnTileEdit(TSPlayer player, TileEditType editType, int x, int y, int tileId, int tileStyle) {
       if (this.isDisposed)
         return false;
 
-      switch (editType) {
-        case TileEditType.PlaceTile:
-          if (this.UserInteractionHandler.HandleTilePlacing(player, tileId, x, y, tileStyle))
-            return true;
+      try {
+        switch (editType) {
+          case TileEditType.PlaceTile:
+            if (this.UserInteractionHandler.HandleTilePlacing(player, tileId, x, y, tileStyle))
+              return true;
 
-          this.WorldMetadataHandler.HandleTilePlacing(player, tileId, x, y, tileStyle);
-          break;
-
-        case TileEditType.DestroyTile:
-          this.WorldMetadataHandler.HandleTileDestroying(player, x, y);
-
-          break;
-
-        case TileEditType.PlaceWire:
-          if (this.UserInteractionHandler.HandleWirePlacing(player, x, y))
-            return true;
-
-          break;
-
-        case TileEditType.DestroyWire:
-          #if DEBUG || Testrun
-          player.SendMessage(string.Format("X: {0}, Y: {1}", x, y), Color.Aqua);
-
-          if (!Main.tile[x, y].active)
+            this.WorldMetadataHandler.HandleTilePlacing(player, tileId, x, y, tileStyle);
             break;
 
-          Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(new DPoint(x, y));
-          player.SendInfoMessage(string.Format(
-            "Origin X: {0}, Origin Y: {1}", measureData.OriginTileLocation.X, measureData.OriginTileLocation.Y)
-          );
-          #endif
-          break;
+          case TileEditType.DestroyTile:
+            this.WorldMetadataHandler.HandleTileDestroying(player, x, y);
+
+            break;
+
+          case TileEditType.PlaceWire:
+            if (this.UserInteractionHandler.HandleWirePlacing(player, x, y))
+              return true;
+
+            break;
+
+          case TileEditType.DestroyWire:
+            #if DEBUG || Testrun
+            player.SendMessage(string.Format("X: {0}, Y: {1}", x, y), Color.Aqua);
+
+            if (!Main.tile[x, y].active)
+              break;
+
+            Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(new DPoint(x, y));
+            player.SendInfoMessage(string.Format(
+              "Origin X: {0}, Origin Y: {1}", measureData.OriginTileLocation.X, measureData.OriginTileLocation.Y)
+            );
+            #endif
+            break;
+        }
+      } catch (Exception ex) {
+        AdvancedCircuitsPlugin.Trace.WriteLineError("A Tile Edit Handler caused an exception.\n{0}", ex.ToString());
       }
 
       return false;
     }
 
     protected virtual bool OnWorldSaved() {
-      this.WorldMetadataHandler.WriteMetadata();
+      try {
+        this.WorldMetadataHandler.WriteMetadata();
+      } catch (Exception ex) {
+        AdvancedCircuitsPlugin.Trace.WriteLineError("A World Saved Handler caused an exception.\n{0}", ex.ToString());
+      }
 
       return false;
     }

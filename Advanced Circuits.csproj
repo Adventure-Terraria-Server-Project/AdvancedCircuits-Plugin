@@ -123,9 +123,9 @@
     <Folder Include="Implementation\Test\Test Data\World Data\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CC Plugins Common\CC Plugins Common.csproj">
+    <ProjectReference Include="..\CC Plugins Common\Plugin Common Library.csproj">
       <Project>{1D38E0CF-BF13-4229-860F-3809F39F0892}</Project>
-      <Name>CC Plugins Common</Name>
+      <Name>Plugin Common Library</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
