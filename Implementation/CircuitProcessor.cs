@@ -111,7 +111,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public void HandleGameUpdate() {
       this.frameCounter++;
 
-      if (this.frameCounter % CircuitProcessor.TimerUpdateFrameRate != 0) {
+      if (this.frameCounter % CircuitProcessor.TimerUpdateFrameRate == 0) {
         // Deleting multiple items from a dictionary in one loop requires quite a bit of performance, so we try to do 
         // it only when necessary.
         bool deletionLoopRequired = false;
@@ -146,7 +146,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
       }
 
-      if (this.frameCounter % CircuitProcessor.ClockUpdateFrameRate != 0) {
+      if (this.frameCounter % CircuitProcessor.ClockUpdateFrameRate == 0) {
         if (Main.dayTime != this.isDayTime) {
           for (int i = 0; i < this.WorldMetadata.ClockLocations.Count; i++) {
             DPoint clockLocation = this.WorldMetadata.ClockLocations[i];
