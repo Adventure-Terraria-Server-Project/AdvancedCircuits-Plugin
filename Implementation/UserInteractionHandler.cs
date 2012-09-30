@@ -74,8 +74,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return;
       }
 
-      args.Player.SendMessage(this.PluginInfo.ToString());
-      args.Player.SendMessage(this.PluginInfo.Description);
+      args.Player.SendInfoMessage(this.PluginInfo.ToString());
+      args.Player.SendInfoMessage(this.PluginInfo.Description);
       args.Player.SendMessage(string.Empty, Color.Yellow);
       args.Player.SendMessage("Write \"/aci commands\" to see a list of sub-commands.", Color.Yellow);
       args.Player.SendMessage("For help and support refer to the TShock forums.", Color.Yellow);
@@ -107,7 +107,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               );
             }
           } else {
-            args.Player.SendMessage("You do not have the necessary permission to do that.", Color.Red);
+            args.Player.SendErrorMessage("You do not have the necessary permission to do that.");
           }
 
           return true;
@@ -161,7 +161,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return false;
 
       if (!player.Group.HasPermission(statueConfig.RequiredPermission)) {
-        player.SendMessage("You don't have the required permission to wire up this statue.", Color.Red);
+        player.SendErrorMessage("You don't have the required permission to wire up this statue.");
         player.SendTileSquare(x, y, 6);
 
         AdvancedCircuitsPlugin.Trace.WriteLineInfo(
@@ -190,7 +190,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return false;
 
         if (!player.Group.HasPermission(statueConfig.RequiredPermission)) {
-          player.SendMessage("You don't have the required permission to wire up this statue.", Color.Red);
+          player.SendErrorMessage("You don't have the required permission to wire up this statue.");
           player.SendTileSquareEx(x, y, 3);
 
           AdvancedCircuitsPlugin.Trace.WriteLineInfo(

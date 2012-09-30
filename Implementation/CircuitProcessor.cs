@@ -114,17 +114,17 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.frameCounter % CircuitProcessor.TimerUpdateFrameRate != 0) {
         // Deleting multiple items from a dictionary in one loop requires quite a bit of performance, so we try to do 
         // it only when necessary.
-        bool safeLoopRequired = false;
+        bool deletionLoopRequired = false;
         foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in this.WorldMetadata.ActiveTimers) {
           if (activeTimer.Value.FramesLeft <= 0) {
-            safeLoopRequired = true;
+            deletionLoopRequired = true;
             continue;
           }
 
           activeTimer.Value.FramesLeft -= CircuitProcessor.TimerUpdateFrameRate;
         }
-      
-        if (safeLoopRequired) {
+        
+        if (deletionLoopRequired) {
           List<DPoint> activeTimerLocations = new List<DPoint>(this.WorldMetadata.ActiveTimers.Keys);
           foreach (DPoint activeTimerLocation in activeTimerLocations) {
             ActiveTimerMetadata activeActiveTimer;
@@ -343,8 +343,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           stripData.SenderLocation, this.Config.MaxCircuitLength
         );
         if (stripData.SendingPlayer != TSPlayer.Server) {
-          stripData.SendingPlayer.SendMessage(
-            string.Format("This circuit exceeds the maxmium length of {0} wires.", this.Config.MaxCircuitLength), Color.Yellow
+          stripData.SendingPlayer.SendWarningMessage(
+            string.Format("This circuit exceeds the maxmium length of {0} wires.", this.Config.MaxCircuitLength)
           );
         }
         stripData.IsCancelled = true;
@@ -567,7 +567,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                   pumpCounter++;
                 } else {
                   if (stripData.SendingPlayer != TSPlayer.Server)
-                    stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of pumps.", Color.Red);
+                    stripData.SendingPlayer.SendErrorMessage("This circuit signalizes more than the allowed maximum of pumps.");
                 }
               }
 
@@ -618,7 +618,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               stripData.SignaledDartTraps++;
             } else {
               if (stripData.SendingPlayer != TSPlayer.Server)
-                stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of Dart Traps.", Color.Red);
+                stripData.SendingPlayer.SendErrorMessage("This circuit signalizes more than the allowed maximum of Dart Traps.");
             }
           }
 
@@ -713,7 +713,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 }
               } else {
                 if (stripData.SendingPlayer != TSPlayer.Server)
-                  stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of Statues.", Color.Red);
+                  stripData.SendingPlayer.SendErrorMessage("This circuit signalizes more than the allowed maximum of Statues.");
               }
 
               stripData.SignaledStatues++;

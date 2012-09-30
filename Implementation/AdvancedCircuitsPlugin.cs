@@ -264,8 +264,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             break;
 
           Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(new DPoint(x, y));
-          player.SendMessage(string.Format(
-            "Origin X: {0}, Origin Y: {1}", measureData.OriginTileLocation.X, measureData.OriginTileLocation.Y));
+          player.SendInfoMessage(string.Format(
+            "Origin X: {0}, Origin Y: {1}", measureData.OriginTileLocation.X, measureData.OriginTileLocation.Y)
+          );
           #endif
           break;
       }
