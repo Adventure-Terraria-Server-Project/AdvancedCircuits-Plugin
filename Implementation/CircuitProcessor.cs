@@ -426,14 +426,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case Terraria.TileId_LampPost:
         case Terraria.TileId_Switch:
         case Terraria.TileId_Lever: {
-          if (
-            isAdvancedCircuit &&
-            (tile.type == Terraria.TileId_Switch || tile.type == Terraria.TileId_Lever) &&
-            Terraria.IsSpriteWired(measureData)
-          ) {
+          if (tile.type == Terraria.TileId_Switch || tile.type == Terraria.TileId_Lever) {
+            // A Switch or Lever should not be toggled in a Vanilla Circuit.
             // Directly wired Switches / Levers in ACs are not meant to be toggled.
-            stripData.IgnoredTiles.AddRange(Terraria.EnumerateSpriteTileLocations(measureData));
-            return false;
+            if ((!isAdvancedCircuit && stripData != null) || Terraria.IsSpriteWired(measureData)) {
+              if (stripData != null)
+                stripData.IgnoredTiles.AddRange(Terraria.EnumerateSpriteTileLocations(measureData));
+
+              return false;
+            }
           }
 
           if (!isAdvancedCircuit)
