@@ -27,7 +27,6 @@ NOTE: Before installing and configuring the plugin, read the
 
 Features
 --------------------------------------------------------------
-
 -Adds "Advanced Circuits", a more powerful wiring mechanism.
 -Improves the existing Terraria wiring mechanics.
 -Enables the server's owner to have more control over wiring.
@@ -62,32 +61,27 @@ they execute.
 
 A Quickstart to Advanced Circuits
 --------------------------------------------------------------
-Because this stuff is far easier explained and understood 
-if you see it in action, you should download this pre-configured 
-testserver. Just extract it, run "Run Server.bat" and use the
-game to connect to your localhost: 127.0.0.1
-
-I'll try to write a detailed textual guide on how to use 
-Advanced Circuits later, though I'm too busy with plugin 
-development right now. If they can spare some free-time I would 
-very appreciate a community member writing a guide instead.
+Have a look in the official wiki:
+https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 
 Changelog
 --------------------------------------------------------------
 Version 1.0.3 Beta [30.09.2012]
+  -Updated for TShock 4.0 Pre
   -Added some unit tests to ensure that no further bugs are 
    introduced with new updates.
   -Improved general plugin stability.
   -Timers that were enabled during a world save will now be 
-   re-enabled when a world is loaded.
-  -Fixed a bug causing doors not to try to open to the opposite
+   re-enabled when that world is loaded again.
+  -Fixed a bug causing Port Defining Components sometimes not 
+   to be signalized by their Input Ports if their circuit met
+   special conditions.
+  -Fixed a bug causing Pumps to malfunction or not work at all.
+  -Fixed a bug causing Doors not to try to open to the opposite
    direction if blocked.
   -Fixed a bug causing Timers in an AC to be signalized when
    connected directly.
-  -Fixed a bug causing Port Defining Components sometimes not 
-   being signalized  when a wire was "looping through" one of 
-   their Input Ports.
   -Fixed the default ProjectileOffset value of DartTraps. It did 
    not reflect the Terraria default value (2), causing objects 
    right infront of them not to be hit.

@@ -271,10 +271,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             );
           }
         }
-
-        if (WorldGen.numInPump <= 0 || WorldGen.numOutPump <= 0)
-          return;
-        WorldGen.xferWater();
       } catch (Exception ex) {
         AdvancedCircuitsPlugin.Trace.WriteLineError(
           "HitSwitch for \"{0}\" failed. See inner exception for details.\n{1}", Terraria.GetTileName(hitTile.type), ex.ToString()
@@ -310,6 +306,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       try {
         this.StripProcessTile(stripData.FirstWireLocation, DPoint.Empty, signal, stripData);
+
+        if (WorldGen.numInPump <= 0 || WorldGen.numOutPump <= 0)
+          return;
+        WorldGen.xferWater();
       } catch (Exception ex) {
         throw new InvalidOperationException(string.Format(
           "Failed on stripping circuit at [{0}]. Exception details: {1}", stripData.FirstWireLocation, ex
