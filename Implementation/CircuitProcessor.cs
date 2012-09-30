@@ -101,6 +101,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.config = config;
       this.worldMetadata = worldMetadata;
       this.isDayTime = Main.dayTime;
+
+      // Timers are always inactive when a map is loaded, so switch them into their active state if necessary.
+      foreach (DPoint activeTimerLocation in this.WorldMetadata.ActiveTimers.Keys)
+        Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(activeTimerLocation), true);
     }
     #endregion
 

@@ -76,6 +76,8 @@ very appreciate a community member writing a guide instead.
 Changelog
 --------------------------------------------------------------
 Version 1.0.3 Beta [29.09.2012]
+  -Timers that were enabled during a world save will now be 
+   re-enabled when a world is loaded.
   -Fixed a bug causing Timers in an AC to be signalized when
    connected directly.
   -Fixed a bug causing Port Defining Components sometimes not 
