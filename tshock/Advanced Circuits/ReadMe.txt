@@ -76,6 +76,8 @@ very appreciate a community member writing a guide instead.
 Changelog
 --------------------------------------------------------------
 Version 1.0.3 Beta [29.09.2012]
+  -Fixed a bug causing Timers in an AC to be signalized when
+   connected directly.
   -Fixed a bug causing Port Defining Components sometimes not 
    being signalized  when a wire was "looping through" on of 
    their Input Ports.

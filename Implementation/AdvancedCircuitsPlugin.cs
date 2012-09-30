@@ -257,7 +257,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           break;
 
         case TileEditType.DestroyWire:
-          #if DEBUG
+          #if DEBUG || Testrun
           player.SendMessage(string.Format("X: {0}, Y: {1}", x, y), Color.Aqua);
 
           if (!Main.tile[x, y].active)

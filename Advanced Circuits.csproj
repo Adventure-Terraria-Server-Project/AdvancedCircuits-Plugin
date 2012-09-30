@@ -70,10 +70,6 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CCPluginsCommon, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>References\CCPluginsCommon.dll</HintPath>
-    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>References\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -125,6 +121,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Implementation\Test\Test Data\World Data\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CC Plugins Common\CC Plugins Common.csproj">
+      <Project>{1D38E0CF-BF13-4229-860F-3809F39F0892}</Project>
+      <Name>CC Plugins Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
