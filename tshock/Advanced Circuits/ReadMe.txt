@@ -76,6 +76,8 @@ very appreciate a community member writing a guide instead.
 Changelog
 --------------------------------------------------------------
 Version 1.0.3 Beta [29.09.2012]
+  -Fixed a bug causing doors not to try to open to the opposite
+   direction if blocked.
   -Timers that were enabled during a world save will now be 
    re-enabled when a world is loaded.
   -Fixed a bug causing Timers in an AC to be signalized when

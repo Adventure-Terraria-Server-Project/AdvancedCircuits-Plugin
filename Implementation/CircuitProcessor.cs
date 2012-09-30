@@ -491,24 +491,22 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             signal = !isOpen;
 
           if (signal != isOpen) {
-            // TODO: This code sucks
             if (signal) {
+              // A door will always try to open to the opposite site of the sender that triggered the circuit first.
               int direction = 1;
               if (stripData != null && x < stripData.SenderLocation.X)
                 direction = -1;
 
-              if (WorldGen.OpenDoor(x, y, direction) || WorldGen.OpenDoor(x, y, --direction)) {
-                spriteWidth = 2;
+              // If opening it towards one direction doesn't work, try the other.
+              isOpen = WorldGen.OpenDoor(x, y, direction);
+              if (!isOpen) {
+                direction *= -1;
+                isOpen = WorldGen.OpenDoor(x, y, direction);
+              }
+
+              if (isOpen) {
                 TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 0, x, y, direction);
-
-                // Re-Measure the door's tiles.
-                tile = Main.tile[originX, originY];
-                int frameIndexX = tile.frameX / spriteTextureTileSize.X;
-                if (frameIndexX >= spriteWidth)
-                  frameIndexX -= spriteWidth;
-
-                originX -= frameIndexX;
-                originY = originY - (tile.frameY / spriteTextureTileSize.Y);
+                measureData = Terraria.MeasureSprite(measureData.OriginTileLocation);
               }
             } else {
               if (WorldGen.CloseDoor(x, y, true))
@@ -519,15 +517,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             WorldGen.numNoWire = 0;
           }
 
-          for (int tx = 0; tx < spriteWidth; tx++) {
-            for (int ty = 0; ty < spriteHeight; ty++) {
-              int absoluteX = originX + tx;
-              int absoluteY = originY + ty;
-
-              if (stripData != null)
-                stripData.IgnoredTiles.Add(new DPoint(absoluteX, absoluteY));
-            }
-          }
+          if (stripData != null)
+            stripData.IgnoredTiles.AddRange(Terraria.EnumerateSpriteTileLocations(measureData));
 
           return true;
         }

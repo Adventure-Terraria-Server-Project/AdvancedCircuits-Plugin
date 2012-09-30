@@ -287,20 +287,17 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
     private void AC_BlockedDoorToggling1(TestContext context) {
       DPoint testOffset = new DPoint(92, 345);
 
+      Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(new DPoint(testOffset.X + 4, testOffset.Y + 3)), false);
+
       context.Phase = "1";
       this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 4, testOffset.Y + 3);
-      TAssert.IsTileId(testOffset.X + 2, testOffset.Y + 3, Terraria.TileId_DoorClosed);
-      TAssert.IsTileId(testOffset.X + 6, testOffset.Y + 3, Terraria.TileId_DoorClosed);
+      TAssert.IsTileId(testOffset.X + 2, testOffset.Y + 3, Terraria.TileId_DoorOpened);
+      TAssert.IsTileId(testOffset.X + 6, testOffset.Y + 3, Terraria.TileId_DoorOpened);
 
       context.Phase = "2";
       this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 4, testOffset.Y + 3);
-      TAssert.IsTileId(testOffset.X + 1, testOffset.Y + 3, Terraria.TileId_DoorOpened);
-      TAssert.IsTileId(testOffset.X + 7, testOffset.Y + 3, Terraria.TileId_DoorOpened);
-
-      context.Phase = "3";
-      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 4, testOffset.Y + 3);
-      TAssert.IsTileId(testOffset.X + 2, testOffset.Y + 3, Terraria.TileId_DoorClosed);
-      TAssert.IsTileId(testOffset.X + 6, testOffset.Y + 3, Terraria.TileId_DoorClosed);
+      TAssert.IsTileId(testOffset.X + 1, testOffset.Y + 3, Terraria.TileId_DoorClosed);
+      TAssert.IsTileId(testOffset.X + 7, testOffset.Y + 3, Terraria.TileId_DoorClosed);
     }
 
     private void AC_BlockedDoorToggling2(TestContext context) {
