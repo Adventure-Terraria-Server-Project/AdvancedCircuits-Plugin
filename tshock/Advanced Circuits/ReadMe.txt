@@ -68,7 +68,6 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 Changelog
 --------------------------------------------------------------
 Version 1.0.3 Beta [30.09.2012]
-  -Updated for TShock 4.0 Pre
   -Added some unit tests to ensure that no further bugs are 
    introduced with new updates.
   -Improved general plugin stability.
@@ -78,13 +77,17 @@ Version 1.0.3 Beta [30.09.2012]
    to be signalized by their Input Ports if their circuit met
    special conditions.
   -Fixed a bug causing Pumps to malfunction or not work at all.
-  -Fixed a bug causing Doors not to try to open to the opposite
-   direction if blocked.
+  -Fixed a bug causing Doors not to always try to open to the 
+   opposite direction if blocked.
   -Fixed a bug causing Timers in an AC to be signalized when
    connected directly.
   -Fixed the default ProjectileOffset value of DartTraps. It did 
    not reflect the Terraria default value (2), causing objects 
    right infront of them not to be hit.
+  -Fixed a very rare occuring bug causing a NullReferenceException 
+   related to Timers.
+  -Fixed a rare occuring bug causing "random exceptions" in 
+   circuits meeting special conditions.
   -Updated for Plugins Common Lib 1.3.
   -The Plugin Common Library will now carry its version number 
    in its file name. The old "CCPluginsCommon.dll" can be 

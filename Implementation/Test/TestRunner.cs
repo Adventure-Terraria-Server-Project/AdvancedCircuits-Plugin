@@ -65,6 +65,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.RegisterTest(@"Vanilla\Pumps", this.Vanilla_Pumps);
       this.RegisterTest(@"Vanilla\Statues", this.Vanilla_Statues);
       this.RegisterTest(@"Vanilla\ComponentActivation", this.Vanilla_ComponentActivation);
+      this.RegisterTest(@"Vanilla\Timers", this.Vanilla_Timers);
 
       this.RegisterTest(@"AC\All Sprites State Toggle Test", this.AC_AllSpritesToggleState);
       this.RegisterTest(@"AC\Basic Door Toggling Test", this.AC_BasicDoorToggling);
@@ -98,6 +99,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.RegisterTest(@"AC\Multi Tile Trigger Input Ports 1", this.AC_MultiTileTriggerInputPorts1);
       this.RegisterTest(@"AC\Multi Tile Trigger Input Ports 2", this.AC_MultiTileTriggerInputPorts2);
       this.RegisterTest(@"AC\Multi Tile Trigger Ports 3", this.AC_MultiTileTriggerPorts3);
+      this.RegisterTest(@"AC\Timers", this.AC_Timers);
       //this.RegisterTest(@"AC\", this.AC_InputPortInbetween);
     }
     #endregion
@@ -233,6 +235,77 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 2, testOffset.Y + 6);
       TAssert.IsSpriteInactive(testOffset.X + 2, testOffset.Y);
       TAssert.IsSpriteInactive(testOffset.X + 2, testOffset.Y + 3);
+    }
+
+    private void Vanilla_Timers(TestContext context) {
+      DPoint testOffset = new DPoint(154, 281);
+
+      context.Phase = "1";
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X, testOffset.Y + 1);
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X, testOffset.Y + 4);
+
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 2, testOffset.Y + 4);
+      TAssert.IsSpriteActive(testOffset.X + 2, testOffset.Y + 1);
+
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 4, testOffset.Y + 4);
+      TAssert.IsSpriteActive(testOffset.X + 4, testOffset.Y + 1);
+
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 6, testOffset.Y + 4);
+      TAssert.IsSpriteActive(testOffset.X + 6, testOffset.Y + 1);
+
+      // Other Timer
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 8, testOffset.Y + 4);
+      TAssert.IsSpriteInactive(testOffset.X + 8, testOffset.Y + 1);
+
+      // Switch
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 10, testOffset.Y + 4);
+      TAssert.IsSpriteActive(testOffset.X + 10, testOffset.Y + 1);
+
+      // Lever
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 12, testOffset.Y + 4);
+      TAssert.IsSpriteActive(testOffset.X + 12, testOffset.Y + 1);
+
+      context.DelayedActions.Add(new TestDelay(65, contextLocal => {
+        context.Phase = "2";
+        TAssert.IsSpriteActive(testOffset.X, testOffset.Y + 1);
+        TAssert.IsSpriteActive(testOffset.X, testOffset.Y + 4);
+
+        TAssert.IsSpriteInactive(testOffset.X + 2, testOffset.Y + 1);
+
+        TAssert.IsSpriteInactive(testOffset.X + 4, testOffset.Y + 1);
+
+        TAssert.IsSpriteInactive(testOffset.X + 6, testOffset.Y + 1);
+
+        // Other Timer
+        TAssert.IsSpriteActive(testOffset.X + 8, testOffset.Y + 1);
+
+        // Switch
+        TAssert.IsSpriteActive(testOffset.X + 10, testOffset.Y + 1);
+
+        // Lever
+        TAssert.IsSpriteActive(testOffset.X + 12, testOffset.Y + 1);
+      }));
+
+      context.DelayedActions.Add(new TestDelay(130, contextLocal => {
+        context.Phase = "3";
+        TAssert.IsSpriteActive(testOffset.X, testOffset.Y + 1);
+        TAssert.IsSpriteActive(testOffset.X, testOffset.Y + 4);
+
+        TAssert.IsSpriteActive(testOffset.X + 2, testOffset.Y + 1);
+
+        TAssert.IsSpriteActive(testOffset.X + 4, testOffset.Y + 1);
+
+        TAssert.IsSpriteActive(testOffset.X + 6, testOffset.Y + 1);
+
+        // Other Timer
+        TAssert.IsSpriteInactive(testOffset.X + 8, testOffset.Y + 1);
+
+        // Switch
+        TAssert.IsSpriteActive(testOffset.X + 10, testOffset.Y + 1);
+
+        // Lever
+        TAssert.IsSpriteActive(testOffset.X + 12, testOffset.Y + 1);
+      }));
     }
     #endregion
 
@@ -380,6 +453,83 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 2, testOffset.Y + 6);
       TAssert.IsSpriteInactive(testOffset.X + 2, testOffset.Y);
       TAssert.IsSpriteInactive(testOffset.X + 2, testOffset.Y + 3);
+    }
+
+    private void AC_Timers(TestContext context) {
+      DPoint testOffset = new DPoint(154, 344);
+
+      Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(new DPoint(testOffset.X + 2, testOffset.Y + 1)), false);
+      Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(new DPoint(testOffset.X + 4, testOffset.Y + 1)), false);
+      Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(new DPoint(testOffset.X + 6, testOffset.Y + 1)), false);
+      Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(new DPoint(testOffset.X + 10, testOffset.Y + 1)), false);
+      Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(new DPoint(testOffset.X + 12, testOffset.Y + 1)), false);
+
+      context.Phase = "1";
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X, testOffset.Y + 1);
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X, testOffset.Y + 4);
+
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 2, testOffset.Y + 4);
+      TAssert.IsSpriteInactive(testOffset.X + 2, testOffset.Y + 1);
+
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 4, testOffset.Y + 4);
+      TAssert.IsSpriteInactive(testOffset.X + 4, testOffset.Y + 1);
+
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 6, testOffset.Y + 4);
+      TAssert.IsSpriteInactive(testOffset.X + 6, testOffset.Y + 1);
+
+      // Other Timer
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 8, testOffset.Y + 4);
+      TAssert.IsSpriteInactive(testOffset.X + 8, testOffset.Y + 1);
+
+      // Switch
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 10, testOffset.Y + 4);
+      TAssert.IsSpriteInactive(testOffset.X + 10, testOffset.Y + 1);
+
+      // Lever
+      this.CircuitProcessor.HandleHitSwitch(this.GetTestPlayer(), testOffset.X + 12, testOffset.Y + 4);
+      TAssert.IsSpriteInactive(testOffset.X + 12, testOffset.Y + 1);
+
+      context.DelayedActions.Add(new TestDelay(65, contextLocal => {
+        context.Phase = "2";
+        TAssert.IsSpriteActive(testOffset.X, testOffset.Y + 1);
+        TAssert.IsSpriteActive(testOffset.X, testOffset.Y + 4);
+
+        TAssert.IsSpriteActive(testOffset.X + 2, testOffset.Y + 1);
+
+        TAssert.IsSpriteActive(testOffset.X + 4, testOffset.Y + 1);
+
+        TAssert.IsSpriteActive(testOffset.X + 6, testOffset.Y + 1);
+
+        // Other Timer
+        TAssert.IsSpriteActive(testOffset.X + 8, testOffset.Y + 1);
+
+        // Switch
+        TAssert.IsSpriteActive(testOffset.X + 10, testOffset.Y + 1);
+
+        // Lever
+        TAssert.IsSpriteActive(testOffset.X + 12, testOffset.Y + 1);
+      }));
+
+      context.DelayedActions.Add(new TestDelay(130, contextLocal => {
+        context.Phase = "3";
+        TAssert.IsSpriteActive(testOffset.X, testOffset.Y + 1);
+        TAssert.IsSpriteActive(testOffset.X, testOffset.Y + 4);
+
+        TAssert.IsSpriteInactive(testOffset.X + 2, testOffset.Y + 1);
+
+        TAssert.IsSpriteInactive(testOffset.X + 4, testOffset.Y + 1);
+
+        TAssert.IsSpriteInactive(testOffset.X + 6, testOffset.Y + 1);
+
+        // Other Timer
+        TAssert.IsSpriteInactive(testOffset.X + 8, testOffset.Y + 1);
+
+        // Switch
+        TAssert.IsSpriteInactive(testOffset.X + 10, testOffset.Y + 1);
+
+        // Lever
+        TAssert.IsSpriteInactive(testOffset.X + 12, testOffset.Y + 1);
+      }));
     }
     #endregion
 
@@ -1713,6 +1863,17 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       TAssert.IsSpriteActive(tileOffset.X + 12, tileOffset.Y + 15, expectedState);
       TAssert.IsSpriteActive(tileOffset.X + 14, tileOffset.Y + 15, expectedState);
       TAssert.IsSpriteActive(tileOffset.X + 16, tileOffset.Y + 15, expectedState);
+
+      // Active Stone Blocks
+      if (expectedState) {
+        TAssert.IsTileId(tileOffset.X + 18, tileOffset.Y + 15, Terraria.TileId_ActiveStone);
+        TAssert.IsTileId(tileOffset.X + 19, tileOffset.Y + 15, Terraria.TileId_ActiveStone);
+        TAssert.IsTileId(tileOffset.X + 20, tileOffset.Y + 15, Terraria.TileId_ActiveStone);
+      } else {
+        TAssert.IsTileId(tileOffset.X + 18, tileOffset.Y + 15, Terraria.TileId_InactiveStone);
+        TAssert.IsTileId(tileOffset.X + 19, tileOffset.Y + 15, Terraria.TileId_InactiveStone);
+        TAssert.IsTileId(tileOffset.X + 20, tileOffset.Y + 15, Terraria.TileId_InactiveStone);
+      }
 
       int doorTileId = Terraria.TileId_DoorClosed;
       if (expectedState)

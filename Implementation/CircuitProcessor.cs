@@ -95,6 +95,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    #if Testrun
+    #region [Property: LastStripData]
+    private CircuitStripData lastStripData;
+
+    public CircuitStripData LastStripData {
+      get { return this.lastStripData; }
+    }
+    #endregion
+    #endif
+
 
     #region [Method: Constructor]
     public CircuitProcessor(Configuration config, WorldMetadata worldMetadata) {
@@ -120,7 +130,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         // it only when necessary.
         bool deletionLoopRequired = false;
         foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in this.WorldMetadata.ActiveTimers) {
-          if (activeTimer.Value.FramesLeft <= 0) {
+          if (activeTimer.Value == null || activeTimer.Value.FramesLeft <= 0) {
             deletionLoopRequired = true;
             continue;
           }
@@ -131,11 +141,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         if (deletionLoopRequired) {
           List<DPoint> activeTimerLocations = new List<DPoint>(this.WorldMetadata.ActiveTimers.Keys);
           foreach (DPoint activeTimerLocation in activeTimerLocations) {
-            ActiveTimerMetadata activeActiveTimer;
-            if (!this.WorldMetadata.ActiveTimers.TryGetValue(activeTimerLocation, out activeActiveTimer))
+            ActiveTimerMetadata activeTimer;
+            if (!this.WorldMetadata.ActiveTimers.TryGetValue(activeTimerLocation, out activeTimer))
               continue;
 
-            if (activeActiveTimer.FramesLeft <= 0) {
+            if (activeTimer == null) {
+              this.WorldMetadata.ActiveTimers.Remove(activeTimerLocation);
+              continue;
+            }
+
+            if (activeTimer.FramesLeft <= 0) {
               int x = activeTimerLocation.X;
               int y = activeTimerLocation.Y;
               if (!Main.tile[x, y].active || Main.tile[x, y].type != Terraria.TileId_XSecondTimer) {
@@ -144,7 +159,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               }
 
               this.HitSwitch(TSPlayer.Server, activeTimerLocation, true);
-              activeActiveTimer.FramesLeft = this.MeasureTimersExpirationTime(activeTimerLocation);
+              activeTimer.FramesLeft = this.MeasureTimersExpirationTime(activeTimerLocation);
             }
           }
         }
@@ -307,9 +322,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       try {
         this.StripProcessTile(stripData.FirstWireLocation, DPoint.Empty, signal, stripData);
 
-        if (WorldGen.numInPump <= 0 || WorldGen.numOutPump <= 0)
-          return;
-        WorldGen.xferWater();
+        if (WorldGen.numInPump > 0 && WorldGen.numOutPump > 0)
+          WorldGen.xferWater();
       } catch (Exception ex) {
         throw new InvalidOperationException(string.Format(
           "Failed on stripping circuit at [{0}]. Exception details: {1}", stripData.FirstWireLocation, ex
@@ -320,6 +334,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         "Ended stripping circuit. {0} wires signaled. {1} sprites signaled. {2} components signaled.", 
         stripData.ProcessedWires.Count, stripData.SignaledComponentsCounter, stripData.SignaledACComponentsCounter
       );
+      #if Testrun
+      this.lastStripData = stripData;
+      #endif
     }
 
     protected virtual void StripProcessTile(DPoint tileLocation, DPoint lastTileLocation, bool signal, CircuitStripData stripData) {
@@ -347,8 +364,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           stripData.SenderLocation, this.Config.MaxCircuitLength
         );
         if (stripData.SendingPlayer != TSPlayer.Server) {
-          stripData.SendingPlayer.SendWarningMessage(
-            string.Format("This circuit exceeds the maxmium length of {0} wires.", this.Config.MaxCircuitLength)
+          stripData.SendingPlayer.SendMessage(
+            string.Format("This circuit exceeds the maxmium length of {0} wires.", this.Config.MaxCircuitLength), Color.Yellow
           );
         }
         stripData.IsCancelled = true;
@@ -563,7 +580,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                   pumpCounter++;
                 } else {
                   if (stripData.SendingPlayer != TSPlayer.Server)
-                    stripData.SendingPlayer.SendErrorMessage("This circuit signalizes more than the allowed maximum of pumps.");
+                    stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of pumps.", Color.Red);
                 }
               }
 
@@ -614,7 +631,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               stripData.SignaledDartTraps++;
             } else {
               if (stripData.SendingPlayer != TSPlayer.Server)
-                stripData.SendingPlayer.SendErrorMessage("This circuit signalizes more than the allowed maximum of Dart Traps.");
+                stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of Dart Traps.", Color.Red);
             }
           }
 
@@ -709,7 +726,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 }
               } else {
                 if (stripData.SendingPlayer != TSPlayer.Server)
-                  stripData.SendingPlayer.SendErrorMessage("This circuit signalizes more than the allowed maximum of Statues.");
+                  stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of Statues.", Color.Red);
               }
 
               stripData.SignaledStatues++;
