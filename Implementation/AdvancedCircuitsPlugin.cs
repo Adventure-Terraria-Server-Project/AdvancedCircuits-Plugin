@@ -106,7 +106,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.pluginInfo = new PluginInfo(
         "Advanced Circuits",
         Assembly.GetAssembly(typeof(AdvancedCircuitsPlugin)).GetName().Version,
-        "Beta", // TODO: Remove Beta on stable release
+        "",
         "CoderCow",
         "Adds advanced wiring mechanics to Terraria servers."
       );
