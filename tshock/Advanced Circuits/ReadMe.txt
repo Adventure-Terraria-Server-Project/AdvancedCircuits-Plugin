@@ -67,10 +67,14 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 Changelog
 --------------------------------------------------------------
-Version 1.0.3 Beta [30.09.2012]
+Version 1.0.3 [03.10.2012]
+  -The version tree 1.0 is from now on considered stable.
   -Added some unit tests to ensure that no further bugs are 
    introduced with new updates.
   -Improved general plugin stability.
+  -Gate states are now property deleted from the world metadata 
+   if their tile were destroyed or an older version of the world
+   was restored.
   -Timers that were enabled during a world save will now be 
    re-enabled when that world is loaded again.
   -Fixed a bug causing Port Defining Components sometimes not 

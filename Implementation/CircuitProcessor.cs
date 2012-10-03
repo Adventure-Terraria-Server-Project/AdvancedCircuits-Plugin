@@ -66,13 +66,13 @@ using TShockAPI;
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitProcessor {
     #region [Constants]
-    private const int TileId_ORGate = Terraria.TileId_CopperOre;
-    private const int TileId_ANDGate = Terraria.TileId_SilverOre;
-    private const int TileId_XORGate = Terraria.TileId_GoldOre;
-    private const int TileId_NOTGate = Terraria.TileId_Obsidian;
-    private const int TileId_Swapper = Terraria.TileId_IronOre;
-    private const int TileId_CrossoverBridge = Terraria.TileId_Spike;
-    private const int TileId_InputPort = Terraria.TileId_Glass;
+    public const int TileId_ORGate = Terraria.TileId_CopperOre;
+    public const int TileId_ANDGate = Terraria.TileId_SilverOre;
+    public const int TileId_XORGate = Terraria.TileId_GoldOre;
+    public const int TileId_NOTGate = Terraria.TileId_Obsidian;
+    public const int TileId_Swapper = Terraria.TileId_IronOre;
+    public const int TileId_CrossoverBridge = Terraria.TileId_Spike;
+    public const int TileId_InputPort = Terraria.TileId_Glass;
     private const int TileId_Modifier = Terraria.TileId_CobaltOre;
 
     private const int TimerUpdateFrameRate = 10;
@@ -423,7 +423,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (Terraria.IsBlockTile(tile.type, false, true))
         return false;
 
-      // TODO: Caused an error for a server owner, probably cuz dynamic sprite measuring failed.
       Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(anyTileLocation);
       int originX = measureData.OriginTileLocation.X;
       int originY = measureData.OriginTileLocation.Y;
@@ -807,6 +806,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return false;
 
           signal = !signal;
+          stripData.IgnoredTiles.Add(componentLocation);
           break;
         case CircuitProcessor.TileId_ANDGate:
         case CircuitProcessor.TileId_ORGate:
@@ -861,7 +861,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               signal = (signaledPorts != 0 && signaledPorts < inputPorts);
               break;
           }
-
+          
+          stripData.IgnoredTiles.Add(componentLocation);
           break;
         }
         case CircuitProcessor.TileId_Swapper:
@@ -877,14 +878,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             signal = true;
           }
 
+          stripData.IgnoredTiles.Add(componentLocation);
           break;
         case CircuitProcessor.TileId_CrossoverBridge:
           break;
         default:
           return false;
       }
-
-      stripData.IgnoredTiles.Add(componentLocation);
 
       if (componentPorts == null) {
         componentPorts = new List<DPoint> {

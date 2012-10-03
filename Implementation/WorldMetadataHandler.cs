@@ -67,7 +67,23 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     protected override IWorldMetadata ReadMetadataFromFile(string filePath) {
-      return WorldMetadata.Read(filePath);
+      WorldMetadata metadata = WorldMetadata.Read(filePath);
+
+      // Invalidate gates if necessary.
+      List<DPoint> gateLocations = new List<DPoint>(metadata.GateStates.Keys);
+      foreach (DPoint gateLocation in gateLocations) {
+        Tile tile = Main.tile[gateLocation.X, gateLocation.Y];
+        if (
+          !tile.active || (
+            tile.type != CircuitProcessor.TileId_ANDGate && 
+            tile.type != CircuitProcessor.TileId_ORGate && 
+            tile.type != CircuitProcessor.TileId_XORGate)
+        ) {
+          metadata.GateStates.Remove(gateLocation);
+        }
+      }
+
+      return metadata;
     }
     #endregion
 
@@ -99,6 +115,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           int clockIndex = this.Metadata.ClockLocations.IndexOf(measureData.OriginTileLocation);
           if (clockIndex != -1)
             this.Metadata.ClockLocations.RemoveAt(clockIndex);
+
+          break;
+        }
+          case CircuitProcessor.TileId_ANDGate:
+          case CircuitProcessor.TileId_ORGate:
+          case CircuitProcessor.TileId_XORGate: {
+          DPoint location = new DPoint(x, y);
+          if (this.Metadata.GateStates.ContainsKey(location))
+            this.Metadata.GateStates.Remove(location);
 
           break;
         }
