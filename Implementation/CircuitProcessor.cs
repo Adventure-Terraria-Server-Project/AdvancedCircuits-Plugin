@@ -114,7 +114,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       // Timers are always inactive when a map is loaded, so switch them into their active state if necessary.
       foreach (DPoint activeTimerLocation in this.WorldMetadata.ActiveTimers.Keys)
-        if (Terraria.Tiles[activeTimerLocation].active)
+        if (Main.tile[activeTimerLocation.X, activeTimerLocation.Y].active)
           Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(activeTimerLocation), true);
     }
     #endregion
@@ -170,7 +170,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         if (Main.dayTime != this.isDayTime) {
           for (int i = 0; i < this.WorldMetadata.ClockLocations.Count; i++) {
             DPoint clockLocation = this.WorldMetadata.ClockLocations[i];
-            if (Main.tile[clockLocation.X, clockLocation.Y].type != Terraria.TileId_GrandfatherClock) {
+            if (
+              !Main.tile[clockLocation.X, clockLocation.Y].active || 
+              Main.tile[clockLocation.X, clockLocation.Y].type != Terraria.TileId_GrandfatherClock
+            ) {
               this.WorldMetadata.ClockLocations.RemoveAt(i);
               i--;
             }
@@ -207,36 +210,40 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         bool isAdvancedCircuit;
         Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(tileLocation);
         // Does the turned switch have any wires on it?
-        if (hitTile.type == Terraria.TileId_Lever || hitTile.type == Terraria.TileId_GrandfatherClock) {
+        if (hitTile.type == Terraria.TileId_Lever || hitTile.type == Terraria.TileId_GrandfatherClock)
           isAdvancedCircuit = !Terraria.IsSpriteWired(measureData);
-        } else {
+        else
           isAdvancedCircuit = !hitTile.wire;
-        }
        
         if (isAdvancedCircuit) {
           if (!this.Config.AdvancedCircuitsEnabled)
             return;
-        
-          switch (hitTile.type) {
-            case Terraria.TileId_PressurePlate:
-              // Red sends "0", all the others send "1".
-              signal = (hitTile.frameY > 0);
-              break;
-            case Terraria.TileId_Lever:
-            case Terraria.TileId_Switch:
-            case Terraria.TileId_XSecondTimer:
-              if (!stripOnly) {
-                signal = !measureData.HasActiveFrame;
+          
+          if (overridenSignal == null) {
+            switch (hitTile.type) {
+              case Terraria.TileId_PressurePlate:
+                // Red sends "0", all the others send "1".
+                signal = (hitTile.frameY > 0);
+                break;
+              case Terraria.TileId_Lever:
+              case Terraria.TileId_Switch:
+              case Terraria.TileId_XSecondTimer:
+                if (!stripOnly) {
+                  signal = !measureData.HasActiveFrame;
               
-                // Turn the lever / switch / timer locally
-                this.SignalizeComponent(tileLocation, signal, null, true);
-              } else {
-                signal = measureData.HasActiveFrame;
-              }
+                  // Turn the lever / switch / timer locally
+                  this.SignalizeComponent(tileLocation, signal, null, true);
+                } else {
+                  signal = measureData.HasActiveFrame;
+                }
 
-              break;
-            default:
-              return;
+                break;
+              case Terraria.TileId_GrandfatherClock:
+                signal = true;
+                break;
+              default:
+                return;
+            }
           }
         } else {
           // Grandfather Clock is an Advanced Circuit component and thus wont work in Vanilla Circuits.

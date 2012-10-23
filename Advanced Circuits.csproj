@@ -74,6 +74,9 @@
       <HintPath>References\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Plugin Common Lib 1.3, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>References\Plugin Common Lib 1.3.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -121,12 +124,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Implementation\Test\Test Data\World Data\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CC Plugins Common\Plugin Common Library.csproj">
-      <Project>{1D38E0CF-BF13-4229-860F-3809F39F0892}</Project>
-      <Name>Plugin Common Library</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Guide.wld" />

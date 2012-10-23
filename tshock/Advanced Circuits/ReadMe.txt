@@ -68,7 +68,8 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 Changelog
 --------------------------------------------------------------
 Version 1.0.4 [23.10.2012]
-  -Fixed a rare bug where World Metadata were sometimes not validated 
+  -Fixed a bug causing Grandfather Clock to not work anymore.
+  -Fixed a bug causing World Metadata sometimes not be validated 
    correctly for Timers.
   -Improved World Metadata validation.
 
