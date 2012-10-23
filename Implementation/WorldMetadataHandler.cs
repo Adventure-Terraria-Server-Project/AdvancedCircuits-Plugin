@@ -69,7 +69,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     protected override IWorldMetadata ReadMetadataFromFile(string filePath) {
       WorldMetadata metadata = WorldMetadata.Read(filePath);
 
-      // Invalidate gates if necessary.
+      // Invalidate Gates if necessary.
       List<DPoint> gateLocations = new List<DPoint>(metadata.GateStates.Keys);
       foreach (DPoint gateLocation in gateLocations) {
         Tile tile = Main.tile[gateLocation.X, gateLocation.Y];
@@ -81,6 +81,28 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         ) {
           metadata.GateStates.Remove(gateLocation);
         }
+      }
+
+      // Invalidate active Timers.
+      List<DPoint> activeTimerLocations = new List<DPoint>(metadata.ActiveTimers.Keys);
+      foreach (DPoint activeTimerLocation in activeTimerLocations) {
+        Tile tile = Main.tile[activeTimerLocation.X, activeTimerLocation.Y];
+        if (!tile.active || tile.type != Terraria.TileId_XSecondTimer)
+          metadata.ActiveTimers.Remove(activeTimerLocation);
+      }
+
+      // Invalidate Grandfather Clocks.
+      for (int i = 0; i < metadata.ClockLocations.Count; i++) {
+        Tile tile = Main.tile[metadata.ClockLocations[i].X, metadata.ClockLocations[i].Y];
+        if (!tile.active || tile.type != Terraria.TileId_GrandfatherClock)
+          metadata.ClockLocations.RemoveAt(i--);
+      }
+
+      // Invalidate active Swappers.
+      for (int i = 0; i < metadata.ActiveSwapperLocations.Count; i++) {
+        Tile tile = Main.tile[metadata.ActiveSwapperLocations[i].X, metadata.ActiveSwapperLocations[i].Y];
+        if (!tile.active || tile.type != CircuitProcessor.TileId_Swapper)
+          metadata.ActiveSwapperLocations.RemoveAt(i--);
       }
 
       return metadata;

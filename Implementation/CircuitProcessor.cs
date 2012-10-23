@@ -114,7 +114,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       // Timers are always inactive when a map is loaded, so switch them into their active state if necessary.
       foreach (DPoint activeTimerLocation in this.WorldMetadata.ActiveTimers.Keys)
-        Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(activeTimerLocation), true);
+        if (Terraria.Tiles[activeTimerLocation].active)
+          Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(activeTimerLocation), true);
     }
     #endregion
 

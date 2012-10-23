@@ -67,6 +67,11 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 Changelog
 --------------------------------------------------------------
+Version 1.0.4 [23.10.2012]
+  -Fixed a rare bug where World Metadata were sometimes not validated 
+   correctly for Timers.
+  -Improved World Metadata validation.
+
 Version 1.0.3 [03.10.2012]
   -The version tree 1.0 is from now on considered stable.
   -Added some unit tests to ensure that no further bugs are 
