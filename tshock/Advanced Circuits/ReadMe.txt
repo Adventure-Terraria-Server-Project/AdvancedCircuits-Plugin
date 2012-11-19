@@ -71,6 +71,8 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 Changelog
 --------------------------------------------------------------
+Version 1.1.1 [xx.xx.xxxx]
+  -Improved metadata handling.
 Version 1.1 [19.11.2012]
   -Updated for TShock 4.0.
   -Configuration file structure has changed, your old configuration

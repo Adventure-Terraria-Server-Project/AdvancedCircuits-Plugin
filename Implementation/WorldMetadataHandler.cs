@@ -92,16 +92,17 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
 
       // Invalidate Grandfather Clocks.
-      for (int i = 0; i < metadata.ClockLocations.Count; i++) {
-        Tile tile = Main.tile[metadata.ClockLocations[i].X, metadata.ClockLocations[i].Y];
+      List<DPoint> clockLocations = new List<DPoint>(metadata.Clocks.Keys);
+      for (int i = 0; i < clockLocations.Count; i++) {
+        Tile tile = Main.tile[clockLocations[i].X, clockLocations[i].Y];
         if (!tile.active || tile.type != Terraria.TileId_GrandfatherClock)
-          metadata.ClockLocations.RemoveAt(i--);
+          clockLocations.RemoveAt(i--);
       }
 
       // Invalidate active Swappers.
       for (int i = 0; i < metadata.ActiveSwapperLocations.Count; i++) {
         Tile tile = Main.tile[metadata.ActiveSwapperLocations[i].X, metadata.ActiveSwapperLocations[i].Y];
-        if (!tile.active || tile.type != CircuitProcessor.TileId_Swapper)
+        if (!tile.active || tile.type != AdvancedCircuits.TileId_Swapper)
           metadata.ActiveSwapperLocations.RemoveAt(i--);
       }
 
@@ -136,6 +137,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(location);
           if (this.Metadata.Clocks.ContainsKey(measureData.OriginTileLocation))
             this.Metadata.Clocks.Remove(measureData.OriginTileLocation);
+
+          break;
+        }
+        case AdvancedCircuits.TileId_Swapper: {
+          DPoint location = new DPoint(x, y);
+          if (this.Metadata.ActiveSwapperLocations.Contains(location))
+            this.Metadata.ActiveSwapperLocations.Remove(location);
 
           break;
         }
