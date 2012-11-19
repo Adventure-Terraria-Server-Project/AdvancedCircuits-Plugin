@@ -7,11 +7,18 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Xml.Serialization;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  [XmlRoot("ActiveTimer")]
   public class ActiveTimerMetadata {
+    #region [Property: TriggeringPlayerName]
+    private string triggeringPlayerName;
+
+    public string TriggeringPlayerName {
+      get { return this.triggeringPlayerName; }
+      set { this.triggeringPlayerName = value; }
+    }
+    #endregion
+
     #region [Property: FramesLeft]
     private int framesLeft;
 
@@ -23,8 +30,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
 
     #region [Method: Constructor]
-    public ActiveTimerMetadata(int framesLeft) {
+    public ActiveTimerMetadata(int framesLeft, string triggeringPlayerName) {
       this.framesLeft = framesLeft;
+      this.triggeringPlayerName = triggeringPlayerName;
     }
 
     public ActiveTimerMetadata() {}

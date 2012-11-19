@@ -7,11 +7,28 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Xml.Serialization;
+using System.Xml;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  [XmlRoot("DartTrapConfig")]
   public class DartTrapConfig {
+    #region [Property: WirePermission]
+    private string wirePermission;
+
+    public string WirePermission {
+      get { return this.wirePermission; }
+      set { this.wirePermission = value; }
+    }
+    #endregion
+
+    #region [Property: TriggerPermission]
+    private string triggerPermission;
+
+    public string TriggerPermission {
+      get { return this.triggerPermission; }
+      set { this.triggerPermission = value; }
+    }
+    #endregion
+
     #region [Property: ProjectileType]
     private int projectileType;
 
@@ -67,7 +84,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
 
-    #region [Methods: Constructor]
+    #region [Methods: Constructor, Static FromXmlElement]
     public DartTrapConfig() {
       this.cooldown = 180;
       this.projectileOffset = 8;
@@ -75,6 +92,22 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.projectileType = 98;
       this.projectileDamage = 20;
       this.projectileLifeTime = 80;
+    }
+
+    public static DartTrapConfig FromXmlElement(XmlElement xmlData) {
+      DartTrapConfig resultingDartTrapConfig = new DartTrapConfig();
+      resultingDartTrapConfig.projectileType = int.Parse(xmlData["ProjectileType"].InnerText);
+      resultingDartTrapConfig.projectileDamage = int.Parse(xmlData["ProjectileDamage"].InnerText);
+      resultingDartTrapConfig.projectileSpeed = int.Parse(xmlData["ProjectileSpeed"].InnerText);
+      resultingDartTrapConfig.projectileOffset = int.Parse(xmlData["ProjectileOffset"].InnerText);
+      resultingDartTrapConfig.projectileLifeTime = int.Parse(xmlData["ProjectileLifeTime"].InnerText);
+      resultingDartTrapConfig.cooldown = int.Parse(xmlData["Cooldown"].InnerText);
+      if (xmlData["WirePermission"] != null)
+        resultingDartTrapConfig.wirePermission = xmlData["WirePermission"].InnerText;
+      if (xmlData["TriggerPermission"] != null)
+        resultingDartTrapConfig.triggerPermission = xmlData["TriggerPermission"].InnerText;
+
+      return resultingDartTrapConfig;
     }
     #endregion
   }

@@ -5,24 +5,19 @@
 // Written by CoderCow
 
 using System;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Collections.Generic;
+using System.IO;
 using System.Xml;
-using System.Xml.Serialization;
-
-using Terraria.Plugins.CoderCow.Collections;
+using System.Xml.Schema;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  public class StatueConfigsDictionary: SerializableDictionary<StatueType,StatueConfig> {
-    public StatueConfigsDictionary(): base("StatueConfigItem", "StatueType") {} 
-  }
-  public class DartTrapConfigsDictionary: SerializableDictionary<DartTrapType,DartTrapConfig> {
-    public DartTrapConfigsDictionary(): base("DartTrapConfigItem", "DartTrapType") {} 
-  }
-
-  [XmlRoot("AdvancedCircuitsConfiguration")]
   public class Configuration {
+    #region [Constants]
+    public const string CurrentVersion = "1.1";
+    #endregion
+
     #region [Property: OverrideVanillaCircuits]
     private bool overrideVanillaCircuits;
 
@@ -77,58 +72,128 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: DartTrapConfigs]
-    private DartTrapConfigsDictionary dartTrapConfigs;
+    #region [Property: BoulderWirePermission]
+    private string boulderWirePermission;
 
-    public DartTrapConfigsDictionary DartTrapConfigs {
+    public string BoulderWirePermission {
+      get { return this.boulderWirePermission; }
+      set { this.boulderWirePermission = value; }
+    }
+    #endregion
+
+    #region [Property: BlockActivatorConfig]
+    private BlockActivatorConfig blockActivatorConfig;
+
+    public BlockActivatorConfig BlockActivatorConfig {
+      get { return this.blockActivatorConfig; }
+      set { this.blockActivatorConfig = value; }
+    }
+    #endregion
+
+    #region [Property: DartTrapConfigs]
+    private Dictionary<ComponentConfigProfile,DartTrapConfig> dartTrapConfigs;
+
+    public Dictionary<ComponentConfigProfile,DartTrapConfig> DartTrapConfigs {
       get { return this.dartTrapConfigs; }
       set { this.dartTrapConfigs = value; }
     }
     #endregion
 
     #region [Property: StatueConfigs]
-    private StatueConfigsDictionary statueConfigs;
+    private Dictionary<StatueType,StatueConfig> statueConfigs;
 
-    public StatueConfigsDictionary StatueConfigs {
+    public Dictionary<StatueType,StatueConfig> StatueConfigs {
       get { return this.statueConfigs; }
       set { this.statueConfigs = value; }
     }
     #endregion
 
 
-    #region [Methods: Static Read]
-    public static Configuration Read(string filePath) {
-      XmlSerializer configSerializer = Configuration.GetSerializer();
-      using (XmlReader xmlReader = XmlReader.Create(filePath)) {
-        return (Configuration)configSerializer.Deserialize(xmlReader);
-      }
-    }
+    #region [Methods: Constructor, Static Read]
+    public Configuration(): this(true) {}
 
-    private static XmlSerializer cachedSerializer;
-    private static XmlSerializer GetSerializer() {
-      if (Configuration.cachedSerializer == null) {
-        Configuration.cachedSerializer = new XmlSerializer(
-          typeof(Configuration), new[] {
-            typeof(StatueConfigsDictionary), typeof(DartTrapConfigsDictionary), typeof(StatueConfig), typeof(DartTrapConfig)
-          }
-        );
-      }
-
-      return Configuration.cachedSerializer;
-    }
-    #endregion
-
-    #region [Methods: Constructor]
-    public Configuration() {
+    protected Configuration(bool fillDictionaries) {
       this.overrideVanillaCircuits = false;
       this.advancedCircuitsEnabled = true;
-      this.maxDartTrapsPerCircuit = 5;
+      this.maxDartTrapsPerCircuit = 10;
       this.maxStatuesPerCircuit = 10;
       this.maxPumpsPerCircuit = 4;
-      this.maxCircuitLength = 500;
+      this.maxCircuitLength = 400;
 
-      this.dartTrapConfigs = new DartTrapConfigsDictionary();
-      this.statueConfigs = new StatueConfigsDictionary();
+      this.blockActivatorConfig = new BlockActivatorConfig();
+
+      this.dartTrapConfigs = new Dictionary<ComponentConfigProfile,DartTrapConfig>();
+      if (fillDictionaries)
+        this.dartTrapConfigs.Add(ComponentConfigProfile.Default, new DartTrapConfig());
+
+      this.statueConfigs = new Dictionary<StatueType,StatueConfig>();
+    }
+
+    public static Configuration Read(string filePath) {
+      XmlReaderSettings configReaderSettings = new XmlReaderSettings {
+        ValidationType = ValidationType.Schema,
+        ValidationFlags = XmlSchemaValidationFlags.ProcessIdentityConstraints | XmlSchemaValidationFlags.ReportValidationWarnings
+      };
+      
+      string configSchemaPath = Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath) + ".xsd");
+      configReaderSettings.Schemas.Add(null, configSchemaPath);
+
+      XmlDocument document = new XmlDocument();
+      using (XmlReader configReader = XmlReader.Create(filePath, configReaderSettings)) {
+        document.Load(configReader);
+      }
+
+      // Before validating using the schema, first check if the configuration file's version matches with the supported version.
+      XmlElement rootElement = document.DocumentElement;
+      string fileVersionRaw;
+      if (rootElement.HasAttribute("Version"))
+        fileVersionRaw = rootElement.GetAttribute("Version");
+      else
+        fileVersionRaw = "1.0";
+      
+      if (fileVersionRaw != Configuration.CurrentVersion) {
+        throw new FormatException(string.Format(
+          "The configuration file is either outdated or too new. Expected version was: {0}. File version is: {1}", 
+          Configuration.CurrentVersion, fileVersionRaw
+        ));
+      }
+
+      document.Validate((sender, args) => {
+        if (args.Severity == XmlSeverityType.Warning)
+          AdvancedCircuitsPlugin.Trace.WriteLineWarning("Configuration validation warning: " + args.Message);
+      });
+      
+      Configuration resultingConfig = new Configuration(false);
+      resultingConfig.overrideVanillaCircuits = BoolEx.ParseEx(rootElement["OverrideVanillaCircuits"].InnerXml);
+      resultingConfig.advancedCircuitsEnabled = BoolEx.ParseEx(rootElement["AdvancedCircuitsEnabled"].InnerText);
+      resultingConfig.maxDartTrapsPerCircuit  = int.Parse(rootElement["MaxDartTrapsPerCircuit"].InnerText);
+      resultingConfig.maxStatuesPerCircuit    = int.Parse(rootElement["MaxStatuesPerCircuit"].InnerText);
+      resultingConfig.maxPumpsPerCircuit      = int.Parse(rootElement["MaxPumpsPerCircuit"].InnerText);
+      resultingConfig.maxCircuitLength        = int.Parse(rootElement["MaxCircuitLength"].InnerText);
+      resultingConfig.boulderWirePermission   = rootElement["BoulderWirePermission"].InnerText;
+      resultingConfig.blockActivatorConfig    = BlockActivatorConfig.FromXmlElement(rootElement["BlockActivatorConfig"]);
+
+      XmlElement dartTrapConfigsNode = rootElement["DartTrapConfigs"];
+      foreach (XmlNode dartTrapConfigNode in dartTrapConfigsNode.ChildNodes) {
+        XmlElement dartTrapConfigElement = (dartTrapConfigNode as XmlElement);
+        if (dartTrapConfigElement == null)
+          continue;
+
+        ComponentConfigProfile componentConfigProfile = (ComponentConfigProfile)Enum.Parse(typeof(ComponentConfigProfile), dartTrapConfigElement.Attributes["Profile"].Value);
+        resultingConfig.dartTrapConfigs.Add(componentConfigProfile, DartTrapConfig.FromXmlElement(dartTrapConfigElement));
+      }
+
+      XmlElement statueConfigsNode = rootElement["StatueConfigs"];
+      foreach (XmlNode statueConfigNode in statueConfigsNode.ChildNodes) {
+        XmlElement statueConfigElement = (statueConfigNode as XmlElement);
+        if (statueConfigElement == null)
+          continue;
+
+        StatueType statueType = (StatueType)Enum.Parse(typeof(StatueType), statueConfigElement.Attributes["StatueType"].Value);
+        resultingConfig.statueConfigs.Add(statueType, StatueConfig.FromXmlElement(statueConfigElement));
+      }
+
+      return resultingConfig;
     }
     #endregion
   }

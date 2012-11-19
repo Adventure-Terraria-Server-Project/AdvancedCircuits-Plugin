@@ -21,26 +21,26 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
 
-    #region [Methods: Constructor, InitMetadata]
+    #region [Methods: Constructor, InitMetadata, ReadMetadataFromFile]
     public WorldMetadataHandler(string metadataDirectoryPath): base(AdvancedCircuitsPlugin.Trace, metadataDirectoryPath) {}
 
     protected override IWorldMetadata InitMetadata() {
       WorldMetadata metadata = new WorldMetadata();
 
       List<DPoint> ignoredTiles = new List<DPoint>();
-      for (int x = 0; x < Main.maxTilesX; x++) {
-        for (int y = 0; y < Main.maxTilesY; y++) {
-          if (!Main.tile[x, y].active)
+      for (int x = 0; x < Main.maxTilesX - 1; x++) {
+        for (int y = 0; y < Main.maxTilesY - 1; y++) {
+          if (!Terraria.Tiles[x, y].active)
             continue;
 
           DPoint tileLocation = new DPoint(x, y);
           if (ignoredTiles.Contains(tileLocation))
             continue;
 
-          switch (Main.tile[x, y].type) {
+          switch (Terraria.Tiles[x, y].type) {
             case Terraria.TileId_XSecondTimer: {
               // Is active timer?
-              if (Main.tile[x, y].frameY > 0)
+              if (Terraria.Tiles[x, y].frameY > 0)
                 metadata.ActiveTimers.Add(tileLocation, new ActiveTimerMetadata());
 
               ignoredTiles.Add(tileLocation);
@@ -50,7 +50,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             case Terraria.TileId_GrandfatherClock: {
               Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(tileLocation);
 
-              metadata.ClockLocations.Add(measureData.OriginTileLocation);
+              metadata.Clocks.Add(measureData.OriginTileLocation, new GrandfatherClockMetadata(null));
               for (int sx = 0; sx < measureData.Size.X; sx++) {
                 for (int sy = 0; sy < measureData.Size.Y; sy++) {
                   ignoredTiles.Add(new DPoint(x + sx, y + sy));
@@ -72,12 +72,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       // Invalidate Gates if necessary.
       List<DPoint> gateLocations = new List<DPoint>(metadata.GateStates.Keys);
       foreach (DPoint gateLocation in gateLocations) {
-        Tile tile = Main.tile[gateLocation.X, gateLocation.Y];
+        Tile tile = Terraria.Tiles[gateLocation];
         if (
           !tile.active || (
-            tile.type != CircuitProcessor.TileId_ANDGate && 
-            tile.type != CircuitProcessor.TileId_ORGate && 
-            tile.type != CircuitProcessor.TileId_XORGate)
+            tile.type != AdvancedCircuits.TileId_ANDGate && 
+            tile.type != AdvancedCircuits.TileId_ORGate && 
+            tile.type != AdvancedCircuits.TileId_XORGate)
         ) {
           metadata.GateStates.Remove(gateLocation);
         }
@@ -110,19 +110,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Methods: HandleTilePlacing, HandleTileDestroying]
-    public void HandleTilePlacing(TSPlayer player, int tileId, int x, int y, int tileStyle) {
-      switch (tileId) {
+    public void HandleTilePlacing(TSPlayer player, int blockId, int x, int y, int tileStyle) {
+      switch (blockId) {
         case Terraria.TileId_GrandfatherClock:
-          this.Metadata.ClockLocations.Add(new DPoint(x, y - 4));
+          this.Metadata.Clocks.Add(new DPoint(x, y - 4), new GrandfatherClockMetadata(player.Name));
           break;
       }
     }
 
     public void HandleTileDestroying(TSPlayer player, int x, int y) {
-      if (!Main.tile[x, y].active)
+      if (!Terraria.Tiles[x, y].active)
         return;
 
-      switch (Main.tile[x, y].type) {
+      switch (Terraria.Tiles[x, y].type) {
         case Terraria.TileId_XSecondTimer: {
           DPoint location = new DPoint(x, y);
           if (this.Metadata.ActiveTimers.ContainsKey(location))
@@ -134,18 +134,24 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           DPoint location = new DPoint(x, y);
 
           Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(location);
-          int clockIndex = this.Metadata.ClockLocations.IndexOf(measureData.OriginTileLocation);
-          if (clockIndex != -1)
-            this.Metadata.ClockLocations.RemoveAt(clockIndex);
+          if (this.Metadata.Clocks.ContainsKey(measureData.OriginTileLocation))
+            this.Metadata.Clocks.Remove(measureData.OriginTileLocation);
 
           break;
         }
-          case CircuitProcessor.TileId_ANDGate:
-          case CircuitProcessor.TileId_ORGate:
-          case CircuitProcessor.TileId_XORGate: {
+        case AdvancedCircuits.TileId_ANDGate:
+        case AdvancedCircuits.TileId_ORGate:
+        case AdvancedCircuits.TileId_XORGate: {
           DPoint location = new DPoint(x, y);
           if (this.Metadata.GateStates.ContainsKey(location))
             this.Metadata.GateStates.Remove(location);
+
+          break;
+        }
+        case AdvancedCircuits.TileId_BlockActivator: {
+          DPoint location = new DPoint(x, y);
+          if (this.Metadata.BlockActivators.ContainsKey(location))
+            this.Metadata.BlockActivators.Remove(location);
 
           break;
         }

@@ -7,16 +7,12 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Xml.Serialization;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  [XmlRoot("GateState")]
   public class GateStateMetadata {
     #region [Property: PortStates]
     private bool?[] portStates;
 
-    [XmlArray("PortStates")]
-    [XmlArrayItem("PortState")]
     public bool?[] PortStates {
       get { return this.portStates; }
       set { this.portStates = value; }

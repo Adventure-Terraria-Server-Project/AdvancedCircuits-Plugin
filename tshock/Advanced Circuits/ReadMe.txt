@@ -58,6 +58,10 @@ neither trigger an Advanced Circuit nor will any configuration
 options or extensions take any effect on the Vanilla Circuit 
 they execute.
 
+1.0 to 1.1 Upgrade Notes
+--------------------------------------------------------------
+Delete your "tshock/Advanced Circuits/World Data" folder.
+
 
 A Quickstart to Advanced Circuits
 --------------------------------------------------------------
@@ -67,6 +71,41 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 Changelog
 --------------------------------------------------------------
+Version 1.1 [19.11.2012]
+  -Updated for TShock 4.0.
+  -Configuration file structure has changed, your old configuration
+   will have to be ported to the new version.
+  -Components in circuits might now be signaled multiple times during 
+   a single circuit execution.
+  -Wires of circuits might now be processed multiple times during a 
+   single circuit execution.
+  -Added the new Port Defining Component "Block Activator" 
+   (Active Stone).
+  -Beside acting as NOT-Gate, Obsidian may now also be used as a
+   NOT-Port to invert the incoming or outgoing signal for / of a 
+   Port Defining Component.
+  -Signs will now state their text to the circuit triggering player
+   when signaled with "1" in an Advanced Circuit.
+  -Implemented modifiers, special blocks (Cobalt Ore) changing the
+   behaviour of certain components.
+  -Timers support 4 modifiers now to modify their time intervals.
+  -Dart Traps may have up to 5 different configurations now (one
+   default + 4 for the modifiers).
+  -Switches and Levers will now forward received signals if they
+   got toggled by them.
+  -Added AC sub-command "toggle" / "switch", useful to easily toggle 
+   the state of a Torch or some other component.
+  -Boulders will now start rolling if they receive a "1" signal in an
+   Advanced Circuit.
+  -Grandfather Clocks can now be used with one or two modifiers.
+  -Components will now be dropped if they were placed onto a wire by
+   a player who didn't have the permission to wire them up.
+  -Huge performance improvements in matter of circuit processing.
+  -Fixed a bug allowing Statues to be placed on wires even if that
+   player had not the permission to do so.
+  -Improved configuration parsing, validation and error detection.
+  -Some general stability improvements.
+
 Version 1.0.4 [23.10.2012]
   -Fixed a bug causing Grandfather Clock to not work anymore.
   -Fixed a bug causing World Metadata sometimes not be validated 

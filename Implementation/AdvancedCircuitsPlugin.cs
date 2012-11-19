@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Xml.Schema;
 using DPoint = System.Drawing.Point;
 
 using Hooks;
@@ -72,11 +73,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: CircuitProcessor]
-    private CircuitProcessor circuitProcessor;
+    #region [Property: CircuitHandler]
+    private CircuitHandler circuitHandler;
 
-    protected CircuitProcessor CircuitProcessor {
-      get { return this.circuitProcessor; }
+    protected CircuitHandler CircuitHandler {
+      get { return this.circuitHandler; }
     }
     #endregion
 
@@ -97,7 +98,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #if Testrun
-    private TestRunner testRunner = new TestRunner();
+    private TestRunner testRunner;
     #endif
 
 
@@ -126,26 +127,37 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         try {
           this.config = Configuration.Read(AdvancedCircuitsPlugin.ConfigFilePath);
         } catch (Exception ex) {
+          string exceptionDetailsText;
+          if (ex is XmlSchemaException)
+            exceptionDetailsText = ex.Message;
+          else
+            exceptionDetailsText = ex.ToString();
+
           AdvancedCircuitsPlugin.Trace.WriteLineError(
-            "Reading the configuration file failed. This plugin will be disabled. Exception details:\n{0}", ex
+            "Reading the configuration file failed. This plugin will be disabled. Exception details:\n{0}", exceptionDetailsText
           );
 
           return;
         }
       } else {
         this.config = new Configuration();
+        AdvancedCircuitsPlugin.Trace.WriteLineWarning(string.Format(
+          "Configuration file was not found at \"{0}\". Default settings will be used.", AdvancedCircuitsPlugin.ConfigFilePath
+        ));
       }
 
       this.worldMetadataHandler = new WorldMetadataHandler(AdvancedCircuitsPlugin.WorldMetadataDirectory);
-      this.circuitProcessor = new CircuitProcessor(this.Config, this.WorldMetadataHandler.Metadata);
+      #if !Testrun
+      this.circuitHandler = new CircuitHandler(this.Config, this.WorldMetadataHandler.Metadata);
+      #endif
 
       Action reloadConfiguration = () => {
         if (this.isDisposed)
           return;
 
         this.config = Configuration.Read(AdvancedCircuitsPlugin.ConfigFilePath);
-        if (this.circuitProcessor != null)
-          this.circuitProcessor = new CircuitProcessor(this.Config, this.WorldMetadataHandler.Metadata);
+        if (this.circuitHandler != null)
+          this.circuitHandler = new CircuitHandler(this.Config, this.WorldMetadataHandler.Metadata);
       };
       this.userInteractionHandler = new UserInteractionHandler(this.PluginInfo, this.Config, reloadConfiguration);
 
@@ -156,7 +168,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       GameHooks.PostInitialize -= this.Game_PostInitialize;
 
       #if Testrun
+      this.testRunner = new TestRunner(this.WorldMetadataHandler);
       this.testRunner.RunAllTests();
+      this.testRunner.TestRunCompleted += (sender, e) => {
+        this.circuitHandler = new CircuitHandler(this.Config, this.WorldMetadataHandler.Metadata);
+        this.config.MaxCircuitLength = 5000;
+      };
       #endif
     }
     #endregion
@@ -165,7 +182,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     private void NetHooks_GetData(GetDataEventArgs e) {
       if (e == null || this.isDisposed || e.Handled)
         return;
-
+      
       TSPlayer player = TShock.Players[e.Msg.whoAmI];
       if (player == null || !player.ConnectionAlive || player.RequiresPassword || player.Dead || player.State < 10)
         return;
@@ -179,27 +196,27 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           byte editType = e.Msg.readBuffer[e.Index];
           int x = BitConverter.ToInt32(e.Msg.readBuffer, e.Index + 1);
           int y = BitConverter.ToInt32(e.Msg.readBuffer, e.Index + 5);
-          byte tileId = e.Msg.readBuffer[e.Index + 9];
+          byte blockId = e.Msg.readBuffer[e.Index + 9];
           byte tileStyle = e.Msg.readBuffer[e.Index + 10];
 
-          if (!Terraria.IsValidCoord(x, y) || editType < 0 || editType > 6)
+          if (!Terraria.Tiles.IsValidCoord(x, y) || editType < 0 || editType > 6)
             return;
           if (TShock.CheckIgnores(player))
             return;
           if (TShock.CheckRangePermission(player, x, y, 32))
             return;
 
-          e.Handled = this.OnTileEdit(player, (TileEditType)editType, x, y, tileId, tileStyle);
+          e.Handled = this.OnTileEdit(player, (TileEditType)editType, x, y, blockId, tileStyle);
           break;
         }
         case PacketTypes.HitSwitch: {
-          if (e.Msg.readBuffer.Length - e.Index < 5)
+          if (e.Msg.readBuffer.Length - e.Index < 8)
             break;
 
           int x = BitConverter.ToInt32(e.Msg.readBuffer, e.Index);
           int y = BitConverter.ToInt32(e.Msg.readBuffer, e.Index + 4);
           
-          if (!Terraria.IsValidCoord(x, y) || !Main.tile[x, y].active)
+          if (!Terraria.Tiles.IsValidCoord(x, y) || !Terraria.Tiles[x, y].active)
             return;
           if (TShock.CheckIgnores(player))
             return;
@@ -229,11 +246,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return false;
 
       try {
-        return this.CircuitProcessor.HandleHitSwitch(player, x, y);
+        if (this.CircuitHandler != null)
+          return this.CircuitHandler.HandleHitSwitch(player, x, y);
       } catch (Exception ex) {
         AdvancedCircuitsPlugin.Trace.WriteLineError("A HitSwitch Handler caused an exception.\n{0}", ex.ToString());
-        return false;
+        return true;
       }
+
+      return true;
     }
 
     protected virtual void OnGameUpdate() {
@@ -241,50 +261,47 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
 
       try {
-        this.CircuitProcessor.HandleGameUpdate();
+        if (this.CircuitHandler != null)
+          this.CircuitHandler.HandleGameUpdate();
+
+        this.UserInteractionHandler.HandleGameUpdate();
+
         #if Testrun
-        this.testRunner.HandleGameUpdate();
+        if (this.testRunner.IsRunning)
+          this.testRunner.HandleGameUpdate();
         #endif
       } catch (Exception ex) {
         AdvancedCircuitsPlugin.Trace.WriteLineError("A Game Update Handler caused an exception.\n{0}", ex.ToString());
       }
     }
 
-    protected virtual bool OnTileEdit(TSPlayer player, TileEditType editType, int x, int y, int tileId, int tileStyle) {
+    protected virtual bool OnTileEdit(TSPlayer player, TileEditType editType, int x, int y, int blockId, int tileStyle) {
       if (this.isDisposed)
         return false;
 
       try {
+        if (this.UserInteractionHandler.HandleTileEdit(player, editType, blockId, x, y, tileStyle))
+          return true;
+
         switch (editType) {
           case TileEditType.PlaceTile:
-            if (this.UserInteractionHandler.HandleTilePlacing(player, tileId, x, y, tileStyle))
-              return true;
-
-            this.WorldMetadataHandler.HandleTilePlacing(player, tileId, x, y, tileStyle);
+            this.WorldMetadataHandler.HandleTilePlacing(player, blockId, x, y, tileStyle);
             break;
-
           case TileEditType.DestroyTile:
             this.WorldMetadataHandler.HandleTileDestroying(player, x, y);
-
             break;
-
-          case TileEditType.PlaceWire:
-            if (this.UserInteractionHandler.HandleWirePlacing(player, x, y))
-              return true;
-
-            break;
-
           case TileEditType.DestroyWire:
             #if DEBUG || Testrun
             player.SendMessage(string.Format("X: {0}, Y: {1}", x, y), Color.Aqua);
 
-            if (!Main.tile[x, y].active)
+            if (!Terraria.Tiles[x, y].active)
               break;
 
             Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(new DPoint(x, y));
-            player.SendMessage(string.Format(
-              "Origin X: {0}, Origin Y: {1}, Active: {2}", measureData.OriginTileLocation.X, measureData.OriginTileLocation.Y, measureData.HasActiveFrame)
-            );
+            player.SendInfoMessage(string.Format(
+              "Origin X: {0}, Origin Y: {1}, Active: {2}", 
+              measureData.OriginTileLocation.X, measureData.OriginTileLocation.Y, Terraria.HasSpriteActiveFrame(measureData)
+            ));
             #endif
             break;
         }

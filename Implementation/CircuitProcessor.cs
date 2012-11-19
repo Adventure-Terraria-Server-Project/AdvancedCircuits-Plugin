@@ -4,85 +4,25 @@
 // 
 // Written by CoderCow
 
-/* Star Cloak Projectiles:
-for (int i = 0; i < 3; i++) {
-  float x = this.position.X + (float)Main.rand.Next(-400, 400);
-  float y = this.position.Y - (float)Main.rand.Next(500, 800);
-  Vector2 vector = new Vector2(x, y);
-  float num4 = this.position.X + (float)(this.width / 2) - vector.X;
-  float num5 = this.position.Y + (float)(this.height / 2) - vector.Y;
-  num4 += (float)Main.rand.Next(-100, 101);
-  int num6 = 23;
-  float num7 = (float)Math.Sqrt((double)(num4 * num4 + num5 * num5));
-  num7 = (float)num6 / num7;
-  num4 *= num7;
-  num5 *= num7;
-  int num8 = Projectile.NewProjectile(x, y, num4, num5, 92, 30, 5f, this.whoAmi);
-  Main.projectile[num8].ai[1] = this.position.Y;
-}
-
-case Terraria.TileId_Sunflower: {
-  if (signal == true) {
-    DPoint projectileSpawn = new DPoint((originX * 16 + 16), (originY * 16 + 8));
-    float projectileSpeedX = 5;
-    float projectileSpeedY = 5;
-    int projectileType = 10;
-            
-    Projectile.NewProjectile(
-      projectileSpawn.X, projectileSpawn.Y, projectileSpeedX, projectileSpeedY, projectileType, 1, 
-      1, Main.myPlayer
-    );
-
-    Projectile.NewProjectile(
-      projectileSpawn.X, projectileSpawn.Y, -projectileSpeedX, projectileSpeedY, projectileType, 1, 
-      1, Main.myPlayer
-    );
-  }
-
-  if (stripData != null) {
-    for (int tx = 0; tx < frameWidth; tx++) {
-      for (int ty = 0; ty < frameHeight; ty++) {
-        int absoluteX = originX + tx;
-        int absoluteY = originY + ty;
-
-        stripData.Value.IgnoredTiles.Add(new DPoint(absoluteX, absoluteY));
-      }
-    }
-  }
-  return true;
-}
-*/
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using Terraria.Plugins.CoderCow.Collections;
-using DPoint = System.Drawing.Point;
-
-using Hooks;
+using System.Text;
 using TShockAPI;
+using DPoint = System.Drawing.Point;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitProcessor {
     #region [Constants]
-    public const int TileId_ORGate = Terraria.TileId_CopperOre;
-    public const int TileId_ANDGate = Terraria.TileId_SilverOre;
-    public const int TileId_XORGate = Terraria.TileId_GoldOre;
-    public const int TileId_NOTGate = Terraria.TileId_Obsidian;
-    public const int TileId_Swapper = Terraria.TileId_IronOre;
-    public const int TileId_CrossoverBridge = Terraria.TileId_Spike;
-    public const int TileId_InputPort = Terraria.TileId_Glass;
-    private const int TileId_Modifier = Terraria.TileId_CobaltOre;
-
-    private const int TimerUpdateFrameRate = 10;
-    private const int ClockUpdateFrameRate = 60;
+    // The maximum amount of times a single component can be signaled in the same circuit execution until it "overheats".
+    public const int PortDefiningComponentSignalMaximum = 5;
     #endregion
 
     #region [Property: Config]
     private readonly Configuration config;
 
-    public Configuration Config {
+    protected Configuration Config {
       get { return this.config; }
     }
     #endregion
@@ -90,356 +30,559 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #region [Property: WorldMetadata]
     private readonly WorldMetadata worldMetadata;
 
-    public WorldMetadata WorldMetadata {
+    protected WorldMetadata WorldMetadata {
       get { return this.worldMetadata; }
     }
     #endregion
 
-    #if Testrun
-    #region [Property: LastStripData]
-    private CircuitStripData lastStripData;
+    #region [Property: SenderMeasureData]
+    private readonly Terraria.SpriteMeasureData senderMeasureData;
 
-    public CircuitStripData LastStripData {
-      get { return this.lastStripData; }
+    protected Terraria.SpriteMeasureData SenderMeasureData {
+      get { return this.senderMeasureData; }
     }
     #endregion
-    #endif
+
+    #region [Property: QueuedRootBranches]
+    private readonly List<RootBranchProcessData> queuedRootBranches;
+
+    protected List<RootBranchProcessData> QueuedRootBranches {
+      get { return this.queuedRootBranches; }
+    }
+    #endregion
+
+    #region [Property: PortDefiningComponentSignalCounter]
+    private readonly Dictionary<DPoint,int> portDefiningComponentSignalCounter;
+
+    // Stores the amount of times a single port defining component was signaled during the current circuit execution.
+    protected Dictionary<DPoint,int> PortDefiningComponentSignalCounter {
+      get { return this.portDefiningComponentSignalCounter; }
+    }
+    #endregion
+
+    #region [Property: TemporaryGateStates]
+    private Dictionary<DPoint, GateStateMetadata> temporaryGateStates;
+
+    protected Dictionary<DPoint,GateStateMetadata> TemporaryGateStates {
+      get { return this.temporaryGateStates; }
+    }
+    #endregion
+
+    #region [Properties: Result, IsAdvancedCircuit, TriggeringPlayer, TriggeredPassively, CircuitLength, IsCancellationPending]
+    private readonly CircuitProcessResult result;
+
+    protected CircuitProcessResult Result {
+      get { return this.result; }
+    }
+
+    public bool IsAdvancedCircuit {
+      get { return this.result.IsAdvancedCircuit; }
+    }
+    
+    public TSPlayer TriggeringPlayer {
+      get { return this.result.TriggeringPlayer; }
+      set { this.result.TriggeringPlayer = value; }
+    }
+
+    public bool TriggeredPassively {
+      get { return this.result.TriggeredPassively; }
+      set { this.result.TriggeredPassively = value; }
+    }
+
+    public int CircuitLength { 
+      get { return this.result.CircuitLength; }
+      set { this.result.CircuitLength = value; }
+    }
+
+    public bool IsCancellationPending {
+      get { return (this.result.CancellationReason != CircuitCancellationReason.None); }
+    }
+    #endregion
+
+    private bool wasExecuted;
 
 
     #region [Method: Constructor]
-    public CircuitProcessor(Configuration config, WorldMetadata worldMetadata) {
+    public CircuitProcessor(Configuration config, WorldMetadata worldMetadata, DPoint senderLocation) {
+      Tile senderTile = Terraria.Tiles[senderLocation];
+      if (!senderTile.active)
+        throw new ArgumentException("No tile at the given sender location.", "senderLocation");
+
       this.config = config;
       this.worldMetadata = worldMetadata;
-      this.isDayTime = Main.dayTime;
+      this.senderMeasureData = Terraria.MeasureSprite(senderLocation);
+      this.queuedRootBranches = new List<RootBranchProcessData>(20);
+      this.result = new CircuitProcessResult {
+        IsAdvancedCircuit = !Terraria.IsSpriteWired(this.SenderMeasureData),
+        SenderLocation = this.SenderMeasureData.OriginTileLocation
+      };
 
-      // Timers are always inactive when a map is loaded, so switch them into their active state if necessary.
-      foreach (DPoint activeTimerLocation in this.WorldMetadata.ActiveTimers.Keys)
-        if (Main.tile[activeTimerLocation.X, activeTimerLocation.Y].active)
-          Terraria.SetSpriteActiveFrame(Terraria.MeasureSprite(activeTimerLocation), true);
+      if (this.IsAdvancedCircuit)
+        this.portDefiningComponentSignalCounter = new Dictionary<DPoint,int>(20);
     }
     #endregion
 
-    #region [Method: HandleGameUpdate, HandleHitSwitch]
-    private int frameCounter;
-    private bool isDayTime;
-
-    public void HandleGameUpdate() {
-      this.frameCounter++;
-
-      if (this.frameCounter % CircuitProcessor.TimerUpdateFrameRate == 0) {
-        // Deleting multiple items from a dictionary in one loop requires quite a bit of performance, so we try to do 
-        // it only when necessary.
-        bool deletionLoopRequired = false;
-        foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in this.WorldMetadata.ActiveTimers) {
-          if (activeTimer.Value == null || activeTimer.Value.FramesLeft <= 0) {
-            deletionLoopRequired = true;
-            continue;
-          }
-
-          activeTimer.Value.FramesLeft -= CircuitProcessor.TimerUpdateFrameRate;
-        }
-        
-        if (deletionLoopRequired) {
-          List<DPoint> activeTimerLocations = new List<DPoint>(this.WorldMetadata.ActiveTimers.Keys);
-          foreach (DPoint activeTimerLocation in activeTimerLocations) {
-            ActiveTimerMetadata activeTimer;
-            if (!this.WorldMetadata.ActiveTimers.TryGetValue(activeTimerLocation, out activeTimer))
-              continue;
-
-            if (activeTimer == null) {
-              this.WorldMetadata.ActiveTimers.Remove(activeTimerLocation);
-              continue;
-            }
-
-            if (activeTimer.FramesLeft <= 0) {
-              int x = activeTimerLocation.X;
-              int y = activeTimerLocation.Y;
-              if (!Main.tile[x, y].active || Main.tile[x, y].type != Terraria.TileId_XSecondTimer) {
-                this.WorldMetadata.ActiveTimers.Remove(activeTimerLocation);
-                continue;
-              }
-
-              this.HitSwitch(TSPlayer.Server, activeTimerLocation, true);
-              activeTimer.FramesLeft = this.MeasureTimersExpirationTime(activeTimerLocation);
-            }
-          }
-        }
-      }
-
-      if (this.frameCounter % CircuitProcessor.ClockUpdateFrameRate == 0) {
-        if (Main.dayTime != this.isDayTime) {
-          for (int i = 0; i < this.WorldMetadata.ClockLocations.Count; i++) {
-            DPoint clockLocation = this.WorldMetadata.ClockLocations[i];
-            if (
-              !Main.tile[clockLocation.X, clockLocation.Y].active || 
-              Main.tile[clockLocation.X, clockLocation.Y].type != Terraria.TileId_GrandfatherClock
-            ) {
-              this.WorldMetadata.ClockLocations.RemoveAt(i);
-              i--;
-            }
-
-            this.HitSwitch(TSPlayer.Server, clockLocation, true, !Main.dayTime);
-          }
-
-          this.isDayTime = Main.dayTime;
-        }
-
-        if (this.frameCounter >= 100000)
-          this.frameCounter = 0;
-      }
-    }
-
-    public bool HandleHitSwitch(TSPlayer player, int x, int y) {
-      this.HitSwitch(player, new DPoint(x, y));
-
-      return true;
-    }
-
-    public void HitSwitch(
-      TSPlayer player, DPoint tileLocation, bool stripOnly = false, bool? overridenSignal = null
+    #region [Methods: ProcessCircuit, ProcessRootBranch, ProcessSubBranches, ProcessTile]
+    public CircuitProcessResult ProcessCircuit(
+      TSPlayer player = null, SignalType? overrideSignal = null, bool switchSender = true, bool switchSenderLocalOnly = true
     ) {
-      Tile hitTile = Main.tile[tileLocation.X, tileLocation.Y];
-      if (!hitTile.active)
-        return;
+      if (this.wasExecuted)
+        throw new InvalidOperationException("This Circuit Processor has already processed a circuit.");
 
-      bool signal = false;
-      if (overridenSignal != null)
-        signal = overridenSignal.Value;
+      this.wasExecuted = true;
 
+      DateTime processingStartTime = DateTime.Now;
+      int senderType = this.SenderMeasureData.SpriteType;
+
+      this.TriggeringPlayer = player;
+      this.TriggeredPassively = (senderType == Terraria.TileId_XSecondTimer || senderType == Terraria.TileId_GrandfatherClock);
+
+      SignalType signal = SignalType.Swap;
       try {
-        bool isAdvancedCircuit;
-        Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(tileLocation);
-        // Does the turned switch have any wires on it?
-        if (hitTile.type == Terraria.TileId_Lever || hitTile.type == Terraria.TileId_GrandfatherClock)
-          isAdvancedCircuit = !Terraria.IsSpriteWired(measureData);
-        else
-          isAdvancedCircuit = !hitTile.wire;
-       
-        if (isAdvancedCircuit) {
+        if (this.IsAdvancedCircuit) {
           if (!this.Config.AdvancedCircuitsEnabled)
-            return;
+            return this.Result;
           
-          if (overridenSignal == null) {
-            switch (hitTile.type) {
+          if (overrideSignal == null) {
+            switch (senderType) {
               case Terraria.TileId_PressurePlate:
                 // Red sends "0", all the others send "1".
-                signal = (hitTile.frameY > 0);
+                signal = AdvancedCircuits.BoolToSignal(Terraria.Tiles[this.SenderMeasureData.OriginTileLocation].frameY > 0);
+
                 break;
               case Terraria.TileId_Lever:
               case Terraria.TileId_Switch:
               case Terraria.TileId_XSecondTimer:
-                if (!stripOnly) {
-                  signal = !measureData.HasActiveFrame;
-              
-                  // Turn the lever / switch / timer locally
-                  this.SignalizeComponent(tileLocation, signal, null, true);
-                } else {
-                  signal = measureData.HasActiveFrame;
-                }
+                signal = AdvancedCircuits.BoolToSignal(!Terraria.HasSpriteActiveFrame(this.SenderMeasureData));
+                break;
 
-                break;
-              case Terraria.TileId_GrandfatherClock:
-                signal = true;
-                break;
               default:
-                return;
+                signal = SignalType.On;
+                break;
             }
           }
         } else {
           // Grandfather Clock is an Advanced Circuit component and thus wont work in Vanilla Circuits.
-          if (hitTile.type == Terraria.TileId_GrandfatherClock)
-            return;
+          if (senderType == Terraria.TileId_GrandfatherClock)
+            return this.Result;
 
-          if (this.Config.OverrideVanillaCircuits) {
-            if (hitTile.type == Terraria.TileId_XSecondTimer && !stripOnly) {
-              measureData = Terraria.MeasureSprite(tileLocation);
-              this.SignalizeComponent(tileLocation, !measureData.HasActiveFrame, null, true);
-            }
-          } else {
-            WorldGen.hitSwitch(tileLocation.X, tileLocation.Y);
-            return;
+          if (!this.Config.OverrideVanillaCircuits) {
+            WorldGen.hitSwitch(this.SenderMeasureData.OriginTileLocation.X, this.SenderMeasureData.OriginTileLocation.Y);
+            return this.Result;
+          }
+
+          signal = SignalType.Swap;
+        }
+
+        if (overrideSignal != null)
+          signal = overrideSignal.Value;
+        
+        if (
+          switchSender && (
+            senderType == Terraria.TileId_Switch || 
+            senderType == Terraria.TileId_Lever || 
+            senderType == Terraria.TileId_XSecondTimer
+          )
+        ) {
+          bool newSenderState;
+          if (signal == SignalType.Swap)
+            newSenderState = !Terraria.HasSpriteActiveFrame(this.SenderMeasureData);
+          else 
+            newSenderState = AdvancedCircuits.SignalToBool(signal).Value;
+
+          if (Terraria.HasSpriteActiveFrame(this.SenderMeasureData) != newSenderState)
+            Terraria.SetSpriteActiveFrame(this.SenderMeasureData, newSenderState, !switchSenderLocalOnly);
+
+          if (senderType == Terraria.TileId_XSecondTimer) {
+            this.RegisterUnregisterTimer(this.SenderMeasureData, newSenderState);
+
+            // Timers do not execute circuits as they are switched.
+            return this.Result;
           }
         }
-      
-        if (hitTile.type == Terraria.TileId_XSecondTimer && !stripOnly)
-          return;
 
-        if (!isAdvancedCircuit) {
-          if (hitTile.type == Terraria.TileId_Lever) {
-            foreach (DPoint innerTileLocation in Terraria.EnumerateSpriteTileLocations(measureData)) {
-              Tile tile = Main.tile[innerTileLocation.X, innerTileLocation.Y];
-              if (tile.wire) {
-                this.StripCircuit(
-                  false, new CircuitStripData(player, innerTileLocation, innerTileLocation, false, 
-                  Terraria.EnumerateSpriteTileLocations(measureData))
-                );
-              }
-            }
-          } else {
-            this.StripCircuit(false, new CircuitStripData(player, tileLocation, tileLocation, false));
+        if (this.IsAdvancedCircuit) {
+          AdvancedCircuitsPlugin.Trace.WriteLineVerbose(
+            "Started processing Advanced Circuit at {0} with signal {1}.", 
+            this.SenderMeasureData.OriginTileLocation, signal.ToString()
+          );
+        } else {
+          AdvancedCircuitsPlugin.Trace.WriteLineVerbose(
+            "Started processing Vanilla Circuit at {0} with signal {1}.", 
+            this.SenderMeasureData.OriginTileLocation, signal.ToString()
+          );
+        }
+
+        WorldGen.numWire = 0;
+        WorldGen.numNoWire = 0;
+        WorldGen.numInPump = 0;
+        WorldGen.numOutPump = 0;
+
+        foreach (DPoint portLocation in AdvancedCircuits.EnumerateComponentPortLocations(this.SenderMeasureData)) {
+          Tile portTile = Terraria.Tiles[portLocation];
+          if (!portTile.wire)
+            continue;
+
+          DPoint portAdjacentTileLocation = AdvancedCircuits.GetPortAdjacentComponentTileLocation(
+            this.SenderMeasureData, portLocation
+          );
+
+          SignalType portSignal = signal;
+          if (this.IsAdvancedCircuit && portTile.active && portTile.type == AdvancedCircuits.TileId_NOTGate)
+            portSignal = AdvancedCircuits.BoolToSignal(!AdvancedCircuits.SignalToBool(portSignal).Value);
+
+          this.QueuedRootBranches.Add(new RootBranchProcessData(portAdjacentTileLocation, portLocation, portSignal));
+        }
+
+        if (this.IsAdvancedCircuit) {
+          // Main Branch Processing Loop
+          while (this.QueuedRootBranches.Count > 0) {
+            RootBranchProcessData currentBranch = this.QueuedRootBranches[0];
+
+            this.ProcessRootBranch(currentBranch);
+            this.QueuedRootBranches.RemoveAt(0);
           }
         } else {
-          IEnumerable<DPoint> spriteTileLocationEnumerable = null;
+          // We know that the sender must have at least one of its tiles wired, we are too lazy to count them though, so we just
+          // expect the wiring of the sender as 1.
+          this.CircuitLength++;
 
-          // Allow Timers to switch themselfes in the same circuit.
-          if (hitTile.type != Terraria.TileId_XSecondTimer)
-            spriteTileLocationEnumerable = Terraria.EnumerateSpriteTileLocations(measureData);
+          RootBranchProcessData dummyRoot = new RootBranchProcessData(
+            this.SenderMeasureData.OriginTileLocation, this.SenderMeasureData.OriginTileLocation, signal
+          );
+          List<BranchProcessData> subBranches = new List<BranchProcessData>(this.QueuedRootBranches.Capacity);
+          foreach (RootBranchProcessData rootBranch in this.QueuedRootBranches)
+            subBranches.Add(rootBranch.ToBranchProcessData());
 
-          foreach (DPoint portLocation in ACUtils.EnumerateComponentPortLocations(measureData)) {
-            if (!Main.tile[portLocation.X, portLocation.Y].wire)
-              continue;
-
-            this.StripCircuit(
-              signal, new CircuitStripData(player, tileLocation, portLocation, true, spriteTileLocationEnumerable)
-            );
-          }
+          this.ProcessSubBranches(dummyRoot, subBranches);
         }
-      } catch (Exception ex) {
-        AdvancedCircuitsPlugin.Trace.WriteLineError(
-          "HitSwitch for \"{0}\" failed. See inner exception for details.\n{1}", Terraria.GetTileName(hitTile.type), ex.ToString()
-        );
-      }
-    }
-    #endregion
-
-    #region [Methods: StripCircuit, StripProcessTile]
-    public void StripCircuit(bool signal, CircuitStripData stripData) {
-      Tile tile = Main.tile[stripData.FirstWireLocation.X, stripData.FirstWireLocation.Y];
-      if (!tile.wire)
-        return;
-
-      // Input Ports are not meant to send signals.
-      if (stripData.IsAdvancedCircuit && tile.active && tile.type == CircuitProcessor.TileId_InputPort)
-        return;
-
-      if (stripData.IsAdvancedCircuit) {
-        AdvancedCircuitsPlugin.Trace.WriteLineVerbose(
-          "Started stripping Advanced Circuit at {0} with signal {1}.", stripData.SenderLocation, signal.ToString()
-        );
-      } else {
-        AdvancedCircuitsPlugin.Trace.WriteLineVerbose(
-          "Started stripping Vanilla Circuit at {0} with signal {1}.", stripData.SenderLocation, signal.ToString()
-        );
-      }
-
-      WorldGen.numWire = 0;
-      WorldGen.numNoWire = 0;
-      WorldGen.numInPump = 0;
-      WorldGen.numOutPump = 0;
-
-      try {
-        this.StripProcessTile(stripData.FirstWireLocation, DPoint.Empty, signal, stripData);
 
         if (WorldGen.numInPump > 0 && WorldGen.numOutPump > 0)
           WorldGen.xferWater();
       } catch (Exception ex) {
-        throw new InvalidOperationException(string.Format(
-          "Failed on stripping circuit at [{0}]. Exception details: {1}", stripData.FirstWireLocation, ex
-        ));
+        throw new InvalidOperationException("Processing circuit failed. See inner exception for details.", ex);
+      } finally {
+        this.Result.ProcessingTime = DateTime.Now - processingStartTime;
+        this.Result.OriginSignal = signal;
       }
 
-      AdvancedCircuitsPlugin.Trace.WriteLineVerbose(
-        "Ended stripping circuit. {0} wires signaled. {1} sprites signaled. {2} components signaled.", 
-        stripData.ProcessedWires.Count, stripData.SignaledComponentsCounter, stripData.SignaledACComponentsCounter
+      #if Verbose
+      StringBuilder resultString = new StringBuilder();
+      resultString.AppendFormat(
+        "\nEnded processing circuit:\n  Sender: {0} {1}\n  Advanced Circuit: {2}\n  Processed Branches: {3}\n",
+        Terraria.Tiles.GetBlockName(Terraria.Tiles[this.Result.SenderLocation].type), 
+        this.Result.SenderLocation, this.Result.IsAdvancedCircuit, this.Result.ProcessedBranchCount
       );
-      #if Testrun
-      this.lastStripData = stripData;
+
+      if (this.Result.WarnReason != CircuitWarnReason.None)
+        resultString.AppendLine("  Warning: " + this.Result.WarnReason);
+
+      if (this.Result.CancellationReason != CircuitCancellationReason.None) {
+        string relatedComponentName;
+        if (this.Result.CancellationRelatedComponentType == -1)
+          relatedComponentName = "None";
+        else
+          relatedComponentName = Terraria.Tiles.GetBlockName(this.Result.CancellationRelatedComponentType);
+
+        resultString.AppendFormat(
+          "  Error: {0}\n  Error Related Component: {1}\n", this.Result.CancellationReason, relatedComponentName
+        );
+      }
+
+      AdvancedCircuitsPlugin.Trace.WriteLineVerbose(resultString.ToString());
       #endif
+
+      return this.Result;
     }
 
-    protected virtual void StripProcessTile(DPoint tileLocation, DPoint lastTileLocation, bool signal, CircuitStripData stripData) {
-      if (tileLocation == stripData.LastWireLocation || stripData.IsCancelled)
+    protected void ProcessRootBranch(RootBranchProcessData rootBranch) {
+      if (this.IsCancellationPending)
         return;
 
-      Tile tile = Main.tile[tileLocation.X, tileLocation.Y];
-      // If the tile has no wire it might be a component and thus the last tile would be its port.
-      if (!tile.wire) {
-        if (!stripData.IsAdvancedCircuit)
-          return;
-        if (stripData.IgnoredTiles.Contains(tileLocation))
-          return;
-        if (lastTileLocation == DPoint.Empty)
-          return;
-
-        if (this.SignalizeACComponent(lastTileLocation, tileLocation, signal, stripData))
-          stripData.SignaledACComponentsCounter++;
-
+      Tile startTile = Terraria.Tiles[rootBranch.FirstWireLocation];
+      if (!startTile.wire || (this.IsAdvancedCircuit && startTile.type == AdvancedCircuits.TileId_InputPort))
         return;
-      }
-      if (stripData.ProcessedWires.Count == this.Config.MaxCircuitLength) {
-        AdvancedCircuitsPlugin.Trace.WriteLineInfo(
-          "Stripping the circuit at {0} was cancelled because the signal reached the maximum transfer length of {1} wires.",
-          stripData.SenderLocation, this.Config.MaxCircuitLength
-        );
-        if (stripData.SendingPlayer != TSPlayer.Server) {
-          stripData.SendingPlayer.SendMessage(
-            string.Format("This circuit exceeds the maxmium length of {0} wires.", this.Config.MaxCircuitLength), Color.Yellow
-          );
+
+      SignalType signal = rootBranch.Signal;
+      Direction direction = rootBranch.Direction;
+      result.ProcessedBranchCount++;
+      List<BranchProcessData> subBranches = new List<BranchProcessData>();
+      // "Move" straight through the branch and register the initial adjacent sub-branches.
+      {
+        DPoint previousTileLocation = DPoint.Empty;
+        DPoint currentTileLocation = rootBranch.FirstWireLocation;
+        Tile currentTile = Terraria.Tiles[currentTileLocation];
+        while (currentTile.wire && !this.IsCancellationPending) {
+          this.ProcessTile(rootBranch, currentTileLocation, previousTileLocation, signal);
+
+          DPoint adjacentTileLocation1;
+          DPoint adjacentTileLocation2;
+          if (direction == Direction.Left || direction == Direction.Right) {
+            adjacentTileLocation1 = new DPoint(currentTileLocation.X, currentTileLocation.Y - 1);
+            adjacentTileLocation2 = new DPoint(currentTileLocation.X, currentTileLocation.Y + 1);
+          } else {
+            adjacentTileLocation1 = new DPoint(currentTileLocation.X + 1, currentTileLocation.Y);
+            adjacentTileLocation2 = new DPoint(currentTileLocation.X - 1, currentTileLocation.Y);
+          }
+
+          Tile adjacentTile1 = Terraria.Tiles[adjacentTileLocation1];
+          Tile adjacentTile2 = Terraria.Tiles[adjacentTileLocation2];
+          if (adjacentTile1.wire)
+            subBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation1, signal));
+          else
+            this.ProcessTile(rootBranch, adjacentTileLocation1, currentTileLocation, signal);
+
+          if (adjacentTile2.wire)
+            subBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation2, signal));
+          else
+            this.ProcessTile(rootBranch, adjacentTileLocation2, currentTileLocation, signal);
+
+          // Next tile
+          previousTileLocation = currentTileLocation;
+          currentTileLocation = currentTileLocation.OffsetTowards(direction);
+          currentTile = Terraria.Tiles[currentTileLocation];
         }
-        stripData.IsCancelled = true;
-        
+
+        // The tile above the "peak" of the branch may also contain a Port Defining Component.
+        if (this.IsAdvancedCircuit)
+          this.ProcessTile(rootBranch, currentTileLocation, previousTileLocation, signal);
+      }
+      
+      if (this.IsCancellationPending)
+        return;
+
+      this.ProcessSubBranches(rootBranch, subBranches);
+    }
+
+    private void ProcessSubBranches(RootBranchProcessData rootBranch, IEnumerable<BranchProcessData> subBranches) {
+      SignalType signal = rootBranch.Signal;
+      List<BranchProcessData> queuedSubBranches = new List<BranchProcessData>(subBranches);
+
+      // Process all Sub-Branches and their Sub-Branches
+      List<BranchProcessData> processedSubBranches = new List<BranchProcessData>();
+      processedSubBranches.Add(new BranchProcessData(rootBranch.SenderLocation, rootBranch.FirstWireLocation, signal));
+
+      while (queuedSubBranches.Count > 0) {
+        int currentBranchIndex = queuedSubBranches.Count - 1;
+        BranchProcessData currentBranch = queuedSubBranches[currentBranchIndex];
+        result.ProcessedBranchCount++;
+
+        DPoint previousTileLocation = currentBranch.BranchingTileLocation;
+        DPoint currentTileLocation = currentBranch.FirstWireLocation;
+        Tile currentTile = Terraria.Tiles[currentTileLocation];
+        while (currentTile.wire && !this.IsCancellationPending) {
+          bool alreadyProcessed = false;
+          for (int i = 0; i < processedSubBranches.Count; i++) {
+            if (processedSubBranches[i].IsTileInBetween(currentTileLocation)) {
+              alreadyProcessed = true;
+              break;
+            }
+          }
+          if (!alreadyProcessed)
+            this.ProcessTile(rootBranch, currentTileLocation, previousTileLocation, signal);
+
+          DPoint adjacentTileLocation1;
+          DPoint adjacentTileLocation2;
+          if (currentBranch.Direction == Direction.Left || currentBranch.Direction == Direction.Right) {
+            adjacentTileLocation1 = new DPoint(currentTileLocation.X, currentTileLocation.Y - 1);
+            adjacentTileLocation2 = new DPoint(currentTileLocation.X, currentTileLocation.Y + 1);
+          } else {
+            adjacentTileLocation1 = new DPoint(currentTileLocation.X + 1, currentTileLocation.Y);
+            adjacentTileLocation2 = new DPoint(currentTileLocation.X - 1, currentTileLocation.Y);
+          }
+
+          Tile adjacentTile1 = Terraria.Tiles[adjacentTileLocation1];
+          Tile adjacentTile2 = Terraria.Tiles[adjacentTileLocation2];
+          if (adjacentTile1.wire) {
+            alreadyProcessed = false;
+            for (int i = 0; i < processedSubBranches.Count; i++) {
+              if (processedSubBranches[i].IsTileInBetween(adjacentTileLocation1)) {
+                alreadyProcessed = true;
+                break;
+              }
+            }
+
+            if (!alreadyProcessed) {
+              bool alreadyQueued = false;
+              for (int i = 0; i < queuedSubBranches.Count; i++) {
+                if (
+                  queuedSubBranches[i].FirstWireLocation == adjacentTileLocation1 ||
+                  queuedSubBranches[i].LastWireLocation == adjacentTileLocation1
+                ) {
+                  alreadyQueued = true;
+                  break;
+                }
+              }
+
+              if (!alreadyQueued)
+                queuedSubBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation1, signal));
+            }
+          } else {
+            this.ProcessTile(rootBranch, adjacentTileLocation1, currentTileLocation, signal);
+          }
+          if (adjacentTile2.wire) {
+            alreadyProcessed = false;
+            for (int i = 0; i < processedSubBranches.Count; i++) {
+              if (processedSubBranches[i].IsTileInBetween(adjacentTileLocation2)) {
+                alreadyProcessed = true;
+                break;
+              }
+            }
+
+            if (!alreadyProcessed) {
+              bool alreadyQueued = false;
+              for (int i = 0; i < queuedSubBranches.Count; i++) {
+                if (
+                  queuedSubBranches[i].FirstWireLocation == adjacentTileLocation2 ||
+                  queuedSubBranches[i].LastWireLocation == adjacentTileLocation2
+                ) {
+                  alreadyQueued = true;
+                  break;
+                }
+              }
+
+              if (!alreadyQueued)
+                queuedSubBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation2, signal));
+            }
+          } else {
+            this.ProcessTile(rootBranch, adjacentTileLocation2, currentTileLocation, signal);
+          }
+
+          // Next tile
+          previousTileLocation = currentTileLocation;
+          currentTileLocation = currentTileLocation.OffsetTowards(currentBranch.Direction);
+          currentTile = Terraria.Tiles[currentTileLocation];
+        }
+
+        // The tile above the "peak" of the branch may also contain a Port Defining Component.
+        if (this.IsAdvancedCircuit)
+          this.ProcessTile(rootBranch, currentTileLocation, previousTileLocation, signal);
+
+        currentBranch.LastWireLocation = previousTileLocation;
+        processedSubBranches.Add(currentBranch);
+
+        queuedSubBranches.RemoveAt(currentBranchIndex);
+      }
+    }
+
+    protected virtual void ProcessTile(
+      RootBranchProcessData rootBranch, DPoint tileLocation, DPoint adjacentTileLocation, SignalType signal
+    ) {
+      if (this.IsCancellationPending)
+        return;
+
+      Tile tile = Terraria.Tiles[tileLocation];
+
+      // If the tile has no wire it might be a AC-Component and thus the adjacent tile would be its port.
+      if (!tile.wire && tile.active) {
+        if (!this.IsAdvancedCircuit || adjacentTileLocation == DPoint.Empty)
+          return;
+        if (!AdvancedCircuits.IsPortDefiningComponentBlock(tile.type))
+          return;
+        if (signal == SignalType.Swap)
+          throw new ArgumentException("A Port can not receive a Swap signal.", "signal");
+
+        Terraria.SpriteMeasureData acComponentMeasureData = Terraria.MeasureSprite(tileLocation);
+        // The origin sender can only signal itself if it is a timer.
+        if (
+          acComponentMeasureData.OriginTileLocation == this.SenderMeasureData.OriginTileLocation &&
+          tile.type != Terraria.TileId_XSecondTimer
+        ) {
+          return;
+        }
+
+        if (rootBranch.SignaledComponentLocations.Contains(acComponentMeasureData.OriginTileLocation))
+          return;
+
+        int componentSignalCounter;
+        this.PortDefiningComponentSignalCounter.TryGetValue(acComponentMeasureData.OriginTileLocation, out componentSignalCounter);
+        if (componentSignalCounter > CircuitProcessor.PortDefiningComponentSignalMaximum) {
+          this.Result.CancellationReason = CircuitCancellationReason.SignaledSameComponentTooOften;
+          this.Result.CancellationRelatedComponentType = acComponentMeasureData.SpriteType;
+          return;
+        }
+
+        if (this.SignalPortDefiningComponent(
+          rootBranch, acComponentMeasureData, adjacentTileLocation, AdvancedCircuits.SignalToBool(signal).Value
+        )) {
+          rootBranch.SignaledComponentLocations.Add(acComponentMeasureData.OriginTileLocation);
+
+          if (componentSignalCounter == default(int))
+            this.PortDefiningComponentSignalCounter.Add(acComponentMeasureData.OriginTileLocation, 1);
+          else 
+            this.PortDefiningComponentSignalCounter[acComponentMeasureData.OriginTileLocation] = componentSignalCounter + 1;
+
+          this.Result.SignaledPortDefiningComponentsCounter++;
+        }
+
         return;
       }
-      if (stripData.ProcessedWires.Contains(tileLocation))
+
+      if (!tile.wire)
         return;
-      
-      if (tile.active) {
-        if (!stripData.IgnoredTiles.Contains(tileLocation)) {
-          if (stripData.IsAdvancedCircuit || tileLocation != stripData.SenderLocation) {
-            if (this.SignalizeComponent(tileLocation, signal, stripData))
-              stripData.SignaledComponentsCounter++;
+
+      try {
+        if (rootBranch.BlockActivator != null) {
+          Tile blockActivatorTile = Terraria.Tiles[rootBranch.BlockActivatorLocation];
+          if (tile.wall == blockActivatorTile.wall) {
+            if (
+              signal == SignalType.Off && tile.active && AdvancedCircuits.IsCustomActivatableBlock(tile.type)
+            ) {
+              rootBranch.BlockActivator.RegisteredInactiveTiles.Add(tileLocation, tile.type);
+              Terraria.Tiles.RemoveBlock(tileLocation, true);
+              
+              return;
+            } else if (signal == SignalType.On && !tile.active) {
+              byte registeredTileId;
+              if (rootBranch.BlockActivator.RegisteredInactiveTiles.TryGetValue(tileLocation, out registeredTileId)) {
+                rootBranch.BlockActivator.RegisteredInactiveTiles.Remove(tileLocation);
+                Terraria.Tiles.SetBlock(tileLocation, registeredTileId);
+
+                return;
+              }
+            }
           }
         }
-      }
 
-      stripData.ProcessedWires.Add(tileLocation);
-      
-      this.StripProcessTile(new DPoint(tileLocation.X - 1, tileLocation.Y), tileLocation, signal, stripData);
-      this.StripProcessTile(new DPoint(tileLocation.X, tileLocation.Y - 1), tileLocation, signal, stripData);
-      this.StripProcessTile(new DPoint(tileLocation.X + 1, tileLocation.Y), tileLocation, signal, stripData);
-      this.StripProcessTile(new DPoint(tileLocation.X, tileLocation.Y + 1), tileLocation, signal, stripData);
+        if (!tile.active)
+          return;
+
+        Terraria.SpriteMeasureData componentMeasureData = Terraria.MeasureSprite(tileLocation);
+        if (rootBranch.SignaledComponentLocations.Contains(componentMeasureData.OriginTileLocation))
+          return;
+
+        // The origin sender can never signal itself if wired directly.
+        if (componentMeasureData.OriginTileLocation == this.SenderMeasureData.OriginTileLocation)
+          return;
+
+        // Switches and Levers can not be signaled if they are wired directly.
+        if (tile.type == Terraria.TileId_Switch || tile.type == Terraria.TileId_Lever)
+          return;
+
+        if (this.SignalComponent(ref componentMeasureData, signal)) {
+          rootBranch.SignaledComponentLocations.Add(componentMeasureData.OriginTileLocation);
+          this.Result.SignaledComponentsCounter++;
+        }
+      } finally {
+        this.CircuitLength++;
+        
+        if (this.CircuitLength >= this.Config.MaxCircuitLength) {
+          this.Result.CancellationReason = CircuitCancellationReason.ExceededMaxLength;
+          AdvancedCircuitsPlugin.Trace.WriteLineInfo(
+            "Processing of the circuit at {0} was cancelled because the signal reached the maximum transfer length of {1} wires.",
+            this.SenderMeasureData.OriginTileLocation, this.Config.MaxCircuitLength
+          );
+        }
+      }
     }
     #endregion
 
-    #region [Methods: SignalizeComponent, SignalizeTimer, SignalizeACComponent]
-    /// <summary>
-    ///   Signalizes a directly wired (portless) component.
-    /// </summary>
-    /// <param name="anyTileLocation">
-    ///   The location of a arbitary tile within the component.
-    /// </param>
-    /// <param name="signal">
-    ///   The signal to send.
-    /// </param>
-    /// <param name="stripData">
-    ///   The <see cref="CircuitStripData" /> describing the current circuit's state, set to <c>null</c> to indicate
-    ///   that a sprite should be simply signaled as it were in an advanced circuit.
-    /// </param>
-    /// <param name="localOnly">
-    ///   Indicates whether the tile data are changed locally, but not remotely by not sending clients the updated tiles.
-    /// </param>
-    /// <returns>
-    ///   The size of the unit. Null if the tile at the given location is no terraria unit at all.
-    /// </returns>
-    private bool SignalizeComponent(DPoint anyTileLocation, bool signal, CircuitStripData stripData = null, bool localOnly = false) {
-      int x = anyTileLocation.X;
-      int y = anyTileLocation.Y;
-      Tile tile = Main.tile[anyTileLocation.X, anyTileLocation.Y];
-      if (!tile.active)
-        return false;
-      
-      if (Terraria.IsBlockTile(tile.type, false, true))
-        return false;
-
-      Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(anyTileLocation);
+    #region [Methods: SignalComponent, SignalPortDefiningComponent]
+    protected bool SignalComponent(ref Terraria.SpriteMeasureData measureData, SignalType signal, bool localOnly = false) {
       int originX = measureData.OriginTileLocation.X;
       int originY = measureData.OriginTileLocation.Y;
-      int spriteWidth = measureData.Size.X;
-      int spriteHeight = measureData.Size.Y;
-      DPoint spriteTextureTileSize = measureData.TextureTileSize;
-      bool isAdvancedCircuit = (stripData != null && stripData.IsAdvancedCircuit);
 
-      switch (tile.type) {
+      switch (measureData.SpriteType) {
         case Terraria.TileId_Torch:
         case Terraria.TileId_XMasLight:
         case Terraria.TileId_Candle:
@@ -452,296 +595,332 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case Terraria.TileId_SilverChandelier:
         case Terraria.TileId_GoldChandelier:
         case Terraria.TileId_LampPost:
-        case Terraria.TileId_Switch:
-        case Terraria.TileId_Lever: {
-          if (tile.type == Terraria.TileId_Switch || tile.type == Terraria.TileId_Lever) {
-            // A Switch or Lever should not be toggled in a Vanilla Circuit.
-            // Directly wired Switches / Levers in ACs are not meant to be toggled.
-            if ((!isAdvancedCircuit && stripData != null) || Terraria.IsSpriteWired(measureData)) {
-              if (stripData != null)
-                stripData.IgnoredTiles.AddRange(Terraria.EnumerateSpriteTileLocations(measureData));
+        case Terraria.TileId_MusicBox:
+        case Terraria.TileId_XSecondTimer: {
+          bool currentState = Terraria.HasSpriteActiveFrame(measureData);
+          bool newState;
+          if (signal == SignalType.Swap)
+            newState = !currentState;
+          else
+            newState = AdvancedCircuits.SignalToBool(signal).Value;
 
-              return false;
-            }
+          if (measureData.SpriteType == Terraria.TileId_XSecondTimer) {
+            // Directly wired Timers in an Advanced Circuit are not meant to be switched.
+            if (this.IsAdvancedCircuit)
+              return true;
+
+            if (newState != currentState)
+              this.RegisterUnregisterTimer(measureData, newState);
           }
 
-          if (!isAdvancedCircuit)
-            signal = !measureData.HasActiveFrame;
-
-          if (signal != measureData.HasActiveFrame)
-            Terraria.SetSpriteActiveFrame(measureData, signal, !localOnly);
-          
-          if (stripData != null)
-            stripData.IgnoredTiles.AddRange(Terraria.EnumerateSpriteTileLocations(measureData));
+          if (newState != currentState)
+            Terraria.SetSpriteActiveFrame(measureData, newState, !localOnly);
 
           return true;
         }
-        case Terraria.TileId_XSecondTimer:
-          // Directly wired Timers are not meant to be toggled.
-          if (isAdvancedCircuit) {
-            stripData.IgnoredTiles.Add(anyTileLocation);
-            return false;
-          }
-
-          this.SignalizeTimer(measureData, !measureData.HasActiveFrame, stripData, localOnly);
-          return true;
         case Terraria.TileId_ActiveStone:
         case Terraria.TileId_InactiveStone: {
-          bool isActive = (tile.type == Terraria.TileId_ActiveStone);
-          if (!isAdvancedCircuit)
-            signal = !isActive;
+          bool currentState = (measureData.SpriteType == Terraria.TileId_ActiveStone);
+          bool newState;
+          if (signal == SignalType.Swap)
+            newState = !currentState;
+          else
+            newState = AdvancedCircuits.SignalToBool(signal).Value;
 
-          if (isActive != signal) {
+          if (newState != currentState) {
             byte newTileType;
-            if (signal)
+            if (newState)
               newTileType = Terraria.TileId_ActiveStone;
             else
               newTileType = Terraria.TileId_InactiveStone;
 
-            Main.tile[originX, originY].type = newTileType;
+            Terraria.Tiles[measureData.OriginTileLocation].type = newTileType;
             WorldGen.SquareTileFrame(originX, originY);
             TSPlayer.All.SendTileSquareEx(originX, originY, 1);
           }
-
-          if (stripData != null)
-            stripData.IgnoredTiles.Add(anyTileLocation);
           
           return true;
         }
         case Terraria.TileId_DoorClosed:
         case Terraria.TileId_DoorOpened: {
-          bool isOpen = (tile.type == Terraria.TileId_DoorOpened);
-          if (!isAdvancedCircuit)
-            signal = !isOpen;
+          bool currentState = (measureData.SpriteType == Terraria.TileId_DoorOpened);
+          bool newState;
+          if (signal == SignalType.Swap)
+            newState = !currentState;
+          else
+            newState = AdvancedCircuits.SignalToBool(signal).Value;
 
-          if (signal != isOpen) {
-            if (signal) {
-              // A door will always try to open to the opposite site of the sender that triggered the circuit first.
+          if (newState != currentState) {
+            int doorX = measureData.OriginTileLocation.X;
+            int doorY = measureData.OriginTileLocation.Y;
+
+            if (newState) {
+              // A door will always try to open to the opposite site of the sender's location that triggered the circuit first.
               int direction = 1;
-              if (stripData != null && x < stripData.SenderLocation.X)
+              if (doorX < this.SenderMeasureData.OriginTileLocation.X)
                 direction = -1;
 
               // If opening it towards one direction doesn't work, try the other.
-              isOpen = WorldGen.OpenDoor(x, y, direction);
-              if (!isOpen) {
+              currentState = WorldGen.OpenDoor(doorX, doorY, direction);
+              if (!currentState) {
                 direction *= -1;
-                isOpen = WorldGen.OpenDoor(x, y, direction);
+                currentState = WorldGen.OpenDoor(doorX, doorY, direction);
               }
 
-              if (isOpen) {
-                TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 0, x, y, direction);
+              if (currentState) {
+                TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 0, doorX, doorY, direction);
+                // Because the door changed its sprite, we have to re-measure it now.
                 measureData = Terraria.MeasureSprite(measureData.OriginTileLocation);
               }
             } else {
-              if (WorldGen.CloseDoor(x, y, true))
-                TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 1, x, y);
+              if (WorldGen.CloseDoor(doorX, doorY, true))
+                TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 1, doorX, doorY);
             }
 
             WorldGen.numWire = 0;
             WorldGen.numNoWire = 0;
           }
 
-          if (stripData != null)
-            stripData.IgnoredTiles.AddRange(Terraria.EnumerateSpriteTileLocations(measureData));
-
-          return true;
-        }
-        case Terraria.TileId_MusicBox: {
-          if (!isAdvancedCircuit)
-            signal = !measureData.HasActiveFrame;
-
-          if (!localOnly && signal != measureData.HasActiveFrame)
-            WorldGen.SwitchMB(x, y);
-
-          if (stripData != null) {
-            stripData.IgnoredTiles.Add(new DPoint(originX, originY));
-            stripData.IgnoredTiles.Add(new DPoint(originX + 1, originY));
-            stripData.IgnoredTiles.Add(new DPoint(originX + 1, originY + 1));
-            stripData.IgnoredTiles.Add(new DPoint(originX, originY + 1));
-          }
-
           return true;
         }
         case Terraria.TileId_InletPump:
         case Terraria.TileId_OutletPump: {
+          if (signal == SignalType.Off)
+            return true;
+
+          if (this.Result.SignaledPumps > this.Config.MaxPumpsPerCircuit) {
+            this.Result.WarnReason = CircuitWarnReason.SignalesTooManyPumps;
+            return true;
+          }
+
           int pumpCounter;
-          if (tile.type == Terraria.TileId_InletPump)
+          if (measureData.SpriteType == Terraria.TileId_InletPump)
             pumpCounter = WorldGen.numInPump;
           else
             pumpCounter = WorldGen.numOutPump;
 
-          for (int tx = 0; tx < spriteWidth; tx++) {
-            for (int ty = 0; ty < spriteHeight; ty++) {
-              int absoluteX = originX + tx;
-              int absoluteY = originY + ty;
-
-              if (!isAdvancedCircuit || signal) {
-                if (stripData == null || stripData.SignaledPumps < this.Config.MaxPumpsPerCircuit) {
-                  if (tile.type == Terraria.TileId_InletPump) {
-                    WorldGen.inPumpX[pumpCounter] = absoluteX;
-                    WorldGen.inPumpY[pumpCounter] = absoluteY;
-                  } else {
-                    WorldGen.outPumpX[pumpCounter] = absoluteX;
-                    WorldGen.outPumpY[pumpCounter] = absoluteY;
-                  }
-                  pumpCounter++;
-                } else {
-                  if (stripData.SendingPlayer != TSPlayer.Server)
-                    stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of pumps.", Color.Red);
-                }
-              }
-
-              if (stripData != null)
-                stripData.IgnoredTiles.Add(new DPoint(absoluteX, absoluteY));
+          foreach (DPoint tileLocation in Terraria.EnumerateSpriteTileLocations(measureData)) {
+            if (measureData.SpriteType == Terraria.TileId_InletPump) {
+              WorldGen.inPumpX[pumpCounter] = tileLocation.X;
+              WorldGen.inPumpY[pumpCounter] = tileLocation.Y;
+            } else {
+              WorldGen.outPumpX[pumpCounter] = tileLocation.X;
+              WorldGen.outPumpY[pumpCounter] = tileLocation.Y;
             }
+            pumpCounter++;
           }
+          this.Result.SignaledPumps++;
 
-          if (tile.type == Terraria.TileId_InletPump)
+          if (measureData.SpriteType == Terraria.TileId_InletPump)
             WorldGen.numInPump = pumpCounter;
           else
             WorldGen.numOutPump = pumpCounter;
 
-          if (stripData != null && (!isAdvancedCircuit || signal))
-            stripData.SignaledPumps++;
-
           return true;
         }
         case Terraria.TileId_DartTrap: {
-          DartTrapConfig config;
+          if (signal == SignalType.Off)
+            return true;
 
+          DartTrapConfig trapConfig;
+          ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigTarget(
+            AdvancedCircuits.CountComponentModifiers(measureData)
+          );
           if (
-            this.Config.DartTrapConfigs.TryGetValue(DartTrapType.Default, out config) && 
-            (!isAdvancedCircuit || signal) && WorldGen.checkMech(x, y, config.Cooldown)
+            (this.Config.DartTrapConfigs.TryGetValue(configProfile, out trapConfig) ||
+            (this.Config.DartTrapConfigs.TryGetValue(ComponentConfigProfile.Default, out trapConfig))) &&
+            WorldGen.checkMech(originX, originY, trapConfig.Cooldown)
           ) {
-            if (stripData == null || stripData.SignaledDartTraps < this.Config.MaxDartTrapsPerCircuit) {
-              bool isPointingLeft = (Main.tile[x, y].frameX == 0);
-              DPoint projectileSpawn = new DPoint((x * 16), (y * 16 + 9));
-              float projectileSpeed;
-              
-              if (isPointingLeft) {
-                projectileSpawn.X -= config.ProjectileOffset;
-                projectileSpeed = -config.ProjectileSpeed;
-              } else {
-                projectileSpawn.X += Terraria.TileSize + config.ProjectileOffset;
-                projectileSpeed = config.ProjectileSpeed;
-              }
-            
-              int projectileDamage = config.ProjectileDamage;
-              int projectileType = config.ProjectileType;
-              const float ProjectileKnockBack = 2f;
-              int projectileIndex = Projectile.NewProjectile(
-                projectileSpawn.X, projectileSpawn.Y, projectileSpeed, 0f, projectileType, projectileDamage, 
-                ProjectileKnockBack, Main.myPlayer
-              );
-              Main.projectile[projectileIndex].timeLeft = config.ProjectileLifeTime;
-
-              stripData.SignaledDartTraps++;
-            } else {
-              if (stripData.SendingPlayer != TSPlayer.Server)
-                stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of Dart Traps.", Color.Red);
+            if (this.Result.SignaledDartTraps > this.Config.MaxDartTrapsPerCircuit) {
+              this.Result.WarnReason = CircuitWarnReason.SignalesTooManyDartTraps;
+              return true;
             }
+            if (
+              trapConfig.TriggerPermission != null && 
+              this.TriggeringPlayer != TSPlayer.Server && 
+              !this.TriggeringPlayer.Group.HasPermission(trapConfig.TriggerPermission)
+            ) {
+              this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
+              this.Result.WarnRelatedComponentType = Terraria.TileId_DartTrap;
+              return true;
+            }
+
+
+            bool isPointingLeft = (Terraria.Tiles[originX, originY].frameX == 0);
+            DPoint projectileSpawn = new DPoint((originX * 16), (originY * 16 + 9));
+            float projectileSpeed;
+              
+            if (isPointingLeft) {
+              projectileSpawn.X -= trapConfig.ProjectileOffset;
+              projectileSpeed = -trapConfig.ProjectileSpeed;
+            } else {
+              projectileSpawn.X += Terraria.TileSize + trapConfig.ProjectileOffset;
+              projectileSpeed = trapConfig.ProjectileSpeed;
+            }
+            
+            int projectileDamage = trapConfig.ProjectileDamage;
+            int projectileType = trapConfig.ProjectileType;
+            const float ProjectileKnockBack = 2f;
+            int projectileIndex = Projectile.NewProjectile(
+              projectileSpawn.X, projectileSpawn.Y, projectileSpeed, 0f, projectileType, projectileDamage, 
+              ProjectileKnockBack, Main.myPlayer
+            );
+            Main.projectile[projectileIndex].timeLeft = trapConfig.ProjectileLifeTime;
+
+            this.Result.SignaledDartTraps++;
           }
-
-          if (stripData != null)
-            stripData.IgnoredTiles.Add(new DPoint(x, y));
-
+          
           return true;
         }
         case Terraria.TileId_Explosives: {
-          if (!isAdvancedCircuit || signal) {
-            WorldGen.KillTile(originX, originY, false, false, true);
-            TSPlayer.All.SendTileSquareEx(originX, originY, 1);
-            Projectile.NewProjectile((originX * 16 + 8), (originY * 16 + 8), 0f, 0f, 108, 250, 10f, Main.myPlayer);
-          }
+          if (signal == SignalType.Off)
+            return true;
 
-          if (stripData != null)
-            stripData.IgnoredTiles.Add(new DPoint(originX, originY));
+          WorldGen.KillTile(originX, originY, false, false, true);
+          TSPlayer.All.SendTileSquareEx(originX, originY, 1);
+          Projectile.NewProjectile((originX * 16 + 8), (originY * 16 + 8), 0f, 0f, 108, 250, 10f, Main.myPlayer);
 
           return true;
         }
         case Terraria.TileId_Statue: {
-          if (!isAdvancedCircuit || signal) {
-            StatueType statueType = (StatueType)(tile.frameX / (spriteTextureTileSize.X * 2));
+          if (signal == SignalType.Off)
+            return true;
 
-            StatueConfig statueConfig;
+          StatueType statueType = Terraria.GetStatueType(measureData.OriginTileLocation);
+          StatueConfig statueConfig;
+          if (
+            this.Config.StatueConfigs.TryGetValue(statueType, out statueConfig) && statueConfig != null &&
+            WorldGen.checkMech(originX, originY, statueConfig.Cooldown)
+          ) {
+            if (this.Result.SignaledStatues > this.Config.MaxStatuesPerCircuit) {
+              this.Result.WarnReason = CircuitWarnReason.SignalesTooManyStatues;
+              return true;
+            }
             if (
-              this.Config.StatueConfigs.TryGetValue(statueType, out statueConfig) && statueConfig != null &&
-              WorldGen.checkMech(originX, originY, statueConfig.Cooldown)
+              statueConfig.TriggerPermission != null && 
+              this.TriggeringPlayer != TSPlayer.Server && 
+              !this.TriggeringPlayer.Group.HasPermission(statueConfig.TriggerPermission)
             ) {
-              if (stripData == null || stripData.SignaledStatues < this.Config.MaxStatuesPerCircuit) {
-                int spawnX = (originX + 1) * 16;
-                int spawnY = (originY + 1) * 16;
+              this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
+              this.Result.WarnRelatedComponentType = Terraria.TileId_Statue;
+              return true;
+            }
 
-                switch (statueConfig.ActionType) {
-                  case StatueActionType.MoveNPC:
-                    // Param1 = NPC group
-                    // Param2 = Specific NPC id
+            int spawnX = (originX + 1) * 16;
+            int spawnY = (originY + 1) * 16;
+
+            switch (statueConfig.ActionType) {
+              case StatueActionType.MoveNPC:
+                // Param1 = NPC group
+                // Param2 = Specific NPC id
                   
-                    List<int> npcIndexes = null;
-                    switch (statueConfig.ActionParam) {
-                      // Random
-                      case 0:
-                        npcIndexes = Terraria.GetFriendlyNPCIndexes();
-                        break;
-                      // Female
-                      case 1:
-                        npcIndexes = Terraria.GetFriendlyFemaleNPCIndexes();
-                        break;
-                      // Male
-                      case 2:
-                        npcIndexes = Terraria.GetFriendlyMaleNPCIndexes();
-                        break;
-                      // Specific
-                      case 3:
-                        npcIndexes = Terraria.GetSpecificNPCIndexes(new List<int> { statueConfig.ActionParam2 });
-                        break;
-                    }
-
-                    if (npcIndexes != null && npcIndexes.Count > 0) {
-                      Random rnd = new Random();
-                      int pickedIndex = npcIndexes[rnd.Next(npcIndexes.Count)];
-                      Main.npc[pickedIndex].position.X = (spawnX - (Main.npc[pickedIndex].width / 2));
-                      Main.npc[pickedIndex].position.Y = (spawnY - (Main.npc[pickedIndex].height - 1));
-
-                      NetMessage.SendData((int)PacketTypes.NpcUpdate, -1, -1, string.Empty, pickedIndex);
-                    }
-
+                List<int> npcIndexes = null;
+                switch (statueConfig.ActionParam) {
+                  // Random
+                  case 0:
+                    npcIndexes = Terraria.GetFriendlyNPCIndexes();
                     break;
-                  case StatueActionType.SpawnMob:
-                    // Param1 = Mob type
-                    // Param2 = Max mobs in range
-                    // Param3 = Range to check
-                    if (Terraria.CountNPCsInRange(spawnX, spawnY, statueConfig.ActionParam, statueConfig.ActionParam3) < statueConfig.ActionParam2) {
-                      int mobIndex = NPC.NewNPC(spawnX, spawnY, statueConfig.ActionParam);
-                      // Ensure that the spawned mob drops no money.
-                      Main.npc[mobIndex].value = 0.0f;
-                      Main.npc[mobIndex].npcSlots = 0.0f;
-                    }
-
+                  // Female
+                  case 1:
+                    npcIndexes = Terraria.GetFriendlyFemaleNPCIndexes();
                     break;
-                  case StatueActionType.SpawnItem:
-                    // Param1 = Item type
-                    // Param2 = Max mobs in range
-                    // Param3 = Range to check
-                    if (Terraria.CountItemsInRange(spawnX, spawnY, statueConfig.ActionParam, statueConfig.ActionParam3) < statueConfig.ActionParam2)
-                      Item.NewItem(spawnX, spawnY, 0, 0, statueConfig.ActionParam);
-                  
+                  // Male
+                  case 2:
+                    npcIndexes = Terraria.GetFriendlyMaleNPCIndexes();
                     break;
-                  case StatueActionType.SpawnBoss:
-
+                  // Specific
+                  case 3:
+                    npcIndexes = Terraria.GetSpecificNPCIndexes(new List<int> { statueConfig.ActionParam2 });
                     break;
                 }
-              } else {
-                if (stripData.SendingPlayer != TSPlayer.Server)
-                  stripData.SendingPlayer.SendMessage("This circuit signalizes more than the allowed maximum of Statues.", Color.Red);
-              }
 
-              stripData.SignaledStatues++;
+                if (npcIndexes != null && npcIndexes.Count > 0) {
+                  Random rnd = new Random();
+                  int pickedIndex = npcIndexes[rnd.Next(npcIndexes.Count)];
+                  Main.npc[pickedIndex].position.X = (spawnX - (Main.npc[pickedIndex].width / 2));
+                  Main.npc[pickedIndex].position.Y = (spawnY - (Main.npc[pickedIndex].height - 1));
+
+                  NetMessage.SendData((int)PacketTypes.NpcUpdate, -1, -1, string.Empty, pickedIndex);
+                }
+                
+                break;
+              case StatueActionType.SpawnMob:
+                // Param1 = Mob type
+                // Param2 = Max mobs in range
+                // Param3 = Range to check
+                if (Terraria.CountNPCsInTileRange(spawnX, spawnY, statueConfig.ActionParam, statueConfig.ActionParam3) < statueConfig.ActionParam2) {
+                  int mobIndex = NPC.NewNPC(spawnX, spawnY, statueConfig.ActionParam);
+                  // Ensure that the spawned mob drops no money.
+                  Main.npc[mobIndex].value = 0.0f;
+                  Main.npc[mobIndex].npcSlots = 0.0f;
+                }
+
+                break;
+              case StatueActionType.SpawnItem:
+                // Param1 = Item type
+                // Param2 = Max mobs in range
+                // Param3 = Range to check
+                if (Terraria.CountItemsInTileRange(spawnX, spawnY, statueConfig.ActionParam, statueConfig.ActionParam3) < statueConfig.ActionParam2)
+                  Item.NewItem(spawnX, spawnY, 0, 0, statueConfig.ActionParam);
+                  
+                break;
+              case StatueActionType.SpawnBoss:
+
+                break;
             }
+
+            this.Result.SignaledStatues++;
           }
 
-          if (stripData != null)
-            stripData.IgnoredTiles.AddRange(Terraria.EnumerateSpriteTileLocations(measureData));
+          return true;
+        }
+        case Terraria.TileId_Sign: {
+          if (
+            !this.IsAdvancedCircuit || signal == SignalType.Off || this.TriggeringPlayer == TSPlayer.Server || 
+            this.TriggeredPassively
+          )
+            return true;
+
+          if (!WorldGen.checkMech(originX, originY, 300))
+            return true;
+
+          Sign sign = Main.sign[Sign.ReadSign(originX, originY)];
+          string fullText = "Sign: " + sign.text;
+
+          int lineStartIndex = 0;
+          int lineLength = 0;
+          for (int i = 0; i < fullText.Length; i++) {
+            if (lineLength == 60 || fullText[i] == '\n' || (i == fullText.Length - 1 && lineLength > 0)) {
+              if (fullText[i] == '\n') {
+                if (lineLength > 0)
+                  this.TriggeringPlayer.SendInfoMessage(fullText.Substring(lineStartIndex, i - lineStartIndex));
+                else 
+                  this.TriggeringPlayer.SendInfoMessage(string.Empty);
+
+                lineStartIndex = i + 1;
+              } else if (i == fullText.Length - 1) {
+                this.TriggeringPlayer.SendInfoMessage(fullText.Substring(lineStartIndex, i - lineStartIndex + 1));
+                lineStartIndex = i;
+              } else {
+                this.TriggeringPlayer.SendInfoMessage(fullText.Substring(lineStartIndex, i - lineStartIndex));
+                lineStartIndex = i;
+              }
+              
+              lineLength = 0;
+              continue;
+            }
+
+            lineLength++;
+          }
+
+          return true;
+        }
+        case Terraria.TileId_Boulder: {
+          if (!this.IsAdvancedCircuit || signal == SignalType.Off)
+            return true;
+
+          WorldGen.KillTile(originX, originY, false, false, true);
+          TSPlayer.All.SendTileSquareEx(originX, originY, 2);
 
           return true;
         }
@@ -750,101 +929,99 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return false;
     }
 
-    private void SignalizeTimer(Terraria.SpriteMeasureData measureData, bool signal, CircuitStripData stripData = null, bool localOnly = false) {
-      bool isAdvancedCircuit = (stripData != null && stripData.IsAdvancedCircuit);
-
-      Terraria.SetSpriteActiveFrame(measureData, signal, !localOnly);
-      if (stripData != null)
-        stripData.IgnoredTiles.AddRange(Terraria.EnumerateSpriteTileLocations(measureData));
-            
-      // In ACs, if a timer receives a 1 signal while it is already activated, its frame time should be rest.
-      if (isAdvancedCircuit && signal == measureData.HasActiveFrame) {
-        if (signal) {
-          ActiveTimerMetadata activeTimer;
-          if (this.WorldMetadata.ActiveTimers.TryGetValue(measureData.OriginTileLocation, out activeTimer))
-            activeTimer.FramesLeft = this.MeasureTimersExpirationTime(measureData.OriginTileLocation);
-        }
-              
-        return;
-      }
-
-      bool alreadyActive = this.WorldMetadata.ActiveTimers.ContainsKey(measureData.OriginTileLocation);
-      if (signal) {
-        if (!alreadyActive) {
-          this.WorldMetadata.ActiveTimers.Add(
-            measureData.OriginTileLocation, 
-            new ActiveTimerMetadata(this.MeasureTimersExpirationTime(measureData.OriginTileLocation))
-          );
-        }
-      } else {
-        if (alreadyActive)
-          this.WorldMetadata.ActiveTimers.Remove(measureData.OriginTileLocation);
-      }
-    }
-
-    private bool SignalizeACComponent(
-      DPoint portLocation, DPoint componentLocation, bool signal, CircuitStripData stripData
+    private bool SignalPortDefiningComponent(
+      RootBranchProcessData rootBranch, Terraria.SpriteMeasureData measureData, DPoint portLocation, bool signal
     ) {
-      Tile portTile = Main.tile[portLocation.X, portLocation.Y];
-      Tile componentTile = Main.tile[componentLocation.X, componentLocation.Y];
+      if (!this.IsAdvancedCircuit)
+        throw new InvalidOperationException("This is no advanced circuit.");
+
+      Tile portTile = Terraria.Tiles[portLocation];
+      Tile componentTile = Terraria.Tiles[measureData.OriginTileLocation];
       if (!portTile.wire || componentTile.wire)
         return false;
-
-      List<DPoint> componentPorts = null;
-      switch (componentTile.type) {
-        case Terraria.TileId_Switch:
-        case Terraria.TileId_Lever:
-        case Terraria.TileId_XSecondTimer:
-          // A component can not signalize itself if the signal doesn't travel at least over one wire.
-          if (componentLocation != stripData.SenderLocation || portLocation != stripData.FirstWireLocation) {
-            if (componentTile.type != Terraria.TileId_XSecondTimer)
-              this.SignalizeComponent(componentLocation, signal, stripData);
-            else
-              this.SignalizeTimer(Terraria.MeasureSprite(componentLocation), signal, stripData);
-
-            return true;
-          }
-
-          return false;
+      if (
+        portTile.active && portTile.type == AdvancedCircuits.TileId_NOTGate && 
+        measureData.SpriteType != AdvancedCircuits.TileId_NOTGate
+      ) {
+        signal = !signal;
       }
 
-      switch (componentTile.type) {
-        case CircuitProcessor.TileId_NOTGate:
-          if (!portTile.active || portTile.type != CircuitProcessor.TileId_InputPort)
-            return false;
+      List<DPoint> componentPorts = null;
+      bool outputSignal = signal;
+      DPoint componentLocation = measureData.OriginTileLocation;
+      
+      BlockActivatorMetadata blockActivatorToRegister = null;
+      DPoint blockActivatorLocationToRegister = DPoint.Empty;
+      switch (measureData.SpriteType) {
+        case Terraria.TileId_XSecondTimer: {
+          bool currentState = (Terraria.HasSpriteActiveFrame(measureData));
+          if (currentState != signal)
+            Terraria.SetSpriteActiveFrame(measureData, signal);
 
-          signal = !signal;
-          stripData.IgnoredTiles.Add(componentLocation);
+          if (currentState != signal)
+            this.RegisterUnregisterTimer(measureData, signal);
+          else if (signal)
+            this.ResetTimer(measureData);
+
+          return true;
+        }
+        case Terraria.TileId_Switch:
+        case Terraria.TileId_Lever: {
+          bool currentState = (Terraria.HasSpriteActiveFrame(measureData));
+          int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
+
+          if (currentState != signal)
+            Terraria.SetSpriteActiveFrame(measureData, signal);
+          else if (modifiers == 0)
+            return true;
+
           break;
-        case CircuitProcessor.TileId_ANDGate:
-        case CircuitProcessor.TileId_ORGate:
-        case CircuitProcessor.TileId_XORGate: {
-          if (!portTile.active || portTile.type != CircuitProcessor.TileId_InputPort)
+        }
+        case AdvancedCircuits.TileId_NOTGate: {
+          if (!portTile.active || portTile.type != AdvancedCircuits.TileId_InputPort)
             return false;
 
-          GateStateMetadata metadata;
-          if (!this.WorldMetadata.GateStates.TryGetValue(componentLocation, out metadata)) {
-            metadata = new GateStateMetadata();
-            this.WorldMetadata.GateStates.Add(componentLocation, metadata);
-          }
+          outputSignal = !signal;
+          break;
+        }
+        case AdvancedCircuits.TileId_ANDGate:
+        case AdvancedCircuits.TileId_ORGate:
+        case AdvancedCircuits.TileId_XORGate: {
+          if (!portTile.active || portTile.type != AdvancedCircuits.TileId_InputPort)
+            return false;
 
-          componentPorts = new List<DPoint> {
-            new DPoint(componentLocation.X - 1, componentLocation.Y),
-            new DPoint(componentLocation.X, componentLocation.Y - 1),
-            new DPoint(componentLocation.X + 1, componentLocation.Y),
-            new DPoint(componentLocation.X, componentLocation.Y + 1)
-          };
+          int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
+          GateStateMetadata metadata;
+          switch (modifiers) {
+            default:
+              if (!this.WorldMetadata.GateStates.TryGetValue(componentLocation, out metadata)) {
+                metadata = new GateStateMetadata();
+                this.WorldMetadata.GateStates.Add(componentLocation, metadata);
+              }
+              break;
+            case 1:
+              if (this.temporaryGateStates == null)
+                this.temporaryGateStates = new Dictionary<DPoint,GateStateMetadata>();
+
+              if (!temporaryGateStates.TryGetValue(componentLocation, out metadata)) {
+                metadata = new GateStateMetadata();
+                temporaryGateStates.Add(componentLocation, metadata);
+              }
+              break;
+          }
+          
+          componentPorts = new List<DPoint>(AdvancedCircuits.EnumerateComponentPortLocations(measureData));
           int inputPorts = 0;
           int signaledPorts = 0;
           bool isInvalid = false;
           for (int i = 0; i < componentPorts.Count; i++) {
             DPoint port = componentPorts[i];
-            portTile = Main.tile[port.X, port.Y];
-            if (portTile.wire && portTile.active && portTile.type == CircuitProcessor.TileId_InputPort) {
+            portTile = Terraria.Tiles[port];
+            if (portTile.wire && portTile.active && portTile.type == AdvancedCircuits.TileId_InputPort) {
               inputPorts++;
 
               if (port == portLocation)
-                metadata.PortStates[i] = signal;
+                metadata.PortStates[i] = outputSignal;
 
               if (metadata.PortStates[i] == null)
                 isInvalid = true;
@@ -856,63 +1033,106 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           // Gates will not operate as long as the input port states are not clear.
           if (isInvalid)
-            return true;
+            return false;
 
           switch (componentTile.type) {
-            case CircuitProcessor.TileId_ANDGate:
-              signal = (inputPorts == signaledPorts);
+            case AdvancedCircuits.TileId_ANDGate:
+              outputSignal = (inputPorts == signaledPorts);
               break;
-            case CircuitProcessor.TileId_ORGate:
-              signal = (signaledPorts > 0);
+            case AdvancedCircuits.TileId_ORGate:
+              outputSignal = (signaledPorts > 0);
               break;
-            case CircuitProcessor.TileId_XORGate:
-              signal = (signaledPorts != 0 && signaledPorts < inputPorts);
+            case AdvancedCircuits.TileId_XORGate:
+              outputSignal = (signaledPorts != 0 && signaledPorts < inputPorts);
               break;
           }
           
-          stripData.IgnoredTiles.Add(componentLocation);
           break;
         }
-        case CircuitProcessor.TileId_Swapper:
+        case AdvancedCircuits.TileId_Swapper: {
           if (!signal)
             return false;
 
           int activeSwapperIndex = this.WorldMetadata.ActiveSwapperLocations.IndexOf(componentLocation);
           if (activeSwapperIndex == -1) {
             this.WorldMetadata.ActiveSwapperLocations.Add(componentLocation);
-            signal = false;
+            outputSignal = false;
           } else {
             this.WorldMetadata.ActiveSwapperLocations.RemoveAt(activeSwapperIndex);
-            signal = true;
+            outputSignal = true;
           }
 
-          stripData.IgnoredTiles.Add(componentLocation);
           break;
-        case CircuitProcessor.TileId_CrossoverBridge:
+        }
+        case AdvancedCircuits.TileId_CrossoverBridge:
+          switch (AdvancedCircuits.DirectionFromTileLocations(componentLocation, portLocation)) {
+            case Direction.Left:
+              componentPorts = new List<DPoint> { new DPoint(componentLocation.X + 1, componentLocation.Y) };
+              break;
+            case Direction.Up:
+              componentPorts = new List<DPoint> { new DPoint(componentLocation.X, componentLocation.Y + 1) };
+              break;
+            case Direction.Right:
+              componentPorts = new List<DPoint> { new DPoint(componentLocation.X - 1, componentLocation.Y) };
+              break;
+            case Direction.Down:
+              componentPorts = new List<DPoint> { new DPoint(componentLocation.X, componentLocation.Y - 1) };
+              break;
+            default:
+              throw new ArgumentOutOfRangeException();
+          }
+
+          break;
+        case AdvancedCircuits.TileId_BlockActivator:
+          if (!portTile.active || portTile.type != AdvancedCircuits.TileId_InputPort)
+            return false;
+          if (
+            this.Config.BlockActivatorConfig.Cooldown > 0 && 
+            !WorldGen.checkMech(componentLocation.X, componentLocation.Y, this.Config.BlockActivatorConfig.Cooldown
+          ))
+            return false;
+
+          if (this.Config.BlockActivatorConfig.TriggerPermission != null && this.TriggeringPlayer != TSPlayer.Server) {
+            if (!this.TriggeringPlayer.Group.HasPermission(this.Config.BlockActivatorConfig.TriggerPermission)) {
+              this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
+              this.Result.WarnRelatedComponentType = AdvancedCircuits.TileId_BlockActivator;
+              return true;
+            }
+          }
+
+          BlockActivatorMetadata blockActivator;
+          this.WorldMetadata.BlockActivators.TryGetValue(componentLocation, out blockActivator);
+
+          if (signal) {
+            if (blockActivator == null || blockActivator.IsActivated)
+              return true;
+          } else {
+            if (blockActivator == null) {
+              blockActivator = new BlockActivatorMetadata();
+              this.WorldMetadata.BlockActivators.Add(componentLocation, blockActivator);
+            } else {
+              // Will do nothing if already deactivated.
+              if (!blockActivator.IsActivated)
+                return true;
+
+              blockActivator.RegisteredInactiveTiles.Clear();
+            }
+          }
+
+          blockActivator.IsActivated = signal;
+          if (signal && blockActivator.RegisteredInactiveTiles.Count == 0)
+            return true;
+
+          blockActivatorToRegister = blockActivator;
+          blockActivatorLocationToRegister = componentLocation;
+
           break;
         default:
           return false;
       }
 
-      if (componentPorts == null) {
-        componentPorts = new List<DPoint> {
-          new DPoint(componentLocation.X - 1, componentLocation.Y),
-          new DPoint(componentLocation.X, componentLocation.Y - 1),
-          new DPoint(componentLocation.X + 1, componentLocation.Y),
-          new DPoint(componentLocation.X, componentLocation.Y + 1)
-        };
-      }
-      
-      if (componentTile.type == CircuitProcessor.TileId_CrossoverBridge) {
-        int inputPortIndex = componentPorts.IndexOf(portLocation);
-        int outputPortIndex = inputPortIndex + 2;
-        if (outputPortIndex >= componentPorts.Count)
-          outputPortIndex = outputPortIndex - componentPorts.Count;
-
-        DPoint outputPort = componentPorts[outputPortIndex];
-        componentPorts.Clear();
-        componentPorts.Add(outputPort);
-      }
+      if (componentPorts == null)
+        componentPorts = new List<DPoint>(AdvancedCircuits.EnumerateComponentPortLocations(measureData));
 
       for (int i = 0; i < componentPorts.Count; i++) {
         DPoint port = componentPorts[i];
@@ -921,36 +1141,59 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           continue;
         }
 
-        portTile = Main.tile[port.X, port.Y];
-        if (!portTile.wire || (portTile.active && portTile.type == CircuitProcessor.TileId_InputPort)) {
+        portTile = Terraria.Tiles[port];
+        if (!portTile.wire || (portTile.active && portTile.type == AdvancedCircuits.TileId_InputPort)) {
           componentPorts.RemoveAt(i--);
           continue;
         }
       }
 
-      foreach (DPoint port in componentPorts)
-        this.StripProcessTile(port, DPoint.Empty, signal, stripData);
+      foreach (DPoint port in componentPorts) {
+        portTile = Terraria.Tiles[port];
+        bool portOutputSignal = outputSignal;
+        if (
+          portTile.active && portTile.type == AdvancedCircuits.TileId_NOTGate && 
+          measureData.SpriteType != AdvancedCircuits.TileId_NOTGate
+        ) {
+          portOutputSignal = !portOutputSignal;
+        }
+
+        RootBranchProcessData newRootBranch = new RootBranchProcessData(
+          componentLocation, port, AdvancedCircuits.BoolToSignal(portOutputSignal)
+        );
+        if (blockActivatorToRegister != null) {
+          newRootBranch.BlockActivator = blockActivatorToRegister;
+          newRootBranch.BlockActivatorLocation = blockActivatorLocationToRegister;
+        }
+
+        this.QueuedRootBranches.Add(newRootBranch);
+      }
 
       return true;
     }
     #endregion
 
-    #region [Methods: MeasureTimersExpirationTime]
-    protected int MeasureTimersExpirationTime(DPoint timerLocation) {
-      int frames = -1;
-      switch (Main.tile[timerLocation.X, timerLocation.Y].frameX) {
-        case 0:
-          frames = 60;
-          break;
-        case 18:
-          frames = 3 * 60;
-          break;
-        case 36:
-          frames = 5 * 60;
-          break;
+    #region [Methods: RegisterUnregisterTimer, ResetTimer]
+    private void RegisterUnregisterTimer(Terraria.SpriteMeasureData measureData, bool register) {
+      bool alreadyRegistered = this.WorldMetadata.ActiveTimers.ContainsKey(measureData.OriginTileLocation);
+      if (register) {
+        if (!alreadyRegistered) {
+          this.WorldMetadata.ActiveTimers.Add(
+            measureData.OriginTileLocation, 
+            new ActiveTimerMetadata(
+              AdvancedCircuits.MeasureTimerFrameTime(measureData.OriginTileLocation), this.TriggeringPlayer.Name
+            )
+          );
+        }
+      } else if (alreadyRegistered) {
+        this.WorldMetadata.ActiveTimers.Remove(measureData.OriginTileLocation);
       }
+    }
 
-      return frames;
+    private void ResetTimer(Terraria.SpriteMeasureData measureData) {
+      ActiveTimerMetadata activeTimer;
+      if (this.WorldMetadata.ActiveTimers.TryGetValue(measureData.OriginTileLocation, out activeTimer))
+        activeTimer.FramesLeft = AdvancedCircuits.MeasureTimerFrameTime(measureData.OriginTileLocation);
     }
     #endregion
   }

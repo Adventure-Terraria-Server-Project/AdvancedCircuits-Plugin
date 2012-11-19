@@ -68,6 +68,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">
@@ -93,13 +94,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Implementation\#Data\CircuitStripData.cs" />
+    <Compile Include="Implementation\#Data\#Config\BlockActivatorConfig.cs" />
+    <Compile Include="Implementation\#Data\#World\BlockActivatorMetadata.cs" />
+    <Compile Include="Implementation\#Data\#World\GrandfatherClockMetadata.cs" />
+    <Compile Include="Implementation\#Data\BranchProcessData.cs" />
+    <Compile Include="Implementation\#Data\CircuitCancellationReason.cs" />
     <Compile Include="Implementation\#Data\#Config\Configuration.cs" />
-    <Compile Include="Implementation\ACUtils.cs" />
-    <Compile Include="Implementation\Test\TestRunner.cs" />
+    <Compile Include="Implementation\#Data\CircuitWarnReason.cs" />
+    <Compile Include="Implementation\#Data\RootBranchProcessData.cs" />
+    <Compile Include="Implementation\#Data\SignalType.cs" />
+    <Compile Include="Implementation\AdvancedCircuits.cs" />
+    <Compile Include="Implementation\#Data\CircuitProcessResult.cs" />
     <Compile Include="Implementation\CircuitProcessor.cs" />
+    <Compile Include="Implementation\Test\TestRunner.cs" />
+    <Compile Include="Implementation\CircuitHandler.cs" />
     <Compile Include="Implementation\#Data\#Config\DartTrapConfig.cs" />
-    <Compile Include="Implementation\#Data\DartTrapType.cs" />
+    <Compile Include="Implementation\#Data\ComponentConfigProfile.cs" />
     <Compile Include="Implementation\#Data\#World\GateStateMetadata.cs" />
     <Compile Include="Implementation\#Data\StatueActionType.cs" />
     <Compile Include="Implementation\#Data\#Config\StatueConfig.cs" />
@@ -111,7 +121,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Implementation\Test\Test Data\Default Config.xml" />
     <Content Include="tshock\Advanced Circuits\Config.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -127,7 +136,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Guide.wld" />
+    <None Include="tshock\Advanced Circuits\Config.xsd">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Unit Tests.wld" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CC Plugins Common\Plugin Common Library.csproj">
+      <Project>{1D38E0CF-BF13-4229-860F-3809F39F0892}</Project>
+      <Name>Plugin Common Library</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

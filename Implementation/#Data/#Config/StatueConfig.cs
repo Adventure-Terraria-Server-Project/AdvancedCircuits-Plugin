@@ -7,10 +7,9 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Xml.Serialization;
+using System.Xml;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  [XmlRoot("StatueConfig")]
   public class StatueConfig {
     #region [Property: ActionType]
     private StatueActionType actionType;
@@ -66,21 +65,49 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: RequiredPermission]
-    private string requiredPermission;
+    #region [Property: WirePermission]
+    private string wirePermission;
 
-    public string RequiredPermission {
-      get { return this.requiredPermission; }
-      set { this.requiredPermission = value; }
+    public string WirePermission {
+      get { return this.wirePermission; }
+      set { this.wirePermission = value; }
+    }
+    #endregion
+
+    #region [Property: TriggerPermission]
+    private string triggerPermission;
+
+    public string TriggerPermission {
+      get { return this.triggerPermission; }
+      set { this.triggerPermission = value; }
     }
     #endregion
 
 
-    #region [Methods: Constructor]
+    #region [Methods: Constructor, Static FromXmlElement]
     public StatueConfig() {
       this.cooldown = 30;
       this.actionParam3 = 4;
       this.actionParam4 = 25;
+    }
+
+    public static StatueConfig FromXmlElement(XmlElement xmlData) {
+      StatueConfig resultingStatueConfig = new StatueConfig();
+      resultingStatueConfig.actionType = (StatueActionType)Enum.Parse(typeof(StatueActionType), xmlData["ActionType"].InnerText);
+      resultingStatueConfig.actionParam = int.Parse(xmlData["ActionParam"].InnerText);
+      if (xmlData["ActionParam2"] != null)
+        resultingStatueConfig.actionParam2 = int.Parse(xmlData["ActionParam2"].InnerText);
+      if (xmlData["ActionParam3"] != null)
+        resultingStatueConfig.actionParam3 = int.Parse(xmlData["ActionParam3"].InnerText);
+      if (xmlData["ActionParam4"] != null)
+        resultingStatueConfig.actionParam4 = int.Parse(xmlData["ActionParam4"].InnerText);
+      resultingStatueConfig.cooldown = int.Parse(xmlData["Cooldown"].InnerText);
+      if (xmlData["TriggerPermission"] != null)
+        resultingStatueConfig.triggerPermission = xmlData["TriggerPermission"].InnerText;
+      if (xmlData["WirePermission"] != null)
+        resultingStatueConfig.wirePermission = xmlData["WirePermission"].InnerText;
+
+      return resultingStatueConfig;
     }
     #endregion
   }
