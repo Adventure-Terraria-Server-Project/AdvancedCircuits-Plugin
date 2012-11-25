@@ -102,8 +102,9 @@
           Optional. The range in blocks with the statue as center to check for already spawned items.
           
     
-    You can also define a "RequiredPermission" node for each statue. Only players in a group having this permission can than wire
-    up this Statue. Statues can always be placed by anyone, the "RequiredPermission" only controls if a player can WIRE it up.
+    You can also define a "WirePermission" node for each statue. Only players in a group having this permission can than wire
+    up this Statue. Statues can always be placed by anyone, the "WirePermission" only controls if a player can WIRE it up.
+    There's also a "TriggerPermission".
   -->
   <StatueConfigs>
     <!-- These Statues are configured like Terraria's defaults. Change them if you want. -->

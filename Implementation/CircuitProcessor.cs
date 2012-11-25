@@ -346,6 +346,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         // The tile above the "peak" of the branch may also contain a Port Defining Component.
         if (this.IsAdvancedCircuit)
           this.ProcessTile(rootBranch, currentTileLocation, previousTileLocation, signal);
+
+        rootBranch.LastWireLocation = previousTileLocation;
       }
       
       if (this.IsCancellationPending)
@@ -360,7 +362,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       // Process all Sub-Branches and their Sub-Branches
       List<BranchProcessData> processedSubBranches = new List<BranchProcessData>();
-      processedSubBranches.Add(new BranchProcessData(rootBranch.SenderLocation, rootBranch.FirstWireLocation, signal));
+      processedSubBranches.Add(rootBranch.ToBranchProcessData());
 
       while (queuedSubBranches.Count > 0) {
         int currentBranchIndex = queuedSubBranches.Count - 1;
@@ -528,6 +530,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             if (
               signal == SignalType.Off && tile.active && AdvancedCircuits.IsCustomActivatableBlock(tile.type)
             ) {
+              if (rootBranch.BlockActivator.RegisteredInactiveTiles.Count > this.Config.BlockActivatorConfig.MaxChangeableBlocks) {
+                this.Result.WarnReason = CircuitWarnReason.BlockActivatorChangedTooManyBlocks;
+                return;
+              }
+
               rootBranch.BlockActivator.RegisteredInactiveTiles.Add(tileLocation, tile.type);
               Terraria.Tiles.RemoveBlock(tileLocation, true);
               

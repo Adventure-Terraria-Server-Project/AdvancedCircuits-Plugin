@@ -26,7 +26,7 @@
   <xs:simpleType name="Cooldown">
     <xs:restriction base="xs:integer">
       <xs:minInclusive value="1" />
-      <xs:maxInclusive value="1800" />
+      <xs:maxInclusive value="5000" />
     </xs:restriction>
   </xs:simpleType>
 

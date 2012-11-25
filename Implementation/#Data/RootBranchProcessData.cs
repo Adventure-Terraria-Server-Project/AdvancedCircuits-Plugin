@@ -29,6 +29,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    #region [Property: LastWireLocation]
+    private DPoint lastWireLocation;
+
+    public DPoint LastWireLocation {
+      get { return this.lastWireLocation; }
+      set { this.lastWireLocation = value; }
+    }
+    #endregion
+
     #region [Property: Direction]
     private readonly Direction direction;
 
@@ -85,6 +94,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public RootBranchProcessData(DPoint senderLocation, DPoint firstWireLocation, SignalType signal) {
       this.senderLocation = senderLocation;
       this.firstWireLocation = firstWireLocation;
+      this.lastWireLocation = firstWireLocation;
       this.direction = AdvancedCircuits.DirectionFromTileLocations(senderLocation, firstWireLocation);
       this.signal = signal;
       this.signaledComponentLocations = new List<DPoint>();
@@ -96,7 +106,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     #region [Method: ToBranchProcessData]
     public BranchProcessData ToBranchProcessData() {
-      return new BranchProcessData(this.SenderLocation, this.FirstWireLocation, this.Signal);
+      BranchProcessData branch = new BranchProcessData(this.SenderLocation, this.FirstWireLocation, this.Signal);
+      branch.LastWireLocation = this.LastWireLocation;
+
+      return branch;
     }
     #endregion
   }

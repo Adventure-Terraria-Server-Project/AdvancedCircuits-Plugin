@@ -71,7 +71,11 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 Changelog
 --------------------------------------------------------------
-Version 1.1.1 [xx.xx.xxxx]
+Version 1.1.1 [25.11.2012]
+  -Fixed a wire processing bug causing some wires, depending on their
+   positioning and alignment, not to be signaled in Advanced Circuits.
+  -Fixed a bug causing Block Activators not to properly check whether
+   the maximum of changeable blocks is reached or not.
   -Improved metadata handling.
 Version 1.1 [19.11.2012]
   -Updated for TShock 4.0.

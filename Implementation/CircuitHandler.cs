@@ -293,6 +293,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             "the component \"{0}\".", AdvancedCircuits.GetComponentName(result.WarnRelatedComponentType)
           ));
           break;
+        case CircuitWarnReason.BlockActivatorChangedTooManyBlocks:
+          player.SendWarningMessage("Warning: A \"Block Activator\" component tried to change more");
+          player.SendWarningMessage(string.Format(
+            "blocks than the allowed maximum of {0} blocks.", this.Config.BlockActivatorConfig.MaxChangeableBlocks
+          ));
+          break;
       }
 
       switch (result.CancellationReason) {

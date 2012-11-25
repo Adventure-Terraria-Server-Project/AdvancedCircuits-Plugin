@@ -12,6 +12,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     SignalesTooManyPumps,
     SignalesTooManyDartTraps,
     SignalesTooManyStatues,
-    InsufficientPermissionToSignalComponent
+    InsufficientPermissionToSignalComponent,
+    BlockActivatorChangedTooManyBlocks
   }
 }
