@@ -97,6 +97,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    #region [Property: PluginCooperationHandler]
+    private PluginCooperationHandler pluginCooperationHandler;
+
+    public PluginCooperationHandler PluginCooperationHandler {
+      get { return this.pluginCooperationHandler; }
+    }
+    #endregion
+
     #if Testrun
     private TestRunner testRunner;
     #endif
@@ -147,8 +155,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
 
       this.worldMetadataHandler = new WorldMetadataHandler(AdvancedCircuitsPlugin.WorldMetadataDirectory);
+      this.pluginCooperationHandler = new PluginCooperationHandler();
       #if !Testrun
-      this.circuitHandler = new CircuitHandler(this.Config, this.WorldMetadataHandler.Metadata);
+      this.circuitHandler = new CircuitHandler(this.Config, this.WorldMetadataHandler.Metadata, this.PluginCooperationHandler);
       #endif
 
       Action reloadConfiguration = () => {
@@ -157,7 +166,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
         this.config = Configuration.Read(AdvancedCircuitsPlugin.ConfigFilePath);
         if (this.circuitHandler != null)
-          this.circuitHandler = new CircuitHandler(this.Config, this.WorldMetadataHandler.Metadata);
+          this.circuitHandler = new CircuitHandler(this.Config, this.WorldMetadataHandler.Metadata, this.PluginCooperationHandler);
       };
       this.userInteractionHandler = new UserInteractionHandler(this.PluginInfo, this.Config, reloadConfiguration);
 

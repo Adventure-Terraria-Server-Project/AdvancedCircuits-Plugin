@@ -72,6 +72,7 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>References\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -93,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Implementation\#Data\#Config\BlockActivatorConfig.cs" />
+    <Compile Include="Implementation\#Data\#Config\PumpConfig.cs" />
     <Compile Include="Implementation\#Data\#World\BlockActivatorMetadata.cs" />
     <Compile Include="Implementation\#Data\#World\GrandfatherClockMetadata.cs" />
     <Compile Include="Implementation\#Data\BranchProcessData.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="Implementation\AdvancedCircuits.cs" />
     <Compile Include="Implementation\#Data\CircuitProcessResult.cs" />
     <Compile Include="Implementation\CircuitProcessor.cs" />
+    <Compile Include="Implementation\PluginCooperationHandler.cs" />
     <Compile Include="Implementation\Test\TestRunner.cs" />
     <Compile Include="Implementation\CircuitHandler.cs" />
     <Compile Include="Implementation\#Data\#Config\DartTrapConfig.cs" />

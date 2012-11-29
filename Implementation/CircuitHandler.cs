@@ -84,11 +84,20 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    #region [Property: PluginCooperationHandler]
+    private readonly PluginCooperationHandler pluginCooperationHandler;
+
+    public PluginCooperationHandler PluginCooperationHandler {
+      get { return this.pluginCooperationHandler; }
+    }
+    #endregion
+
 
     #region [Method: Constructor]
-    public CircuitHandler(Configuration config, WorldMetadata worldMetadata) {
+    public CircuitHandler(Configuration config, WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler) {
       this.config = config;
       this.worldMetadata = worldMetadata;
+      this.pluginCooperationHandler = pluginCooperationHandler;
       this.isDayTime = Main.dayTime;
       this.isDaylight = (Main.dayTime && Main.time >= 7200 && Main.time <= 46800);
 
@@ -155,7 +164,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               if (triggeringPlayer == null)
                 triggeringPlayer = TSPlayer.Server;
 
-              CircuitProcessor processor = new CircuitProcessor(this.Config, this.WorldMetadata, activeTimer.Key);
+              CircuitProcessor processor = new CircuitProcessor(this, activeTimer.Key);
               processor.ProcessCircuit(triggeringPlayer, signalType, false);
             } catch (Exception ex) {
               AdvancedCircuitsPlugin.Trace.WriteLineError(
@@ -221,7 +230,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               if (triggeringPlayer == null)
                 triggeringPlayer = TSPlayer.Server;
 
-              CircuitProcessor processor = new CircuitProcessor(this.Config, this.WorldMetadata, clockLocation);
+              CircuitProcessor processor = new CircuitProcessor(this, clockLocation);
               processor.ProcessCircuit(triggeringPlayer, AdvancedCircuits.BoolToSignal(signal), false);
             } catch (Exception ex) {
               AdvancedCircuitsPlugin.Trace.WriteLineError(
@@ -249,7 +258,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     public bool HandleHitSwitch(TSPlayer player, int x, int y) {
       try {
-        CircuitProcessor processor = new CircuitProcessor(this.Config, this.WorldMetadata, new DPoint(x, y));
+        CircuitProcessor processor = new CircuitProcessor(this, new DPoint(x, y));
         this.NotifyPlayer(processor.ProcessCircuit(player));
       } catch (Exception ex) {
         AdvancedCircuitsPlugin.Trace.WriteLineError(

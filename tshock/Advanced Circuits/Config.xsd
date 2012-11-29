@@ -29,6 +29,18 @@
       <xs:maxInclusive value="5000" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="PumpLiquidAmount">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1" />
+      <xs:maxInclusive value="1020" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PumpLiquidLossValue">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="-1020" />
+      <xs:maxInclusive value="1020" />
+    </xs:restriction>
+  </xs:simpleType>
 
   <xs:simpleType name="Terraria.BlockId">
     <xs:restriction base="xs:integer">
@@ -57,11 +69,35 @@
         <xs:element name="BlockActivatorConfig">
           <xs:complexType>
             <xs:all>
-              <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
               <xs:element name="MaxChangeableBlocks" type="xs:int" />
               <xs:element name="Cooldown" type="Cooldown" />
+              <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
             </xs:all>
           </xs:complexType>
+        </xs:element>
+
+        <xs:element name="PumpConfigs">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="PumpConfig">
+                <xs:complexType>
+                  <xs:all>
+                    <xs:element name="TransferableWater" type="PumpLiquidAmount" />
+                    <xs:element name="TransferableLava" type="PumpLiquidAmount" />
+                    <xs:element name="LossValue" type="PumpLiquidLossValue" />
+                    <xs:element name="Cooldown" type="Cooldown" />
+                    <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
+                    <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
+                  </xs:all>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+
+          <xs:unique name="ComponentConfigProfileUnique">
+            <xs:selector xpath="PumpConfig" />
+            <xs:field xpath="@Profile" />
+          </xs:unique>
         </xs:element>
 
         <xs:element name="DartTrapConfigs">

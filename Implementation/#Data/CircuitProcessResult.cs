@@ -129,6 +129,24 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    #region [Property: TransferedWater]
+    private int transferedWater;
+
+    public int TransferedWater {
+      get { return this.transferedWater; }
+      set { this.transferedWater = value; }
+    }
+    #endregion
+
+    #region [Property: TransferedLava]
+    private int transferedLava;
+
+    public int TransferedLava {
+      get { return this.transferedLava; }
+      set { this.transferedLava = value; }
+    }
+    #endregion
+
     #region [Property: WarnReason]
     private CircuitWarnReason warnReason;
 

@@ -15,7 +15,7 @@ using System.Xml.Schema;
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class Configuration {
     #region [Constants]
-    public const string CurrentVersion = "1.1";
+    public const string CurrentVersion = "1.2";
     #endregion
 
     #region [Property: OverrideVanillaCircuits]
@@ -90,6 +90,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    #region [Property: PumpConfigs]
+    private Dictionary<ComponentConfigProfile,PumpConfig> pumpConfigs;
+
+    public Dictionary<ComponentConfigProfile,PumpConfig> PumpConfigs {
+      get { return this.pumpConfigs; }
+      set { this.pumpConfigs = value; }
+    }
+    #endregion
+
     #region [Property: DartTrapConfigs]
     private Dictionary<ComponentConfigProfile,DartTrapConfig> dartTrapConfigs;
 
@@ -121,6 +130,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.maxCircuitLength = 400;
 
       this.blockActivatorConfig = new BlockActivatorConfig();
+
+      this.pumpConfigs = new Dictionary<ComponentConfigProfile,PumpConfig>();
+      if (fillDictionaries)
+        this.pumpConfigs.Add(ComponentConfigProfile.Default, new PumpConfig());
 
       this.dartTrapConfigs = new Dictionary<ComponentConfigProfile,DartTrapConfig>();
       if (fillDictionaries)
@@ -172,6 +185,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       resultingConfig.maxCircuitLength        = int.Parse(rootElement["MaxCircuitLength"].InnerText);
       resultingConfig.boulderWirePermission   = rootElement["BoulderWirePermission"].InnerText;
       resultingConfig.blockActivatorConfig    = BlockActivatorConfig.FromXmlElement(rootElement["BlockActivatorConfig"]);
+
+      XmlElement pumpConfigsNode = rootElement["PumpConfigs"];
+      foreach (XmlNode pumpConfigNode in pumpConfigsNode.ChildNodes) {
+        XmlElement pumpConfigElement = (pumpConfigNode as XmlElement);
+        if (pumpConfigElement == null)
+          continue;
+
+        ComponentConfigProfile componentConfigProfile = (ComponentConfigProfile)Enum.Parse(typeof(ComponentConfigProfile), pumpConfigElement.Attributes["Profile"].Value);
+        resultingConfig.pumpConfigs.Add(componentConfigProfile, PumpConfig.FromXmlElement(pumpConfigElement));
+      }
 
       XmlElement dartTrapConfigsNode = rootElement["DartTrapConfigs"];
       foreach (XmlNode dartTrapConfigNode in dartTrapConfigsNode.ChildNodes) {

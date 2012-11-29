@@ -265,7 +265,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           blockId = Terraria.Tiles[componentLocation].type;
         }
         
-        ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigTarget(modifiers);
+        ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigProfile(modifiers);
         bool hasPermission = true;
         switch (blockId) {
           case Terraria.TileId_Statue: {
@@ -405,7 +405,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         bool hasPermission = true;
         Terraria.SpriteMeasureData measureData = Terraria.MeasureSprite(tileToCheck);
         int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
-        ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigTarget(modifiers);
+        ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigProfile(modifiers);
         switch (tile.type) {
           case Terraria.TileId_Statue: {
             StatueType statueType = (StatueType)(tile.frameX / (Terraria.DefaultTextureTileSize * 2));

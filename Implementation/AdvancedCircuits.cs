@@ -234,8 +234,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Method: ModifierCountToConfigTarget]
-    public static ComponentConfigProfile ModifierCountToConfigTarget(int modifiers) {
+    #region [Method: ModifierCountToConfigProfile]
+    public static ComponentConfigProfile ModifierCountToConfigProfile(int modifiers) {
       return (ComponentConfigProfile)modifiers;
     }
     #endregion

@@ -7,7 +7,7 @@
 <AdvancedCircuitsConfiguration
   xmlns="http://github.com/CoderCow/AdvancedCircuits-Plugin"
   
-  Version="1.1"
+  Version="1.2"
 >
   <!-- 
     Sets whether usual Terraria circuits are overriden by this plugin to extend / limit their functionalities as configured
@@ -35,13 +35,43 @@
   <MaxCircuitLength>600</MaxCircuitLength>
 
   <BlockActivatorConfig>
-    <TriggerPermission></TriggerPermission>
     <MaxChangeableBlocks>100</MaxChangeableBlocks>
     <Cooldown>30</Cooldown>
+    <TriggerPermission></TriggerPermission>
   </BlockActivatorConfig>
+
+  <!-- 
+    The default setting of the Pump is mostly equal with Terraria's default Pump.
+    It can be configured by 5 different profiles: Default, OneModifier, TwoModifiers, ThreeModifiers, FourModifiers.
+    
+    The amount of modifiers on the edges of the Inlet Pump determine what Profile is used, Modifiers have no effect on 
+    Outlet Pumps.
+  -->
+  <PumpConfigs>
+    <PumpConfig Profile="Default">
+      <!-- 
+        1020 means four Tiles completely filled with liquid (255 per tile), more is not possible.
+      -->
+      <TransferableWater>1020</TransferableWater>
+      <TransferableLava>1020</TransferableLava>
+      <!--
+        You can configure Pumps so, that a small amount of liquid gets lost when transfered so that endless Pump circuits will
+        eventually run dry.
+        The Loss Value can also be positive to have Pumps actually produce more liquid as they take in, however, even if the
+        Loss Value is positive, an Outlet Pump still needs an Inlet Pump in its circuit to work.
+        If the Loss Value is 1020, Inlet Pumps will suck liquid in and it will just vanish, but they also still need 
+        Outlet Pumps in their circuit.
+      -->
+      <LossValue>+1</LossValue>
+      <Cooldown>10</Cooldown>
+      <TriggerPermission></TriggerPermission>
+      <WirePermission></WirePermission>
+    </PumpConfig>
+  </PumpConfigs>
   
   <!-- 
     The default setting of the Dart Trap is equal with Terraria's default Dart Trap.
+    It can be configured by 5 different profiles: Default, OneModifier, TwoModifiers, ThreeModifiers, FourModifiers.
   -->
   <DartTrapConfigs>
     <DartTrapConfig Profile="Default">
