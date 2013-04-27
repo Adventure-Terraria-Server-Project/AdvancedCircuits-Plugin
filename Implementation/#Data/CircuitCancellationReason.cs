@@ -6,7 +6,7 @@
 
 using System;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public enum CircuitCancellationReason {
     None,
     ExceededMaxLength,

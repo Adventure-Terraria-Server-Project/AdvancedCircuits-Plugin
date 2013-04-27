@@ -1,6 +1,6 @@
 ﻿==============================================================
- Advanced Circuits Plugin for Terraria API and TShock
-   by CoderCow
+ Advanced Circuits Plugin
+   (c) CoderCow 2013
 ==============================================================
 
 The Revolutionized Wiring
@@ -23,6 +23,8 @@ when powered.
 
 NOTE: Before installing and configuring the plugin, read the 
 "Known Problems" section first!
+
+Note: This plugin requires TShock 4 or higher in order to work.
 
 
 Features
@@ -65,12 +67,17 @@ Delete your "tshock/Advanced Circuits/World Data" folder.
 
 A Quickstart to Advanced Circuits
 --------------------------------------------------------------
-Have a look in the official wiki:
+Have a look on the official wiki:
 https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 
 Changelog
 --------------------------------------------------------------
+Version 1.2 [27.04.2013]
+  -Pumps can now be configured using 5 different profiles (default + 4 
+   modifiers).
+  -Some minor improvements, fixed typos.
+  -Updated for Plugins Common Lib 1.8.
 Version 1.1.1 [25.11.2012]
   -Fixed a wire processing bug causing some wires, depending on their
    positioning and alignment, not to be signaled in Advanced Circuits.
@@ -182,4 +189,4 @@ Version 1.0.1 Beta [10.09.2012]
   -Updated for Plugins Common Lib 1.1
 
 Version 1.0 Beta [07.09.2012]
-  -Initial release by CoderCow
+  -Initial release by CoderCow.

@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public struct BranchProcessData {
     #region [Property: BranchingTileLocation]
     private readonly DPoint branchingTileLocation;

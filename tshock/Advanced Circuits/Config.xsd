@@ -10,7 +10,7 @@
 >
   <xs:simpleType name="NetVersion">
     <xs:restriction base="xs:string">
-      <xs:pattern value="\n+([.]\n+){0,3}" />
+      <xs:pattern value="^\d+([.]\d+){0,3}$" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="FlexBool">
@@ -21,6 +21,15 @@
       <xs:enumeration value="false" />
       <xs:enumeration value="0" />
       <xs:enumeration value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ModifierConfigProfile">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Default" />
+      <xs:enumeration value="OneModifier" />
+      <xs:enumeration value="TwoModifiers" />
+      <xs:enumeration value="ThreeModifiers" />
+      <xs:enumeration value="FourModifiers" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="Cooldown">
@@ -79,7 +88,7 @@
         <xs:element name="PumpConfigs">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="PumpConfig">
+              <xs:element name="PumpConfig" minOccurs="1" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:all>
                     <xs:element name="TransferableWater" type="PumpLiquidAmount" />
@@ -89,12 +98,14 @@
                     <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
                     <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
                   </xs:all>
+
+                  <xs:attribute name="Profile" type="ModifierConfigProfile" use="required" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
           </xs:complexType>
 
-          <xs:unique name="ComponentConfigProfileUnique">
+          <xs:unique name="PumpConfigProfileUnique">
             <xs:selector xpath="PumpConfig" />
             <xs:field xpath="@Profile" />
           </xs:unique>
@@ -116,23 +127,13 @@
                     <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
                   </xs:all>
 
-                  <xs:attribute name="Profile" use="required">
-                    <xs:simpleType>
-                      <xs:restriction base="xs:string">
-                        <xs:enumeration value="Default" />
-                        <xs:enumeration value="OneModifier" />
-                        <xs:enumeration value="TwoModifiers" />
-                        <xs:enumeration value="ThreeModifiers" />
-                        <xs:enumeration value="FourModifiers" />
-                      </xs:restriction>
-                    </xs:simpleType>
-                  </xs:attribute>
+                  <xs:attribute name="Profile" type="ModifierConfigProfile" use="required" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
           </xs:complexType>
 
-          <xs:unique name="ComponentConfigProfileUnique">
+          <xs:unique name="DartTrapConfigProfileUnique">
             <xs:selector xpath="DartTrapConfig" />
             <xs:field xpath="@Profile" />
           </xs:unique>
@@ -216,6 +217,11 @@
               </xs:element>
             </xs:sequence>
           </xs:complexType>
+
+          <xs:unique name="StatueConfigProfileUnique">
+            <xs:selector xpath="StatueConfig" />
+            <xs:field xpath="@StatueType" />
+          </xs:unique>
         </xs:element>
       </xs:all>
 

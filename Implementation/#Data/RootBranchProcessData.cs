@@ -10,7 +10,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public struct RootBranchProcessData {
     #region [Property: SenderLocation]
     private DPoint senderLocation;

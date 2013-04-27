@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Xml;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public class StatueConfig {
     #region [Property: ActionType]
     private StatueActionType actionType;

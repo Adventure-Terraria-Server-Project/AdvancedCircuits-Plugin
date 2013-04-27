@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Xml;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public class PumpConfig {
     #region [Property: TransferableWater]
     private int transferableWater;
@@ -80,6 +80,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       resultingPumpConfig.transferableLava = int.Parse(xmlData["TransferableLava"].InnerText);
       resultingPumpConfig.lossValue = int.Parse(xmlData["LossValue"].InnerText);
       resultingPumpConfig.cooldown = int.Parse(xmlData["Cooldown"].InnerText);
+
       if (xmlData["TriggerPermission"] != null)
         resultingPumpConfig.triggerPermission = xmlData["TriggerPermission"].InnerText;
       if (xmlData["WirePermission"] != null)

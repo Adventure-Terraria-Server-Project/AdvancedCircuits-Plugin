@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public class BlockActivatorMetadata {
     #region [Property: IsActivated]
     private bool isActivated;
@@ -16,18 +15,18 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: RegisteredInactiveTiles]
-    private readonly Dictionary<DPoint,byte> registeredInactiveTiles;
+    #region [Property: RegisteredInactiveBlocks]
+    private readonly Dictionary<DPoint,BlockType> registeredInactiveBlocks;
 
-    public Dictionary<DPoint,byte> RegisteredInactiveTiles {
-      get { return this.registeredInactiveTiles; }
+    public Dictionary<DPoint,BlockType> RegisteredInactiveBlocks {
+      get { return this.registeredInactiveBlocks; }
     }
     #endregion
 
 
     #region [Method: Constructor]
     public BlockActivatorMetadata() {
-      this.registeredInactiveTiles = new Dictionary<DPoint,byte>();
+      this.registeredInactiveBlocks = new Dictionary<DPoint,BlockType>();
     }
     #endregion
   }

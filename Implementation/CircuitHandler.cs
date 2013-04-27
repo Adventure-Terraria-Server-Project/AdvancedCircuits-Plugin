@@ -4,68 +4,29 @@
 // 
 // Written by CoderCow
 
-/* Star Cloak Projectiles:
-for (int i = 0; i < 3; i++) {
-  float x = this.position.X + (float)Main.rand.Next(-400, 400);
-  float y = this.position.Y - (float)Main.rand.Next(500, 800);
-  Vector2 vector = new Vector2(x, y);
-  float num4 = this.position.X + (float)(this.width / 2) - vector.X;
-  float num5 = this.position.Y + (float)(this.height / 2) - vector.Y;
-  num4 += (float)Main.rand.Next(-100, 101);
-  int num6 = 23;
-  float num7 = (float)Math.Sqrt((double)(num4 * num4 + num5 * num5));
-  num7 = (float)num6 / num7;
-  num4 *= num7;
-  num5 *= num7;
-  int num8 = Projectile.NewProjectile(x, y, num4, num5, 92, 30, 5f, this.whoAmi);
-  Main.projectile[num8].ai[1] = this.position.Y;
-}
-
-case Terraria.TileId_Sunflower: {
-  if (signal == true) {
-    DPoint projectileSpawn = new DPoint((originX * 16 + 16), (originY * 16 + 8));
-    float projectileSpeedX = 5;
-    float projectileSpeedY = 5;
-    int projectileType = 10;
-            
-    Projectile.NewProjectile(
-      projectileSpawn.X, projectileSpawn.Y, projectileSpeedX, projectileSpeedY, projectileType, 1, 
-      1, Main.myPlayer
-    );
-
-    Projectile.NewProjectile(
-      projectileSpawn.X, projectileSpawn.Y, -projectileSpeedX, projectileSpeedY, projectileType, 1, 
-      1, Main.myPlayer
-    );
-  }
-
-  if (stripData != null) {
-    for (int tx = 0; tx < frameWidth; tx++) {
-      for (int ty = 0; ty < frameHeight; ty++) {
-        int absoluteX = originX + tx;
-        int absoluteY = originY + ty;
-
-        stripData.Value.IgnoredTiles.Add(new DPoint(absoluteX, absoluteY));
-      }
-    }
-  }
-  return true;
-}
-*/
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public class CircuitHandler {
     #region [Constants]
     private const int TimerUpdateFrameRate = 10;
     private const int ClockUpdateFrameRate = 60;
+    #endregion
+
+    #region [Property: PluginTrace]
+    private readonly PluginTrace pluginTrace;
+
+    protected PluginTrace PluginTrace {
+      get { return this.pluginTrace; }
+    }
     #endregion
 
     #region [Property: Config]
@@ -94,19 +55,28 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
 
     #region [Method: Constructor]
-    public CircuitHandler(Configuration config, WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler) {
+    public CircuitHandler(
+      PluginTrace pluginTrace,
+      Configuration config, WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler
+    ) {
+      Contract.Requires<ArgumentNullException>(pluginTrace != null);
+      Contract.Requires<ArgumentNullException>(config != null);
+      Contract.Requires<ArgumentNullException>(worldMetadata != null);
+      Contract.Requires<ArgumentNullException>(pluginCooperationHandler != null);
+
+      this.pluginTrace = pluginTrace;
       this.config = config;
       this.worldMetadata = worldMetadata;
       this.pluginCooperationHandler = pluginCooperationHandler;
       this.isDayTime = Main.dayTime;
       this.isDaylight = (Main.dayTime && Main.time >= 7200 && Main.time <= 46800);
 
-      // Timers are always inactive when a map is loaded, so switch them into their active state if necessary.
+      // Timers are always inactive when a map is loaded, so switch them into their active state.
       foreach (DPoint activeTimerLocation in this.WorldMetadata.ActiveTimers.Keys) {
-        Terraria.SpriteMeasureData timerMeasureData = Terraria.MeasureSprite(activeTimerLocation);
+        ObjectMeasureData timerMeasureData = TerrariaUtils.Tiles.MeasureObject(activeTimerLocation);
         
-        if(!Terraria.HasSpriteActiveFrame(timerMeasureData))
-          Terraria.SetSpriteActiveFrame(timerMeasureData, true);
+        if(!TerrariaUtils.Tiles.ObjectHasActiveState(timerMeasureData))
+          TerrariaUtils.Tiles.SetObjectState(timerMeasureData, true);
       }
     }
     #endregion
@@ -126,8 +96,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           DPoint timerLocation = activeTimer.Key;
           ActiveTimerMetadata timerMetadata = activeTimer.Value;
 
-          Tile timerTile = Terraria.Tiles[timerLocation];
-          if (timerMetadata == null || !timerTile.active || timerTile.type != Terraria.TileId_XSecondTimer) {
+          Tile timerTile = TerrariaUtils.Tiles[timerLocation];
+          if (timerMetadata == null || !timerTile.active || timerTile.type != (int)BlockType.XSecondTimer) {
             if (timersToDelete == null)
               timersToDelete = new List<DPoint>();
 
@@ -152,7 +122,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in timersToProcess) {
             SignalType signalType;
             // Is Advanced Circuit?
-            if (!Terraria.Tiles[activeTimer.Key].wire)
+            if (!TerrariaUtils.Tiles[activeTimer.Key].wire)
               signalType = SignalType.On;
             else 
               signalType = SignalType.Swap;
@@ -164,10 +134,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               if (triggeringPlayer == null)
                 triggeringPlayer = TSPlayer.Server;
 
-              CircuitProcessor processor = new CircuitProcessor(this, activeTimer.Key);
+              CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, activeTimer.Key);
               processor.ProcessCircuit(triggeringPlayer, signalType, false);
             } catch (Exception ex) {
-              AdvancedCircuitsPlugin.Trace.WriteLineError(
+              this.PluginTrace.WriteLineError(
                 "Circuit processing for a Timer at {0} failed. See inner exception for details.\n{1}", 
                 activeTimer.Key, ex.ToString()
               );
@@ -191,9 +161,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           foreach (KeyValuePair<DPoint,GrandfatherClockMetadata> clock in this.WorldMetadata.Clocks) {
             DPoint clockLocation = clock.Key;
-            Tile clockTile = Terraria.Tiles[clockLocation];
+            Tile clockTile = TerrariaUtils.Tiles[clockLocation];
 
-            if (!clockTile.active || clockTile.type != Terraria.TileId_GrandfatherClock) {
+            if (!clockTile.active || clockTile.type != (int)BlockType.GrandfatherClock) {
               if (clocksToRemove == null)
                 clocksToRemove = new List<DPoint>();
 
@@ -202,7 +172,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             }
 
             bool signal;
-            switch (AdvancedCircuits.CountComponentModifiers(Terraria.MeasureSprite(clockLocation))) {
+            switch (AdvancedCircuits.CountComponentModifiers(TerrariaUtils.Tiles.MeasureObject(clockLocation))) {
               case 1:
                 if (!daylightChanged)
                   continue;
@@ -230,10 +200,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               if (triggeringPlayer == null)
                 triggeringPlayer = TSPlayer.Server;
 
-              CircuitProcessor processor = new CircuitProcessor(this, clockLocation);
+              CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, clockLocation);
               processor.ProcessCircuit(triggeringPlayer, AdvancedCircuits.BoolToSignal(signal), false);
             } catch (Exception ex) {
-              AdvancedCircuitsPlugin.Trace.WriteLineError(
+              this.PluginTrace.WriteLineError(
                 "Circuit processing for a Grandfather Clock at {0} failed. See inner exception for details.\n{1}", 
                 clockLocation, ex.ToString()
               );
@@ -256,14 +226,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
     }
 
-    public bool HandleHitSwitch(TSPlayer player, int x, int y) {
+    public bool HandleHitSwitch(TSPlayer player, DPoint tileLocation) {
       try {
-        CircuitProcessor processor = new CircuitProcessor(this, new DPoint(x, y));
+        CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
         this.NotifyPlayer(processor.ProcessCircuit(player));
       } catch (Exception ex) {
-        AdvancedCircuitsPlugin.Trace.WriteLineError(
+        this.PluginTrace.WriteLineError(
           "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
-          Terraria.Tiles.GetBlockName(Terraria.Tiles[x, y].type), new DPoint(x, y), ex.ToString()
+          TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[tileLocation].type), tileLocation, ex.ToString()
         );
       }
 
@@ -313,12 +283,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       switch (result.CancellationReason) {
         case CircuitCancellationReason.ExceededMaxLength:
           player.SendErrorMessage("Error: Circuit execution was cancelled because it exceeded");
-          player.SendErrorMessage(string.Format(
-            "the maximum length of {0} wires, current length is {1}.", this.Config.MaxCircuitLength, result.CircuitLength
-          ));
+          player.SendErrorMessage(string.Format("the maximum length of {0} wires.", this.Config.MaxCircuitLength));
           break;
         case CircuitCancellationReason.SignaledSameComponentTooOften:
-          if (result.CancellationRelatedComponentType == -1) {
+          if (result.CancellationRelatedComponentType == BlockType.Invalid) {
             player.SendErrorMessage("Error: Circuit execution was cancelled because a component");
             player.SendErrorMessage("was signaled too often.");
           } else {

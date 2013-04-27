@@ -55,17 +55,32 @@
       <TransferableWater>1020</TransferableWater>
       <TransferableLava>1020</TransferableLava>
       <!--
-        You can configure Pumps so, that a small amount of liquid gets lost when transfered so that endless Pump circuits will
+        You can configure Pumps so that a small amount of liquid gets lost when transfered so that endless Pump circuits will
         eventually run dry.
         The Loss Value can also be positive to have Pumps actually produce more liquid as they take in, however, even if the
         Loss Value is positive, an Outlet Pump still needs an Inlet Pump in its circuit to work.
-        If the Loss Value is 1020, Inlet Pumps will suck liquid in and it will just vanish, but they also still need 
-        Outlet Pumps in their circuit.
       -->
-      <LossValue>+1</LossValue>
-      <Cooldown>10</Cooldown>
+      <LossValue>0</LossValue>
+      <Cooldown>1</Cooldown>
       <TriggerPermission></TriggerPermission>
       <WirePermission></WirePermission>
+    </PumpConfig>
+    <PumpConfig Profile="OneModifier">
+      <!-- 
+        1020 means four Tiles completely filled with liquid (255 per tile), more is not possible.
+      -->
+      <TransferableWater>1020</TransferableWater>
+      <TransferableLava>1020</TransferableLava>
+      <!--
+        You can configure Pumps so that a small amount of liquid gets lost when transfered so that endless Pump circuits will
+        eventually run dry.
+        The Loss Value can also be positive to have Pumps actually produce more liquid as they take in, however, even if the
+        Loss Value is positive, an Outlet Pump still needs an Inlet Pump in its circuit to work.
+      -->
+      <LossValue>-100</LossValue>
+      <Cooldown>1</Cooldown>
+      <TriggerPermission>Test</TriggerPermission>
+      <WirePermission>Test</WirePermission>
     </PumpConfig>
   </PumpConfigs>
   
@@ -93,7 +108,7 @@
       <TriggerPermission>ac_TriggerSuperDartTrap</TriggerPermission>
     </DartTrapConfig>
   </DartTrapConfigs>
-  
+
   <!--
     Add or remove a configuration of a statue as you please here. Make sure no statue type is defined two times though.
     

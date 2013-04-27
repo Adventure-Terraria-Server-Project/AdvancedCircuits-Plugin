@@ -8,7 +8,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public class GateStateMetadata {
     #region [Property: PortStates]
     private bool?[] portStates;

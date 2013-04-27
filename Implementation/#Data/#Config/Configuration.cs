@@ -12,7 +12,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Schema;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public class Configuration {
     #region [Constants]
     public const string CurrentVersion = "1.2";
@@ -108,10 +108,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: StatueConfigs]
-    private Dictionary<StatueType,StatueConfig> statueConfigs;
+    #region [Property: ExplosivesConfigs]
+    private Dictionary<ComponentConfigProfile, ExplosivesConfig> explosivesConfigs;
 
-    public Dictionary<StatueType,StatueConfig> StatueConfigs {
+    public Dictionary<ComponentConfigProfile,ExplosivesConfig> ExplosivesConfigs {
+      get { return this.explosivesConfigs; }
+      set { this.explosivesConfigs = value; }
+    }
+    #endregion
+
+    #region [Property: StatueConfigs]
+    private Dictionary<StatueStyle,StatueConfig> statueConfigs;
+
+    public Dictionary<StatueStyle,StatueConfig> StatueConfigs {
       get { return this.statueConfigs; }
       set { this.statueConfigs = value; }
     }
@@ -139,7 +148,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (fillDictionaries)
         this.dartTrapConfigs.Add(ComponentConfigProfile.Default, new DartTrapConfig());
 
-      this.statueConfigs = new Dictionary<StatueType,StatueConfig>();
+      this.statueConfigs = new Dictionary<StatueStyle,StatueConfig>();
+
+      this.explosivesConfigs = new Dictionary<ComponentConfigProfile,ExplosivesConfig>();
+      if (fillDictionaries)
+        this.explosivesConfigs.Add(ComponentConfigProfile.Default, new ExplosivesConfig());
     }
 
     public static Configuration Read(string filePath) {
@@ -171,11 +184,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         ));
       }
 
-      document.Validate((sender, args) => {
-        if (args.Severity == XmlSeverityType.Warning)
-          AdvancedCircuitsPlugin.Trace.WriteLineWarning("Configuration validation warning: " + args.Message);
-      });
-      
       Configuration resultingConfig = new Configuration(false);
       resultingConfig.overrideVanillaCircuits = BoolEx.ParseEx(rootElement["OverrideVanillaCircuits"].InnerXml);
       resultingConfig.advancedCircuitsEnabled = BoolEx.ParseEx(rootElement["AdvancedCircuitsEnabled"].InnerText);
@@ -206,13 +214,23 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         resultingConfig.dartTrapConfigs.Add(componentConfigProfile, DartTrapConfig.FromXmlElement(dartTrapConfigElement));
       }
 
+      /*XmlElement explosivesConfigsNode = rootElement["ExplosivesConfigs"];
+      foreach (XmlNode explosivesConfigNode in explosivesConfigsNode.ChildNodes) {
+        XmlElement explosivesConfigElement = (explosivesConfigNode as XmlElement);
+        if (explosivesConfigElement == null)
+          continue;
+
+        ComponentConfigProfile componentConfigProfile = (ComponentConfigProfile)Enum.Parse(typeof(ComponentConfigProfile), explosivesConfigElement.Attributes["Profile"].Value);
+        resultingConfig.explosivesConfigs.Add(componentConfigProfile, ExplosivesConfig.FromXmlElement(explosivesConfigElement));
+      }*/
+
       XmlElement statueConfigsNode = rootElement["StatueConfigs"];
       foreach (XmlNode statueConfigNode in statueConfigsNode.ChildNodes) {
         XmlElement statueConfigElement = (statueConfigNode as XmlElement);
         if (statueConfigElement == null)
           continue;
 
-        StatueType statueType = (StatueType)Enum.Parse(typeof(StatueType), statueConfigElement.Attributes["StatueType"].Value);
+        StatueStyle statueType = (StatueStyle)Enum.Parse(typeof(StatueStyle), statueConfigElement.Attributes["StatueType"].Value);
         resultingConfig.statueConfigs.Add(statueType, StatueConfig.FromXmlElement(statueConfigElement));
       }
 

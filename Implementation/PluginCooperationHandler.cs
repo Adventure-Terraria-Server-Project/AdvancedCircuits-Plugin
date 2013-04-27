@@ -11,11 +11,19 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public class PluginCooperationHandler {
     #region [Constants]
     private const string InfiniteSignsGuid = "d1c86597-66c0-4590-aace-7b381d332294";
     private const string InfiniteSignsClassName = "InfiniteSigns.InfiniteSigns";
+    #endregion
+
+    #region [Property: PluginTrace]
+    private readonly PluginTrace pluginTrace;
+
+    protected PluginTrace PluginTrace {
+      get { return this.pluginTrace; }
+    }
     #endregion
 
     #region [Property: InfiniteSignsPlugin]
@@ -32,7 +40,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
 
     #region [Method: Constructor]
-    public PluginCooperationHandler() {
+    public PluginCooperationHandler(PluginTrace pluginTrace) {
+      Contract.Requires<ArgumentNullException>(pluginTrace != null);
+
+      this.pluginTrace = pluginTrace;
+
       Assembly[] domainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
       foreach (Assembly assembly in domainAssemblies) {
         GuidAttribute[] guidAttributes = (GuidAttribute[])assembly.GetCustomAttributes(typeof(GuidAttribute), true);
@@ -57,7 +69,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       try {
         return this.InfiniteSignsPlugin.GetSignText(location.X, location.Y);
       } catch (Exception ex) {
-        AdvancedCircuitsPlugin.Trace.WriteLineError("An exception was thrown when cooperating with a plugin:\n{0}", ex.ToString());
+        this.PluginTrace.WriteLineError("An exception was thrown when cooperating with a plugin:\n{0}", ex.ToString());
         return null;
       }
     }

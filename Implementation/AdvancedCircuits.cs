@@ -10,97 +10,99 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public static class AdvancedCircuits {
     #region [Constants]
-    public const int TileId_ORGate          = Terraria.TileId_CopperOre;
-    public const int TileId_ANDGate         = Terraria.TileId_SilverOre;
-    public const int TileId_XORGate         = Terraria.TileId_GoldOre;
-    public const int TileId_NOTGate         = Terraria.TileId_Obsidian;
-    public const int TileId_Swapper         = Terraria.TileId_IronOre;
-    public const int TileId_CrossoverBridge = Terraria.TileId_Spike;
-    public const int TileId_InputPort       = Terraria.TileId_Glass;
-    public const int TileId_Modifier        = Terraria.TileId_CobaltOre;
-    public const int TileId_BlockActivator  = Terraria.TileId_ActiveStone;
+    public const BlockType BlockType_ORGate          = BlockType.CopperOre;
+    public const BlockType BlockType_ANDGate         = BlockType.SilverOre;
+    public const BlockType BlockType_XORGate         = BlockType.GoldOre;
+    public const BlockType BlockType_NOTGate         = BlockType.Obsidian;
+    public const BlockType BlockType_Swapper         = BlockType.IronOre;
+    public const BlockType BlockType_CrossoverBridge = BlockType.Spike;
+    public const BlockType BlockType_InputPort       = BlockType.Glass;
+    public const BlockType BlockType_Modifier        = BlockType.CobaltOre;
+    public const BlockType BlockType_BlockActivator  = BlockType.ActiveStone;
     #endregion
 
 
     #region [Methods: IsPortDefiningComponentBlock, IsModifierSupportingComponentBlock]
-    public static bool IsPortDefiningComponentBlock(int blockId) {
+    public static bool IsPortDefiningComponentBlock(BlockType blockType) {
       return (
-        blockId == Terraria.TileId_Switch ||
-        blockId == Terraria.TileId_Lever ||
-        blockId == Terraria.TileId_XSecondTimer ||
-        blockId == AdvancedCircuits.TileId_ORGate ||
-        blockId == AdvancedCircuits.TileId_ANDGate ||
-        blockId == AdvancedCircuits.TileId_XORGate ||
-        blockId == AdvancedCircuits.TileId_NOTGate ||
-        blockId == AdvancedCircuits.TileId_Swapper ||
-        blockId == AdvancedCircuits.TileId_CrossoverBridge ||
-        blockId == Terraria.TileId_GrandfatherClock ||
-        blockId == AdvancedCircuits.TileId_BlockActivator
+        blockType == BlockType.Switch ||
+        blockType == BlockType.Lever ||
+        blockType == BlockType.XSecondTimer ||
+        blockType == AdvancedCircuits.BlockType_ORGate ||
+        blockType == AdvancedCircuits.BlockType_ANDGate ||
+        blockType == AdvancedCircuits.BlockType_XORGate ||
+        blockType == AdvancedCircuits.BlockType_NOTGate ||
+        blockType == AdvancedCircuits.BlockType_Swapper ||
+        blockType == AdvancedCircuits.BlockType_CrossoverBridge ||
+        blockType == BlockType.GrandfatherClock ||
+        blockType == AdvancedCircuits.BlockType_BlockActivator
       );
     }
 
-    public static bool IsModifierSupportingComponentBlock(int blockId) {
+    public static bool IsModifierSupportingComponentBlock(BlockType blockType) {
       return (
-        blockId == Terraria.TileId_XSecondTimer ||
-        blockId == Terraria.TileId_Switch ||
-        blockId == Terraria.TileId_Lever ||
-        blockId == Terraria.TileId_GrandfatherClock ||
-        blockId == AdvancedCircuits.TileId_ANDGate ||
-        blockId == AdvancedCircuits.TileId_XORGate ||
-        blockId == AdvancedCircuits.TileId_ORGate ||
-        blockId == Terraria.TileId_DartTrap
+        blockType == BlockType.XSecondTimer ||
+        blockType == BlockType.Switch ||
+        blockType == BlockType.Lever ||
+        blockType == BlockType.GrandfatherClock ||
+        blockType == AdvancedCircuits.BlockType_ANDGate ||
+        blockType == AdvancedCircuits.BlockType_XORGate ||
+        blockType == AdvancedCircuits.BlockType_ORGate ||
+        blockType == BlockType.DartTrap ||
+        blockType == BlockType.InletPump ||
+        blockType == BlockType.OutletPump
       );
     }
 
-    public static bool IsCustomActivatableBlock(int blockId) {
+    public static bool IsCustomActivatableBlock(BlockType blockType) {
       return (
-        blockId == Terraria.TileId_DirtBlock ||
-        blockId == Terraria.TileId_StoneBlock ||
-        blockId == Terraria.TileId_WoodPlatform ||
-        blockId == Terraria.TileId_EbonstoneBlock ||
-        blockId == Terraria.TileId_Wood ||
-        (blockId >= Terraria.TileId_GrayBrick && blockId <= Terraria.TileId_BlueBrick) ||
-        (blockId >= Terraria.TileId_GreenBrick && blockId <= Terraria.TileId_Spike) ||
-        blockId == Terraria.TileId_Glass ||
-        blockId == Terraria.TileId_AshBlock ||
-        blockId == Terraria.TileId_MudBlock ||
-        blockId == Terraria.TileId_ObsidianBrick ||
-        blockId == Terraria.TileId_HellstoneBrick ||
-        (blockId >= Terraria.TileId_PearlstoneBlock && blockId <= Terraria.TileId_WoodenBeam) ||
-        blockId == Terraria.TileId_ActiveStone ||
-        blockId == Terraria.TileId_InactiveStone ||
-        blockId == Terraria.TileId_DemoniteBrick ||
-        (blockId >= Terraria.TileId_RedCandyCaneBlock && blockId <= Terraria.TileId_SnowBrick)
+        blockType == BlockType.DirtBlock ||
+        blockType == BlockType.StoneBlock ||
+        blockType == BlockType.WoodPlatform ||
+        blockType == BlockType.EbonstoneBlock ||
+        blockType == BlockType.Wood ||
+        (blockType >= BlockType.GrayBrick && blockType <= BlockType.BlueBrick) ||
+        (blockType >= BlockType.GreenBrick && blockType <= BlockType.Spike) ||
+        blockType == BlockType.Glass ||
+        blockType == BlockType.AshBlock ||
+        blockType == BlockType.MudBlock ||
+        blockType == BlockType.ObsidianBrick ||
+        blockType == BlockType.HellstoneBrick ||
+        (blockType >= BlockType.PearlstoneBlock && blockType <= BlockType.WoodenBeam) ||
+        blockType == BlockType.ActiveStone ||
+        blockType == BlockType.InactiveStone ||
+        blockType == BlockType.DemoniteBrick ||
+        (blockType >= BlockType.RedCandyCaneBlock && blockType <= BlockType.SnowBrick)
       );
     }
     #endregion
 
     #region [Method: GetComponentName]
-    public static string GetComponentName(int blockId) {
-      switch (blockId) {
-        case AdvancedCircuits.TileId_ORGate:
+    public static string GetComponentName(BlockType blockType) {
+      switch (blockType) {
+        case AdvancedCircuits.BlockType_ORGate:
           return "OR-Gate";
-        case AdvancedCircuits.TileId_ANDGate:
+        case AdvancedCircuits.BlockType_ANDGate:
           return "AND-Gate";
-        case AdvancedCircuits.TileId_XORGate:
+        case AdvancedCircuits.BlockType_XORGate:
           return "XOR-Gate";
-        case AdvancedCircuits.TileId_NOTGate:
+        case AdvancedCircuits.BlockType_NOTGate:
           return "NOT-Gate";
-        case AdvancedCircuits.TileId_Swapper:
+        case AdvancedCircuits.BlockType_Swapper:
           return "Swapper";
-        case AdvancedCircuits.TileId_CrossoverBridge:
+        case AdvancedCircuits.BlockType_CrossoverBridge:
           return "Crossover Bridge";
         default:
-          return Terraria.Tiles.GetBlockName(blockId);
+          return TerrariaUtils.Tiles.GetBlockTypeName(blockType);
       }
     }
     #endregion
 
     #region [Methods: EnumerateComponentPortLocations, GetPortAdjacentComponentTileLocation]
-    public static IEnumerable<DPoint> EnumerateComponentPortLocations(Terraria.SpriteMeasureData measureData) {
+    public static IEnumerable<DPoint> EnumerateComponentPortLocations(ObjectMeasureData measureData) {
       return AdvancedCircuits.EnumerateComponentPortLocations(measureData.OriginTileLocation, measureData.Size);
     }
 
@@ -119,7 +121,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
     }
 
-    public static DPoint GetPortAdjacentComponentTileLocation(Terraria.SpriteMeasureData measureData, DPoint portLocation) {
+    public static DPoint GetPortAdjacentComponentTileLocation(ObjectMeasureData measureData, DPoint portLocation) {
       DPoint origin = measureData.OriginTileLocation;
       DPoint size = measureData.Size;
 
@@ -137,7 +139,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Methods: CountComponentModifiers, GetModifierAdjacentComponents]
-    public static int CountComponentModifiers(Terraria.SpriteMeasureData measureData) {
+    public static int CountComponentModifiers(ObjectMeasureData measureData) {
       return AdvancedCircuits.CountComponentModifiers(measureData.OriginTileLocation, measureData.Size);
     }
 
@@ -145,40 +147,40 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       DPoint origin = componentOriginLocation;
       int modifierCount = 0;
 
-      Tile possibleModifierTile = Terraria.Tiles[origin.X - 1, origin.Y - 1];
-      if (possibleModifierTile.active && possibleModifierTile.type == AdvancedCircuits.TileId_Modifier)
+      Tile possibleModifierTile = TerrariaUtils.Tiles[origin.X - 1, origin.Y - 1];
+      if (possibleModifierTile.active && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
         modifierCount++;
 
-      possibleModifierTile = Terraria.Tiles[origin.X + componentSize.X, origin.Y - 1];
-      if (possibleModifierTile.active && possibleModifierTile.type == AdvancedCircuits.TileId_Modifier)
+      possibleModifierTile = TerrariaUtils.Tiles[origin.X + componentSize.X, origin.Y - 1];
+      if (possibleModifierTile.active && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
         modifierCount++;
 
-      possibleModifierTile = Terraria.Tiles[origin.X + componentSize.X, origin.Y + componentSize.Y];
-      if (possibleModifierTile.active && possibleModifierTile.type == AdvancedCircuits.TileId_Modifier)
+      possibleModifierTile = TerrariaUtils.Tiles[origin.X + componentSize.X, origin.Y + componentSize.Y];
+      if (possibleModifierTile.active && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
         modifierCount++;
 
-      possibleModifierTile = Terraria.Tiles[origin.X - 1, origin.Y + componentSize.Y];
-      if (possibleModifierTile.active && possibleModifierTile.type == AdvancedCircuits.TileId_Modifier)
+      possibleModifierTile = TerrariaUtils.Tiles[origin.X - 1, origin.Y + componentSize.Y];
+      if (possibleModifierTile.active && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
         modifierCount++;
 
       return modifierCount;
     }
 
     public static IEnumerable<DPoint> EnumerateModifierAdjacentComponents(DPoint modifierLocation) {
-      Tile possibleComponentTile = Terraria.Tiles[modifierLocation.X - 1, modifierLocation.Y - 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock(possibleComponentTile.type))
+      Tile possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X - 1, modifierLocation.Y - 1];
+      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X - 1, modifierLocation.Y - 1);
 
-      possibleComponentTile = Terraria.Tiles[modifierLocation.X + 1, modifierLocation.Y - 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock(possibleComponentTile.type))
+      possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X + 1, modifierLocation.Y - 1];
+      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X + 1, modifierLocation.Y - 1);
 
-      possibleComponentTile = Terraria.Tiles[modifierLocation.X + 1, modifierLocation.Y + 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock(possibleComponentTile.type))
+      possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X + 1, modifierLocation.Y + 1];
+      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X + 1, modifierLocation.Y + 1);
 
-      possibleComponentTile = Terraria.Tiles[modifierLocation.X - 1, modifierLocation.Y + 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock(possibleComponentTile.type))
+      possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X - 1, modifierLocation.Y + 1];
+      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X - 1, modifierLocation.Y + 1);
     }
     #endregion
@@ -242,11 +244,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     #region [Method: MeasureTimerFrameTime]
     public static int MeasureTimerFrameTime(DPoint timerLocation) {
-      if (!Terraria.Tiles[timerLocation].active || Terraria.Tiles[timerLocation].type != Terraria.TileId_XSecondTimer)
+      if (!TerrariaUtils.Tiles[timerLocation].active || TerrariaUtils.Tiles[timerLocation].type != (int)BlockType.XSecondTimer)
         throw new ArgumentException("The tile is not active or no timer.", "timerLocation");
 
       int frames = -1;
-      switch (Terraria.Tiles[timerLocation].frameX) {
+      switch (TerrariaUtils.Tiles[timerLocation].frameX) {
         case 0:
           frames = 60;
           break;
@@ -258,7 +260,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           break;
       }
 
-      switch (AdvancedCircuits.CountComponentModifiers(Terraria.MeasureSprite(timerLocation))) {
+      switch (AdvancedCircuits.CountComponentModifiers(TerrariaUtils.Tiles.MeasureObject(timerLocation))) {
         case 1:
           frames *= 2;
           break;

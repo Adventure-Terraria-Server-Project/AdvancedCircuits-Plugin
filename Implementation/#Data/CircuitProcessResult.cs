@@ -10,7 +10,7 @@ using System.Diagnostics.Contracts;
 using TShockAPI;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
   public class CircuitProcessResult {
     #region [Property: SenderLocation]
     private DPoint senderLocation;
@@ -157,18 +157,18 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Property: WarnRelatedComponentType]
-    private int warnRelatedComponentType;
+    private BlockType warnRelatedComponentType;
 
-    public int WarnRelatedComponentType {
+    public BlockType WarnRelatedComponentType {
       get { return this.warnRelatedComponentType; }
       set { this.warnRelatedComponentType = value; }
     }
     #endregion
 
     #region [Property: CancellationRelatedComponentType]
-    private int cancellationRelatedComponentType;
+    private BlockType cancellationRelatedComponentType;
 
-    public int CancellationRelatedComponentType {
+    public BlockType CancellationRelatedComponentType {
       get { return this.cancellationRelatedComponentType; }
       set { this.cancellationRelatedComponentType = value; }
     }
@@ -186,7 +186,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     #region [Method: Constructor]
     public CircuitProcessResult() {
-      this.CancellationRelatedComponentType = -1;
+      this.CancellationRelatedComponentType = BlockType.Invalid;
     }
     #endregion
   }

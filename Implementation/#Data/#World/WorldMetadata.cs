@@ -15,8 +15,8 @@ using DPoint = System.Drawing.Point;
 using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
 
-namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  public class WorldMetadata: IWorldMetadata {
+namespace Terraria.Plugins.Common.AdvancedCircuits {
+  public class WorldMetadata: IMetadataFile {
     #region [Constants]
     protected const string CurrentVersion = "1.1";
     #endregion
