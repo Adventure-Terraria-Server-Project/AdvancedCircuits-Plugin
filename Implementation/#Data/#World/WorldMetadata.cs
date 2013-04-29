@@ -10,15 +10,16 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
+using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
 using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class WorldMetadata: IMetadataFile {
     #region [Constants]
-    protected const string CurrentVersion = "1.1";
+    protected const string CurrentVersion = "1.2";
     #endregion
 
     #region [Property: Version]
@@ -69,6 +70,14 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
     }
     #endregion
 
+    #region [Property: WirelessTransmitters]
+    private readonly Dictionary<DPoint,string> wirelessTransmitters;
+
+    public Dictionary<DPoint,string> WirelessTransmitters {
+      get { return this.wirelessTransmitters; }
+    }
+    #endregion
+
 
     #region [Methods: Static Read, Write]
     public static WorldMetadata Read(string filePath) {
@@ -92,6 +101,7 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
       this.clocks = new Dictionary<DPoint,GrandfatherClockMetadata>();
       this.activeSwapperLocations = new Collection<DPoint>();
       this.blockActivators = new Dictionary<DPoint,BlockActivatorMetadata>();
+      this.wirelessTransmitters = new Dictionary<DPoint,string>();
     }
     #endregion
   }

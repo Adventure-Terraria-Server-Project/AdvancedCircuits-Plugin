@@ -8,11 +8,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class WorldMetadataHandler: WorldMetadataHandlerBase {
     #region [Property: Metadata]
     public new WorldMetadata Metadata {
@@ -84,7 +85,7 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
       // Invalidate active Timers.
       List<DPoint> activeTimerLocations = new List<DPoint>(metadata.ActiveTimers.Keys);
       foreach (DPoint activeTimerLocation in activeTimerLocations) {
-        Tile tile = Main.tile[activeTimerLocation.X, activeTimerLocation.Y];
+        Tile tile = TerrariaUtils.Tiles[activeTimerLocation];
         if (!tile.active || tile.type != (int)BlockType.XSecondTimer)
           metadata.ActiveTimers.Remove(activeTimerLocation);
       }
@@ -92,16 +93,24 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
       // Invalidate Grandfather Clocks.
       List<DPoint> clockLocations = new List<DPoint>(metadata.Clocks.Keys);
       for (int i = 0; i < clockLocations.Count; i++) {
-        Tile tile = Main.tile[clockLocations[i].X, clockLocations[i].Y];
+        Tile tile = TerrariaUtils.Tiles[clockLocations[i]];
         if (!tile.active || tile.type != (int)BlockType.GrandfatherClock)
           clockLocations.RemoveAt(i--);
       }
 
       // Invalidate active Swappers.
       for (int i = 0; i < metadata.ActiveSwapperLocations.Count; i++) {
-        Tile tile = Main.tile[metadata.ActiveSwapperLocations[i].X, metadata.ActiveSwapperLocations[i].Y];
+        Tile tile = TerrariaUtils.Tiles[metadata.ActiveSwapperLocations[i]];
         if (!tile.active || tile.type != (int)AdvancedCircuits.BlockType_Swapper)
           metadata.ActiveSwapperLocations.RemoveAt(i--);
+      }
+
+      // Invalidate Wireless Transmitters.
+      List<DPoint> wirelessTransmitterLocations = new List<DPoint>(metadata.WirelessTransmitters.Keys);
+      foreach (DPoint transmitterLocation in wirelessTransmitterLocations) {
+        Tile tile = TerrariaUtils.Tiles[transmitterLocation];
+        if (!tile.active || tile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter)
+          metadata.WirelessTransmitters.Remove(transmitterLocation);
       }
 
       return metadata;
@@ -116,6 +125,26 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
             case BlockType.GrandfatherClock:
               this.Metadata.Clocks.Add(new DPoint(location.X, location.Y - 4), new GrandfatherClockMetadata(player.Name));
               break;
+            case AdvancedCircuits.BlockType_WirelessTransmitter:
+              if (
+                AdvancedCircuits.IsComponentWiredByPort(location, new DPoint(1, 1)) &&
+                !this.Metadata.WirelessTransmitters.ContainsKey(location)
+              )
+                this.Metadata.WirelessTransmitters.Add(location, player.Name);
+
+              break;
+          }
+
+          break;
+        }
+        case TileEditType.PlaceWire: {
+          // Check if we just wired an unregistered component's port.
+          foreach (DPoint adjacentTileLocation in AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1))) {
+            Tile tile = TerrariaUtils.Tiles[adjacentTileLocation];
+            if (tile.active && tile.type == (int)AdvancedCircuits.BlockType_WirelessTransmitter) {
+              if (!this.Metadata.WirelessTransmitters.ContainsKey(adjacentTileLocation))
+                this.Metadata.WirelessTransmitters.Add(adjacentTileLocation, player.Name);
+            }
           }
 
           break;
@@ -156,6 +185,12 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
             case AdvancedCircuits.BlockType_BlockActivator: {
               if (this.Metadata.BlockActivators.ContainsKey(location))
                 this.Metadata.BlockActivators.Remove(location);
+
+              break;
+            }
+            case AdvancedCircuits.BlockType_WirelessTransmitter: {
+              if (this.Metadata.WirelessTransmitters.ContainsKey(location))
+                this.Metadata.WirelessTransmitters.Remove(location);
 
               break;
             }

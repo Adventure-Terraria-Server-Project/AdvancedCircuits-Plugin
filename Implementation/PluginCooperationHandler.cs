@@ -9,9 +9,10 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class PluginCooperationHandler {
     #region [Constants]
     private const string InfiniteSignsGuid = "d1c86597-66c0-4590-aace-7b381d332294";

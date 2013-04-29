@@ -27,6 +27,10 @@
   <MaxDartTrapsPerCircuit>10</MaxDartTrapsPerCircuit>
   <MaxStatuesPerCircuit>10</MaxStatuesPerCircuit>
   <MaxPumpsPerCircuit>4</MaxPumpsPerCircuit>
+  <!--
+    The prefix to display in front of the text stated by signaled signs.
+  -->
+  <SignPrefix>Sign: </SignPrefix>
   <BoulderWirePermission></BoulderWirePermission>
   
   <!--
@@ -36,7 +40,7 @@
 
   <BlockActivatorConfig>
     <MaxChangeableBlocks>100</MaxChangeableBlocks>
-    <Cooldown>30</Cooldown>
+    <Cooldown>5</Cooldown>
     <TriggerPermission></TriggerPermission>
   </BlockActivatorConfig>
 
@@ -108,6 +112,30 @@
       <TriggerPermission>ac_TriggerSuperDartTrap</TriggerPermission>
     </DartTrapConfig>
   </DartTrapConfigs>
+
+  <WirelessTransmitterConfigs>
+    <WirelessTransmitterConfig Profile="Default">
+      <!-- 
+        Transmitters distinguish signals by three things, the network the Transmitters are clients of, the channel which
+        maps to the port of the Transmitter and the player who placed it.
+        Network 0 means broadcasting. Any Transmitter of any network can receive a signal from a broadcasting Transmitter 
+        and a Transmitter of the broadcast network can receive signals from any other network.
+      -->
+      <Network>1</Network>
+      <!-- 
+        The range in tiles, does only apply to a Transmitter when it is actually Transmitting a signal, it is not checked 
+        by receiving Transmitters. Range 0 means entire map. 
+      -->
+      <Range>140</Range>
+      <Cooldown>10</Cooldown>
+      <WirePermission></WirePermission>
+      <!-- 
+        Note: The TriggerPermission is only checked for sending transmitters, not for receiving transmitters, therefore it's
+        generally not recommended to give untrusted user groups the permission to use broadcasting transmitters.
+      -->
+      <TriggerPermission></TriggerPermission>
+    </WirelessTransmitterConfig>
+  </WirelessTransmitterConfigs>
 
   <!--
     Add or remove a configuration of a statue as you please here. Make sure no statue type is defined two times though.

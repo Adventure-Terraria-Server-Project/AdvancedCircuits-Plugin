@@ -8,20 +8,22 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public static class AdvancedCircuits {
     #region [Constants]
-    public const BlockType BlockType_ORGate          = BlockType.CopperOre;
-    public const BlockType BlockType_ANDGate         = BlockType.SilverOre;
-    public const BlockType BlockType_XORGate         = BlockType.GoldOre;
-    public const BlockType BlockType_NOTGate         = BlockType.Obsidian;
-    public const BlockType BlockType_Swapper         = BlockType.IronOre;
-    public const BlockType BlockType_CrossoverBridge = BlockType.Spike;
-    public const BlockType BlockType_InputPort       = BlockType.Glass;
-    public const BlockType BlockType_Modifier        = BlockType.CobaltOre;
-    public const BlockType BlockType_BlockActivator  = BlockType.ActiveStone;
+    public const BlockType BlockType_ORGate              = BlockType.CopperOre;
+    public const BlockType BlockType_ANDGate             = BlockType.SilverOre;
+    public const BlockType BlockType_XORGate             = BlockType.GoldOre;
+    public const BlockType BlockType_NOTGate             = BlockType.Obsidian;
+    public const BlockType BlockType_Swapper             = BlockType.IronOre;
+    public const BlockType BlockType_CrossoverBridge     = BlockType.Spike;
+    public const BlockType BlockType_InputPort           = BlockType.Glass;
+    public const BlockType BlockType_Modifier            = BlockType.CobaltOre;
+    public const BlockType BlockType_BlockActivator      = BlockType.ActiveStone;
+    public const BlockType BlockType_WirelessTransmitter = BlockType.Meteorite;
     #endregion
 
 
@@ -38,7 +40,8 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
         blockType == AdvancedCircuits.BlockType_Swapper ||
         blockType == AdvancedCircuits.BlockType_CrossoverBridge ||
         blockType == BlockType.GrandfatherClock ||
-        blockType == AdvancedCircuits.BlockType_BlockActivator
+        blockType == AdvancedCircuits.BlockType_BlockActivator ||
+        blockType == AdvancedCircuits.BlockType_WirelessTransmitter
       );
     }
 
@@ -53,7 +56,8 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
         blockType == AdvancedCircuits.BlockType_ORGate ||
         blockType == BlockType.DartTrap ||
         blockType == BlockType.InletPump ||
-        blockType == BlockType.OutletPump
+        blockType == BlockType.OutletPump ||
+        blockType == AdvancedCircuits.BlockType_WirelessTransmitter
       );
     }
 
@@ -101,11 +105,7 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
     }
     #endregion
 
-    #region [Methods: EnumerateComponentPortLocations, GetPortAdjacentComponentTileLocation]
-    public static IEnumerable<DPoint> EnumerateComponentPortLocations(ObjectMeasureData measureData) {
-      return AdvancedCircuits.EnumerateComponentPortLocations(measureData.OriginTileLocation, measureData.Size);
-    }
-
+    #region [Methods: EnumerateComponentPortLocations, GetPortAdjacentComponentTileLocation, IsComponentWiredByPort]
     public static IEnumerable<DPoint> EnumerateComponentPortLocations(DPoint componentOriginLocation, DPoint componentSize) {
       DPoint origin = componentOriginLocation;
       DPoint size = componentSize;
@@ -119,6 +119,10 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
         yield return new DPoint(origin.X - 1, origin.Y + y);
         yield return new DPoint(origin.X + size.X, origin.Y + y);
       }
+    }
+
+    public static IEnumerable<DPoint> EnumerateComponentPortLocations(ObjectMeasureData measureData) {
+      return AdvancedCircuits.EnumerateComponentPortLocations(measureData.OriginTileLocation, measureData.Size);
     }
 
     public static DPoint GetPortAdjacentComponentTileLocation(ObjectMeasureData measureData, DPoint portLocation) {
@@ -136,9 +140,21 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
 
       throw new ArgumentException("The given port location referes to no port of this component at all.", "portLocation");
     }
+
+    public static bool IsComponentWiredByPort(DPoint componentOriginLocation, DPoint componentSize) {
+      foreach (DPoint portLocation in AdvancedCircuits.EnumerateComponentPortLocations(componentOriginLocation, componentSize))
+        if (TerrariaUtils.Tiles[portLocation].wire)
+          return true;
+
+      return false;
+    }
+
+    public static bool IsComponentWiredByPort(ObjectMeasureData measureData) {
+      return AdvancedCircuits.IsComponentWiredByPort(measureData.OriginTileLocation, measureData.Size);
+    }
     #endregion
 
-    #region [Methods: CountComponentModifiers, GetModifierAdjacentComponents]
+    #region [Methods: CountComponentModifiers, EnumerateModifierAdjacentComponents]
     public static int CountComponentModifiers(ObjectMeasureData measureData) {
       return AdvancedCircuits.CountComponentModifiers(measureData.OriginTileLocation, measureData.Size);
     }

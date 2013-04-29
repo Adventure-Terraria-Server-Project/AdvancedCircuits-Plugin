@@ -6,9 +6,10 @@ using DPoint = System.Drawing.Point;
 
 using TShockAPI;
 
+using Terraria.Plugins.Common;
 using Terraria.Plugins.Common.Test;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits.Test {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
   #if Testrun
   public class TestRunner: TestRunnerBase {
     #region [Property: Static TestDataGlobalPath, Static TestDataGlobalConfigFilePath, Static TestDataGlobalMetadataPath]
@@ -139,9 +140,11 @@ namespace Terraria.Plugins.Common.AdvancedCircuits.Test {
       this.RegisterTest(@"AC\NOT Ports 2", this.AC_NOTPorts2);
       this.RegisterTest(@"AC\NOT Ports 3", this.AC_NOTPorts3);
       this.RegisterTest(@"AC\Switch Forwarding", this.AC_SwitchForwarding);
-      this.RegisterTest(@"AC\Grandfather Clock", this.AC_GrandfatherClock);
+      //this.RegisterTest(@"AC\Grandfather Clock", this.AC_GrandfatherClock);
       this.RegisterTest(@"AC\Block Activator", this.AC_BlockActivator);
       this.RegisterTest(@"AC\Boulder", this.AC_Boulder);
+      this.RegisterTest(@"AC\Wireless Transmitter", this.AC_WirelessTransmitter);
+      this.RegisterTest(@"AC\Wireless Transmitter 2", this.AC_WirelessTransmitter2);
     }
     #endregion
 
@@ -154,6 +157,7 @@ namespace Terraria.Plugins.Common.AdvancedCircuits.Test {
       this.MetadataHandler.Metadata.ActiveTimers.Clear();
       this.MetadataHandler.Metadata.Clocks.Clear();
       this.MetadataHandler.Metadata.GateStates.Clear();
+      this.MetadataHandler.Metadata.WirelessTransmitters.Clear();
 
       this.config.StatueConfigs.Add(StatueStyle.Star, new StatueConfig {
         ActionType = StatueActionType.MoveNPC,
@@ -2688,6 +2692,128 @@ namespace Terraria.Plugins.Common.AdvancedCircuits.Test {
 
       this.QuickProcessCircuit(testOffset.X, testOffset.Y + 1);
       TAssert.IsTileInactive(testOffset.X + 2, testOffset.Y);
+    }
+
+    private void AC_WirelessTransmitter(TestContext context) {
+      DPoint testOffset = new DPoint(422, 371);
+
+      context.Phase = "1-1";
+      this.Config.WirelessTransmitterConfigs[ComponentConfigProfile.Default].Range = 3;
+      this.Config.WirelessTransmitterConfigs[ComponentConfigProfile.Default].Cooldown = 0;
+      this.MetadataHandler.Metadata.WirelessTransmitters.Clear();
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset, this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(2, 0), this.GetTestPlayer().Name);
+
+      this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
+      TAssert.IsObjectInactive(testOffset.X + 2, testOffset.Y + 3);
+
+      context.Phase = "1-2";
+      this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
+      TAssert.IsObjectActive(testOffset.X + 2, testOffset.Y + 3);
+
+      context.Phase = "1-3";
+      this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
+      TAssert.IsObjectInactive(testOffset.X + 2, testOffset.Y + 3);
+
+      context.Phase = "2-1";
+      testOffset.Offset(5, 0);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset, this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(2, 0), this.GetTestPlayer().Name);
+
+      this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
+      TAssert.IsObjectActive(testOffset.X + 2, testOffset.Y + 3);
+
+      context.Phase = "2-2";
+      this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
+      TAssert.IsObjectActive(testOffset.X + 2, testOffset.Y + 3);
+
+      context.Phase = "2-3";
+      this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
+      TAssert.IsObjectActive(testOffset.X + 2, testOffset.Y + 3);
+
+      context.Phase = "3-1";
+      this.Config.WirelessTransmitterConfigs[ComponentConfigProfile.Default].Range = 6;
+      testOffset.Offset(5, 0);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset, this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(2, 0), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(4, 0), this.GetTestPlayer().Name);
+
+      this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
+      TAssert.IsObjectInactive(testOffset.X + 2, testOffset.Y + 3);
+      TAssert.IsObjectActive(testOffset.X + 4, testOffset.Y + 3);
+
+      context.Phase = "3-2";
+      this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
+      TAssert.IsObjectActive(testOffset.X + 2, testOffset.Y + 3);
+      TAssert.IsObjectInactive(testOffset.X + 4, testOffset.Y + 3);
+
+      context.Phase = "3-3";
+      this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
+      TAssert.IsObjectInactive(testOffset.X + 2, testOffset.Y + 3);
+      TAssert.IsObjectActive(testOffset.X + 4, testOffset.Y + 3);
+    }
+
+    private void AC_WirelessTransmitter2(TestContext context) {
+      DPoint testOffset = new DPoint(440, 362);
+
+      this.Config.WirelessTransmitterConfigs[ComponentConfigProfile.Default].Range = 5;
+      this.Config.WirelessTransmitterConfigs[ComponentConfigProfile.Default].Cooldown = 0;
+
+      this.MetadataHandler.Metadata.WirelessTransmitters.Clear();
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(10, 0), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(7, 1), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(0, 5), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(2, 5), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(4, 5), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(6, 5), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(9, 5), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(11, 5), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(13, 5), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(9, 9), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(3, 10), this.GetTestPlayer().Name);
+      this.MetadataHandler.Metadata.WirelessTransmitters.Add(testOffset.OffsetEx(1, 11), this.GetTestPlayer().Name);
+
+      context.Phase = "1";
+      this.QuickProcessCircuit(testOffset.X + 6, testOffset.Y + 12);
+      TAssert.IsObjectActive(testOffset.X + 10, testOffset.Y + 1);
+      TAssert.IsObjectInactive(testOffset.X + 7, testOffset.Y + 2);
+      TAssert.IsObjectActive(testOffset.X, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 2, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 4, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 9, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 11, testOffset.Y + 6);
+      TAssert.IsObjectActive(testOffset.X + 13, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 9, testOffset.Y + 10);
+      TAssert.IsObjectInactive(testOffset.X + 3, testOffset.Y + 11);
+      TAssert.IsObjectActive(testOffset.X + 1, testOffset.Y + 12);
+
+      context.Phase = "2";
+      this.QuickProcessCircuit(testOffset.X + 6, testOffset.Y + 12);
+      TAssert.IsObjectActive(testOffset.X + 10, testOffset.Y + 1);
+      TAssert.IsObjectActive(testOffset.X + 7, testOffset.Y + 2);
+      TAssert.IsObjectActive(testOffset.X, testOffset.Y + 6);
+      TAssert.IsObjectActive(testOffset.X + 2, testOffset.Y + 6);
+      TAssert.IsObjectActive(testOffset.X + 4, testOffset.Y + 6);
+      TAssert.IsObjectActive(testOffset.X + 9, testOffset.Y + 6);
+      TAssert.IsObjectActive(testOffset.X + 11, testOffset.Y + 6);
+      TAssert.IsObjectActive(testOffset.X + 13, testOffset.Y + 6);
+      TAssert.IsObjectActive(testOffset.X + 9, testOffset.Y + 10);
+      TAssert.IsObjectActive(testOffset.X + 3, testOffset.Y + 11);
+      TAssert.IsObjectActive(testOffset.X + 1, testOffset.Y + 12);
+
+      context.Phase = "3";
+      this.QuickProcessCircuit(testOffset.X + 6, testOffset.Y + 12);
+      TAssert.IsObjectActive(testOffset.X + 10, testOffset.Y + 1);
+      TAssert.IsObjectInactive(testOffset.X + 7, testOffset.Y + 2);
+      TAssert.IsObjectActive(testOffset.X, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 2, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 4, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 9, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 11, testOffset.Y + 6);
+      TAssert.IsObjectActive(testOffset.X + 13, testOffset.Y + 6);
+      TAssert.IsObjectInactive(testOffset.X + 9, testOffset.Y + 10);
+      TAssert.IsObjectInactive(testOffset.X + 3, testOffset.Y + 11);
+      TAssert.IsObjectActive(testOffset.X + 1, testOffset.Y + 12);
     }
     #endregion
 

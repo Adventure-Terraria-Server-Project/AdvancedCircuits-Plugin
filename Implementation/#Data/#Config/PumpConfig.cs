@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Xml;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class PumpConfig {
     #region [Property: TransferableWater]
     private int transferableWater;

@@ -10,11 +10,12 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
+using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitHandler {
     #region [Constants]
     private const int TimerUpdateFrameRate = 10;

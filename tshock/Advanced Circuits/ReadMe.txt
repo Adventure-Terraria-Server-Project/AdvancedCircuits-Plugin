@@ -74,9 +74,10 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 Changelog
 --------------------------------------------------------------
 Version 1.2 [27.04.2013]
+  -Added Wireless Transmitter Component (Meteorite).
   -Pumps can now be configured using 5 different profiles (default + 4 
    modifiers).
-  -Some minor improvements, fixed typos.
+  -Some minor improvements, fixed some typos.
   -Updated for Plugins Common Lib 1.8.
 Version 1.1.1 [25.11.2012]
   -Fixed a wire processing bug causing some wires, depending on their

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class BlockActivatorMetadata {
     #region [Property: IsActivated]
     private bool isActivated;

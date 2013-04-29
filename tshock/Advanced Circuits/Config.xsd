@@ -50,6 +50,17 @@
       <xs:maxInclusive value="1020" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="WirelessNetwork">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="255" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="WirelessRange">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
 
   <xs:simpleType name="Terraria.BlockId">
     <xs:restriction base="xs:integer">
@@ -73,6 +84,7 @@
         <xs:element name="MaxStatuesPerCircuit" type="xs:int" />
         <xs:element name="MaxPumpsPerCircuit" type="xs:int" />
         <xs:element name="MaxCircuitLength" type="xs:int" />
+        <xs:element name="SignPrefix" type="xs:string" />
         <xs:element name="BoulderWirePermission" type="xs:string" minOccurs="0" />
 
         <xs:element name="BlockActivatorConfig">
@@ -107,6 +119,31 @@
 
           <xs:unique name="PumpConfigProfileUnique">
             <xs:selector xpath="PumpConfig" />
+            <xs:field xpath="@Profile" />
+          </xs:unique>
+        </xs:element>
+
+        <xs:element name="WirelessTransmitterConfigs">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="WirelessTransmitterConfig" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:all>
+                    <xs:element name="Network" type="WirelessNetwork" />
+                    <xs:element name="Range" type="WirelessRange" />
+                    <xs:element name="Cooldown" type="Cooldown" />
+                    <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
+                    <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
+                  </xs:all>
+
+                  <xs:attribute name="Profile" type="ModifierConfigProfile" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+
+          <xs:unique name="WirelessTransmitterConfigProfileUnique">
+            <xs:selector xpath="WirelessTransmitterConfig" />
             <xs:field xpath="@Profile" />
           </xs:unique>
         </xs:element>

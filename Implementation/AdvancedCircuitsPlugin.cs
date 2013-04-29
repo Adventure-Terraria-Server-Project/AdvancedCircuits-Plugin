@@ -10,15 +10,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Xml.Schema;
+using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
-using Terraria.Plugins.Common.AdvancedCircuits.Test;
+using Terraria.Plugins.CoderCow.AdvancedCircuits.Test;
 using Terraria.Plugins.Common.Hooks;
 
 using Hooks;
 using TShockAPI;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   [APIVersion(1, 12)]
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
     #region [Constants]

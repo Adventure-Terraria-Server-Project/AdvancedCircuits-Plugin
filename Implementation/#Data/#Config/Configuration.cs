@@ -11,8 +11,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Schema;
+using Terraria.Plugins.Common;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class Configuration {
     #region [Constants]
     public const string CurrentVersion = "1.2";
@@ -72,6 +73,15 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
     }
     #endregion
 
+    #region [Property: SignPrefix]
+    private string signPrefix;
+
+    public string SignPrefix {
+      get { return this.signPrefix; }
+      set { this.signPrefix = value; }
+    }
+    #endregion
+
     #region [Property: BoulderWirePermission]
     private string boulderWirePermission;
 
@@ -109,11 +119,20 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
     #endregion
 
     #region [Property: ExplosivesConfigs]
-    private Dictionary<ComponentConfigProfile, ExplosivesConfig> explosivesConfigs;
+    private Dictionary<ComponentConfigProfile,ExplosivesConfig> explosivesConfigs;
 
     public Dictionary<ComponentConfigProfile,ExplosivesConfig> ExplosivesConfigs {
       get { return this.explosivesConfigs; }
       set { this.explosivesConfigs = value; }
+    }
+    #endregion
+
+    #region [Property: WirelessTransmitterConfigs]
+    private Dictionary<ComponentConfigProfile, WirelessTransmitterConfig> wirelessTransmitterConfigs;
+
+    public Dictionary<ComponentConfigProfile,WirelessTransmitterConfig> WirelessTransmitterConfigs {
+      get { return this.wirelessTransmitterConfigs; }
+      set { this.wirelessTransmitterConfigs = value; }
     }
     #endregion
 
@@ -137,6 +156,7 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
       this.maxStatuesPerCircuit = 10;
       this.maxPumpsPerCircuit = 4;
       this.maxCircuitLength = 400;
+      this.signPrefix = "Sign: ";
 
       this.blockActivatorConfig = new BlockActivatorConfig();
 
@@ -149,6 +169,10 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
         this.dartTrapConfigs.Add(ComponentConfigProfile.Default, new DartTrapConfig());
 
       this.statueConfigs = new Dictionary<StatueStyle,StatueConfig>();
+
+      this.wirelessTransmitterConfigs = new Dictionary<ComponentConfigProfile,WirelessTransmitterConfig>();
+      if (fillDictionaries)
+        this.wirelessTransmitterConfigs.Add(ComponentConfigProfile.Default, new WirelessTransmitterConfig());
 
       this.explosivesConfigs = new Dictionary<ComponentConfigProfile,ExplosivesConfig>();
       if (fillDictionaries)
@@ -191,6 +215,7 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
       resultingConfig.maxStatuesPerCircuit    = int.Parse(rootElement["MaxStatuesPerCircuit"].InnerText);
       resultingConfig.maxPumpsPerCircuit      = int.Parse(rootElement["MaxPumpsPerCircuit"].InnerText);
       resultingConfig.maxCircuitLength        = int.Parse(rootElement["MaxCircuitLength"].InnerText);
+      resultingConfig.signPrefix              = rootElement["SignPrefix"].InnerText;
       resultingConfig.boulderWirePermission   = rootElement["BoulderWirePermission"].InnerText;
       resultingConfig.blockActivatorConfig    = BlockActivatorConfig.FromXmlElement(rootElement["BlockActivatorConfig"]);
 
@@ -223,6 +248,16 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
         ComponentConfigProfile componentConfigProfile = (ComponentConfigProfile)Enum.Parse(typeof(ComponentConfigProfile), explosivesConfigElement.Attributes["Profile"].Value);
         resultingConfig.explosivesConfigs.Add(componentConfigProfile, ExplosivesConfig.FromXmlElement(explosivesConfigElement));
       }*/
+
+      XmlElement wirelessTransmitterConfigsNode = rootElement["WirelessTransmitterConfigs"];
+      foreach (XmlNode wirelessTransmitterConfigNode in wirelessTransmitterConfigsNode.ChildNodes) {
+        XmlElement wirelessTransmitterConfigElement = (wirelessTransmitterConfigNode as XmlElement);
+        if (wirelessTransmitterConfigElement == null)
+          continue;
+
+        ComponentConfigProfile componentConfigProfile = (ComponentConfigProfile)Enum.Parse(typeof(ComponentConfigProfile), wirelessTransmitterConfigElement.Attributes["Profile"].Value);
+        resultingConfig.wirelessTransmitterConfigs.Add(componentConfigProfile, WirelessTransmitterConfig.FromXmlElement(wirelessTransmitterConfigElement));
+      }
 
       XmlElement statueConfigsNode = rootElement["StatueConfigs"];
       foreach (XmlNode statueConfigNode in statueConfigsNode.ChildNodes) {

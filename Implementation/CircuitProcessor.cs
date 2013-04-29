@@ -10,9 +10,10 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Text;
 using TShockAPI;
+using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitProcessor {
     #region [Constants]
     // The maximum amount of times a single component can be signaled in the same circuit execution until it "overheats".
@@ -1047,7 +1048,7 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
           if (signText == null)
             return true;
 
-          string fullText = "Sign: " + signText;
+          string fullText = this.CircuitHandler.Config.SignPrefix + signText;
           int lineStartIndex = 0;
           int lineLength = 0;
           for (int i = 0; i < fullText.Length; i++) {
@@ -1225,7 +1226,7 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
 
           break;
         }
-        case AdvancedCircuits.BlockType_CrossoverBridge:
+        case AdvancedCircuits.BlockType_CrossoverBridge: {
           switch (AdvancedCircuits.DirectionFromTileLocations(componentLocation, portLocation)) {
             case Direction.Left:
               componentPorts = new List<DPoint> { new DPoint(componentLocation.X + 1, componentLocation.Y) };
@@ -1244,7 +1245,8 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
           }
 
           break;
-        case AdvancedCircuits.BlockType_BlockActivator:
+        }
+        case AdvancedCircuits.BlockType_BlockActivator: {
           if (!portTile.active || portTile.type != (int)AdvancedCircuits.BlockType_InputPort)
             return false;
           if (
@@ -1255,13 +1257,12 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
 
           if (
             this.CircuitHandler.Config.BlockActivatorConfig.TriggerPermission != null && 
-            this.TriggeringPlayer != TSPlayer.Server
+            this.TriggeringPlayer != TSPlayer.Server &&
+            !this.TriggeringPlayer.Group.HasPermission(this.CircuitHandler.Config.BlockActivatorConfig.TriggerPermission)
           ) {
-            if (!this.TriggeringPlayer.Group.HasPermission(this.CircuitHandler.Config.BlockActivatorConfig.TriggerPermission)) {
-              this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
-              this.Result.WarnRelatedComponentType = AdvancedCircuits.BlockType_BlockActivator;
-              return true;
-            }
+            this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
+            this.Result.WarnRelatedComponentType = AdvancedCircuits.BlockType_BlockActivator;
+            return true;
           }
 
           BlockActivatorMetadata blockActivator;
@@ -1291,6 +1292,87 @@ namespace Terraria.Plugins.Common.AdvancedCircuits {
           blockActivatorLocationToRegister = componentLocation;
 
           break;
+        }
+        case AdvancedCircuits.BlockType_WirelessTransmitter: {
+          if (!portTile.active || portTile.type != (int)AdvancedCircuits.BlockType_InputPort)
+            return false;
+
+          WirelessTransmitterConfig transmitterConfig;
+          ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigProfile(
+            AdvancedCircuits.CountComponentModifiers(measureData)
+          );
+          if (
+            (this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(configProfile, out transmitterConfig) ||
+            (this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(ComponentConfigProfile.Default, out transmitterConfig))) && (
+              transmitterConfig.Cooldown == 0 ||
+              WorldGen.checkMech(componentLocation.X, componentLocation.Y, transmitterConfig.Cooldown)
+            )
+          ) {
+            if (
+              transmitterConfig.TriggerPermission != null && 
+              this.TriggeringPlayer != TSPlayer.Server && 
+              !this.TriggeringPlayer.Group.HasPermission(transmitterConfig.TriggerPermission)
+            ) {
+              this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
+              this.Result.WarnRelatedComponentType = AdvancedCircuits.BlockType_WirelessTransmitter;
+              return true;
+            }
+
+            bool isBroadcasting = (transmitterConfig.Network == 0);
+            double squareRange = Math.Pow(transmitterConfig.Range + 1, 2);
+            DPoint portOffset = new DPoint(portLocation.X - componentLocation.X, portLocation.Y - componentLocation.Y);
+            foreach (KeyValuePair<DPoint,string> pair in this.CircuitHandler.WorldMetadata.WirelessTransmitters) {
+              DPoint receivingTransmitterLocation = pair.Key;
+              if (receivingTransmitterLocation == componentLocation)
+                continue;
+
+              string owningPlayerName = pair.Value;
+              if (owningPlayerName != this.TriggeringPlayer.Name)
+                continue;
+
+              Tile transmitterTile = TerrariaUtils.Tiles[receivingTransmitterLocation];
+              if (!transmitterTile.active || transmitterTile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter)
+                continue;
+
+              if (
+                squareRange <= (
+                  Math.Pow(receivingTransmitterLocation.X - componentLocation.X, 2) + 
+                  Math.Pow(receivingTransmitterLocation.Y - componentLocation.Y, 2)
+                )
+              )
+                continue;
+
+              DPoint outputPortLocation = receivingTransmitterLocation.OffsetEx(portOffset.X, portOffset.Y);
+              Tile outputPortTile = TerrariaUtils.Tiles[outputPortLocation];
+              if (!outputPortTile.wire || (outputPortTile.active && outputPortTile.type == (int)AdvancedCircuits.BlockType_InputPort))
+                continue;
+
+              if (!isBroadcasting) {
+                ComponentConfigProfile receiverConfigProfile = AdvancedCircuits.ModifierCountToConfigProfile(
+                  AdvancedCircuits.CountComponentModifiers(receivingTransmitterLocation, new DPoint(1, 1))
+                );
+                WirelessTransmitterConfig receiverConfig;
+                if (!this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(receiverConfigProfile, out receiverConfig))
+                  receiverConfig = this.CircuitHandler.Config.WirelessTransmitterConfigs[ComponentConfigProfile.Default];
+
+                if (receiverConfig.Network != 0 && receiverConfig.Network != transmitterConfig.Network)
+                  continue;
+              }
+
+              bool portOutputSignal = outputSignal;
+              if (outputPortTile.active && outputPortTile.type == (int)AdvancedCircuits.BlockType_NOTGate)
+                portOutputSignal = !portOutputSignal;
+
+              this.QueuedRootBranches.Add(new RootBranchProcessData(
+                receivingTransmitterLocation, outputPortLocation, AdvancedCircuits.BoolToSignal(portOutputSignal)
+              ));
+            }
+
+            return true;
+          }
+
+          break;
+        }
         default:
           return false;
       }

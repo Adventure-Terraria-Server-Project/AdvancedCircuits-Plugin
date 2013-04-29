@@ -8,9 +8,10 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using TShockAPI;
+using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
-namespace Terraria.Plugins.Common.AdvancedCircuits {
+namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitProcessResult {
     #region [Property: SenderLocation]
     private DPoint senderLocation;
