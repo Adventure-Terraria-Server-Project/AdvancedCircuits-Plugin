@@ -90,6 +90,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    #region [Property: BlockActivatorMode]
+    private BlockActivatorMode blockActivatorMode;
+
+    public BlockActivatorMode BlockActivatorMode {
+      get { return this.blockActivatorMode; }
+      set { this.blockActivatorMode = value; }
+    }
+    #endregion
+
 
     #region [Method: Constructor]
     public RootBranchProcessData(DPoint senderLocation, DPoint firstWireLocation, SignalType signal) {
@@ -102,6 +111,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.blockActivator = null;
       this.blockActivatorLocation = DPoint.Empty;
       this.blockActivatorDeactivatedBlockCounter = 0;
+      this.blockActivatorMode = BlockActivatorMode.Default;
     }
     #endregion
 

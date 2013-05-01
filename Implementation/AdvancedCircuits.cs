@@ -70,12 +70,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == BlockType.Wood ||
         (blockType >= BlockType.GrayBrick && blockType <= BlockType.BlueBrick) ||
         (blockType >= BlockType.GreenBrick && blockType <= BlockType.Spike) ||
+        blockType == BlockType.SandBlock ||
         blockType == BlockType.Glass ||
         blockType == BlockType.AshBlock ||
         blockType == BlockType.MudBlock ||
         blockType == BlockType.ObsidianBrick ||
         blockType == BlockType.HellstoneBrick ||
-        (blockType >= BlockType.PearlstoneBlock && blockType <= BlockType.WoodenBeam) ||
+        blockType == BlockType.EbonsandBlock ||
+        (blockType >= BlockType.PearlsandBlock && blockType <= BlockType.WoodenBeam) ||
         blockType == BlockType.ActiveStone ||
         blockType == BlockType.InactiveStone ||
         blockType == BlockType.DemoniteBrick ||

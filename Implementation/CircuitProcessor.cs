@@ -87,6 +87,20 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    #region [Property: TilesToFrameOnPost]
+    [ThreadStatic]
+    private static List<DPoint> tilesToFrameOnPost;
+
+    public List<DPoint> TilesToFrameOnPost {
+      get {
+        if (CircuitProcessor.tilesToFrameOnPost == null)
+          CircuitProcessor.tilesToFrameOnPost = new List<DPoint>();
+
+        return CircuitProcessor.tilesToFrameOnPost;
+      }
+    }
+    #endregion
+
     #region [Property: TemporaryGateStates]
     private Dictionary<DPoint, GateStateMetadata> temporaryGateStates;
 
@@ -163,6 +177,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.wasExecuted = true;
       this.SignaledInletPumps.Clear();
       this.SignaledOutletPumps.Clear();
+      this.TilesToFrameOnPost.Clear();
 
       DateTime processingStartTime = DateTime.Now;
       BlockType senderBlockType = this.SenderMeasureData.BlockType;
@@ -563,14 +578,25 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               }
 
               rootBranch.BlockActivator.RegisteredInactiveBlocks.Add(tileLocation, (BlockType)tile.type);
-              TerrariaUtils.Tiles.RemoveBlock(tileLocation);
+
+              tile.type = 0;
+              tile.active = false;
+              tile.frameX = -1;
+              tile.frameY = -1;
+              tile.frameNumber = 0;
+              this.TilesToFrameOnPost.Add(tileLocation);
               
               return;
-            } else if (signal == SignalType.On && !tile.active) {
+            } else if (
+              signal == SignalType.On && (rootBranch.BlockActivatorMode == BlockActivatorMode.ReplaceBlocks || !tile.active)
+            ) {
               BlockType registeredBlockType;
               if (rootBranch.BlockActivator.RegisteredInactiveBlocks.TryGetValue(tileLocation, out registeredBlockType)) {
                 rootBranch.BlockActivator.RegisteredInactiveBlocks.Remove(tileLocation);
-                TerrariaUtils.Tiles.SetBlock(tileLocation, registeredBlockType);
+
+                tile.type = (byte)registeredBlockType;
+                tile.active = true;
+                this.TilesToFrameOnPost.Add(tileLocation);
 
                 return;
               }
@@ -611,6 +637,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     protected void PostProcessCircuit() {
+      foreach (DPoint tileToFrameLocation in this.TilesToFrameOnPost) {
+        WorldGen.SquareTileFrame(tileToFrameLocation.X, tileToFrameLocation.Y);
+        TSPlayer.All.SendTileSquare(tileToFrameLocation.X, tileToFrameLocation.Y, 1);
+      }
+
       // Transfer Liquid
       if (this.SignaledInletPumps.Count > 0 && this.SignaledOutletPumps.Count > 0) {
         // The first liquid kind we encounter will be only liquid to be transfered.
@@ -1114,6 +1145,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       
       BlockActivatorMetadata blockActivatorToRegister = null;
       DPoint blockActivatorLocationToRegister = DPoint.Empty;
+      BlockActivatorMode blockActivatorModeToRegister = BlockActivatorMode.Default;
       switch (measureData.BlockType) {
         case BlockType.XSecondTimer: {
           bool currentState = (TerrariaUtils.Tiles.ObjectHasActiveState(measureData));
@@ -1244,6 +1276,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               throw new ArgumentOutOfRangeException();
           }
 
+          blockActivatorToRegister = rootBranch.BlockActivator;
+          blockActivatorLocationToRegister = rootBranch.BlockActivatorLocation;
+
           break;
         }
         case AdvancedCircuits.BlockType_BlockActivator: {
@@ -1290,6 +1325,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           blockActivatorToRegister = blockActivator;
           blockActivatorLocationToRegister = componentLocation;
+          if (AdvancedCircuits.CountComponentModifiers(measureData) == 1)
+            blockActivatorModeToRegister = BlockActivatorMode.ReplaceBlocks;
 
           break;
         }
@@ -1365,7 +1402,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
               this.QueuedRootBranches.Add(new RootBranchProcessData(
                 receivingTransmitterLocation, outputPortLocation, AdvancedCircuits.BoolToSignal(portOutputSignal)
-              ));
+              ) {
+                BlockActivator = rootBranch.BlockActivator,
+                BlockActivatorLocation = rootBranch.BlockActivatorLocation,
+                BlockActivatorMode = rootBranch.BlockActivatorMode
+              });
             }
 
             return true;
@@ -1410,6 +1451,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         if (blockActivatorToRegister != null) {
           newRootBranch.BlockActivator = blockActivatorToRegister;
           newRootBranch.BlockActivatorLocation = blockActivatorLocationToRegister;
+          newRootBranch.BlockActivatorMode = blockActivatorModeToRegister;
         }
 
         this.QueuedRootBranches.Add(newRootBranch);

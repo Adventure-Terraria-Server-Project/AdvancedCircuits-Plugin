@@ -201,6 +201,7 @@
     <Compile Include="Implementation\#Data\#Config\WirelessTransmitterConfig.cs" />
     <Compile Include="Implementation\#Data\#World\BlockActivatorMetadata.cs" />
     <Compile Include="Implementation\#Data\#World\GrandfatherClockMetadata.cs" />
+    <Compile Include="Implementation\#Data\BlockActivatorMode.cs" />
     <Compile Include="Implementation\#Data\BlockDestroyMethod.cs" />
     <Compile Include="Implementation\#Data\BranchProcessData.cs" />
     <Compile Include="Implementation\#Data\CircuitCancellationReason.cs" />
