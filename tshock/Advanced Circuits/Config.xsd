@@ -38,6 +38,12 @@
       <xs:maxInclusive value="5000" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="Degree">
+    <xs:restriction base="xs:float">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="360" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="PumpLiquidAmount">
     <xs:restriction base="xs:integer">
       <xs:minInclusive value="1" />
@@ -156,9 +162,11 @@
                   <xs:all>
                     <xs:element name="ProjectileType" type="Terraria.ProjectileId" />
                     <xs:element name="ProjectileDamage" type="xs:int" />
-                    <xs:element name="ProjectileSpeed" type="xs:int" />
-                    <xs:element name="ProjectileOffset" type="xs:int" />
+                    <xs:element name="ProjectileSpeed" type="xs:float" />
+                    <xs:element name="ProjectileAngle" type="Degree" />
+                    <xs:element name="ProjectileOffset" type="xs:float" />
                     <xs:element name="ProjectileLifeTime" type="xs:int" />
+                    <xs:element name="ProjectileKnockback" type="xs:float" />
                     <xs:element name="Cooldown" type="Cooldown" />
                     <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
                     <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />

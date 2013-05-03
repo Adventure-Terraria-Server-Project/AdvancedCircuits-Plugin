@@ -45,11 +45,8 @@
   </BlockActivatorConfig>
 
   <!-- 
-    The default setting of the Pump is mostly equal with Terraria's default Pump.
+    The default setting of the Pump is mostly equal to Terraria's default Pump.
     It can be configured by 5 different profiles: Default, OneModifier, TwoModifiers, ThreeModifiers, FourModifiers.
-    
-    The amount of modifiers on the edges of the Inlet Pump determine what Profile is used, Modifiers have no effect on 
-    Outlet Pumps.
   -->
   <PumpConfigs>
     <PumpConfig Profile="Default">
@@ -65,31 +62,14 @@
         Loss Value is positive, an Outlet Pump still needs an Inlet Pump in its circuit to work.
       -->
       <LossValue>0</LossValue>
-      <Cooldown>1</Cooldown>
+      <Cooldown>5</Cooldown>
       <TriggerPermission></TriggerPermission>
       <WirePermission></WirePermission>
-    </PumpConfig>
-    <PumpConfig Profile="OneModifier">
-      <!-- 
-        1020 means four Tiles completely filled with liquid (255 per tile), more is not possible.
-      -->
-      <TransferableWater>1020</TransferableWater>
-      <TransferableLava>1020</TransferableLava>
-      <!--
-        You can configure Pumps so that a small amount of liquid gets lost when transfered so that endless Pump circuits will
-        eventually run dry.
-        The Loss Value can also be positive to have Pumps actually produce more liquid as they take in, however, even if the
-        Loss Value is positive, an Outlet Pump still needs an Inlet Pump in its circuit to work.
-      -->
-      <LossValue>-100</LossValue>
-      <Cooldown>1</Cooldown>
-      <TriggerPermission>Test</TriggerPermission>
-      <WirePermission>Test</WirePermission>
     </PumpConfig>
   </PumpConfigs>
   
   <!-- 
-    The default setting of the Dart Trap is equal with Terraria's default Dart Trap.
+    The default setting of the Dart Trap is equal to Terraria's default Dart Trap.
     It can be configured by 5 different profiles: Default, OneModifier, TwoModifiers, ThreeModifiers, FourModifiers.
   -->
   <DartTrapConfigs>
@@ -97,22 +77,33 @@
       <ProjectileType>98</ProjectileType>
       <ProjectileDamage>20</ProjectileDamage>
       <ProjectileSpeed>12</ProjectileSpeed>
-      <ProjectileOffset>2</ProjectileOffset>
+      <!-- 
+        Defines the angle in which the projectile is shot from the trap in degrees. If the trap faces left, 180 is added to
+        this value.
+      -->
+      <ProjectileAngle>0</ProjectileAngle>
+      <ProjectileOffset>32</ProjectileOffset>
       <ProjectileLifeTime>150</ProjectileLifeTime>
+      <ProjectileKnockback>2</ProjectileKnockback>
       <Cooldown>180</Cooldown>
     </DartTrapConfig>
     <DartTrapConfig Profile="OneModifier">
       <ProjectileType>75</ProjectileType>
       <ProjectileDamage>40</ProjectileDamage>
       <ProjectileSpeed>4</ProjectileSpeed>
+      <ProjectileAngle>0</ProjectileAngle>
       <ProjectileOffset>2</ProjectileOffset>
       <ProjectileLifeTime>350</ProjectileLifeTime>
+      <ProjectileKnockback>0</ProjectileKnockback>
       <Cooldown>420</Cooldown>
       <WirePermission>ac_PlaceSuperDartTrap</WirePermission>
       <TriggerPermission>ac_TriggerSuperDartTrap</TriggerPermission>
     </DartTrapConfig>
   </DartTrapConfigs>
 
+  <!-- 
+    Can be configured by 5 different profiles: Default, OneModifier, TwoModifiers, ThreeModifiers, FourModifiers.
+  -->
   <WirelessTransmitterConfigs>
     <WirelessTransmitterConfig Profile="Default">
       <!-- 
@@ -130,8 +121,7 @@
       <Cooldown>10</Cooldown>
       <WirePermission></WirePermission>
       <!-- 
-        Note: The TriggerPermission is only checked for sending transmitters, not for receiving transmitters, therefore it's
-        generally not recommended to give untrusted user groups the permission to use broadcasting transmitters.
+        Note: The TriggerPermission is only checked for sending transmitters, not for receiving transmitters.
       -->
       <TriggerPermission></TriggerPermission>
     </WirelessTransmitterConfig>

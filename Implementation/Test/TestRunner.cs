@@ -84,7 +84,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.pluginTrace = pluginTrace;
       this.metadataHandler = metadataHandler;
       this.cooperationHandler = cooperationHandler;
-
+      return;
       this.RegisterTest(@"BP\Multi Branches", this.BP_MultiBranches);
       this.RegisterTest(@"BP\Snacke Branches", this.BP_SnackeBranches);
       this.RegisterTest(@"BP\Wire Bunch", this.BP_WireBunch);

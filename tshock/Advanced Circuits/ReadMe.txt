@@ -73,7 +73,7 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 Changelog
 --------------------------------------------------------------
-Version 1.2 [02.05.2013]
+Version 1.2 [04.05.2013]
   -Added Wireless Transmitter Component (Meteorite).
   -Pumps can now be configured using 5 different profiles 
    (default + 4 modifiers).
@@ -84,7 +84,12 @@ Version 1.2 [02.05.2013]
    Activators.
   -Block Activators with one modifier will now replace already
    existing blocks.
-  -Added persistent mode for /ac switch.
+  -Projectile knockback and angle can now be defined for 
+   Dart Traps, also offset and speed are now of type float 
+   instead of integer.
+  -Fixed projectile lifetime of dart trap configs sometimes not
+   working.
+  -Added persistent mode to /ac switch.
   -/ac switch might now toggle active stone.
   -/ac switch might now set Logical-Gate port states.
   -Added Protector cooperation to check whether tiles to 

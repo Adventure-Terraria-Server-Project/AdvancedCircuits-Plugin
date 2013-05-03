@@ -48,18 +48,27 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Property: ProjectileSpeed]
-    private int projectileSpeed;
+    private float projectileSpeed;
 
-    public int ProjectileSpeed {
+    public float ProjectileSpeed {
       get { return this.projectileSpeed; }
       set { this.projectileSpeed = value; }
     }
     #endregion
 
-    #region [Property: ProjectileOffset]
-    private int projectileOffset;
+    #region [Property: ProjectileAngle]
+    private float projectileAngle;
 
-    public int ProjectileOffset {
+    public float ProjectileAngle {
+      get { return this.projectileAngle; }
+      set { this.projectileAngle = value; }
+    }
+    #endregion
+
+    #region [Property: ProjectileOffset]
+    private float projectileOffset;
+
+    public float ProjectileOffset {
       get { return this.projectileOffset; }
       set { this.projectileOffset = value; }
     }
@@ -71,6 +80,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public int ProjectileLifeTime {
       get { return this.projectileLifeTime; }
       set { this.projectileLifeTime = value; }
+    }
+    #endregion
+
+    #region [Property: ProjectileKnockback]
+    private float projectileKnockback;
+
+    public float ProjectileKnockback {
+      get { return this.projectileKnockback; }
+      set { this.projectileKnockback = value; }
     }
     #endregion
 
@@ -87,20 +105,24 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #region [Methods: Constructor, Static FromXmlElement]
     public DartTrapConfig() {
       this.cooldown = 180;
-      this.projectileOffset = 8;
-      this.projectileSpeed = 12;
       this.projectileType = 98;
       this.projectileDamage = 20;
+      this.projectileAngle = 45;
+      this.projectileOffset = 8;
+      this.projectileSpeed = 12;
       this.projectileLifeTime = 80;
+      this.projectileKnockback = 2f;
     }
 
     public static DartTrapConfig FromXmlElement(XmlElement xmlData) {
       DartTrapConfig resultingDartTrapConfig = new DartTrapConfig();
       resultingDartTrapConfig.projectileType = int.Parse(xmlData["ProjectileType"].InnerText);
       resultingDartTrapConfig.projectileDamage = int.Parse(xmlData["ProjectileDamage"].InnerText);
-      resultingDartTrapConfig.projectileSpeed = int.Parse(xmlData["ProjectileSpeed"].InnerText);
-      resultingDartTrapConfig.projectileOffset = int.Parse(xmlData["ProjectileOffset"].InnerText);
+      resultingDartTrapConfig.projectileSpeed = float.Parse(xmlData["ProjectileSpeed"].InnerText);
+      resultingDartTrapConfig.projectileAngle = float.Parse(xmlData["ProjectileAngle"].InnerText);
+      resultingDartTrapConfig.projectileOffset = float.Parse(xmlData["ProjectileOffset"].InnerText);
       resultingDartTrapConfig.projectileLifeTime = int.Parse(xmlData["ProjectileLifeTime"].InnerText);
+      resultingDartTrapConfig.projectileKnockback = float.Parse(xmlData["ProjectileKnockback"].InnerText);
       resultingDartTrapConfig.cooldown = int.Parse(xmlData["Cooldown"].InnerText);
       if (xmlData["WirePermission"] != null)
         resultingDartTrapConfig.wirePermission = xmlData["WirePermission"].InnerText;

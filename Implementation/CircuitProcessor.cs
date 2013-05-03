@@ -931,27 +931,64 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               return true;
             }
 
+            int projectileIndex = 1000;
+            for (int i = 0; i < 1000; ++i) {
+              if (!Main.projectile[i].active) {
+                projectileIndex = i;
+                break;
+              }
+            }
+            if (projectileIndex == 1000)
+              return true;
 
-            bool isPointingLeft = (TerrariaUtils.Tiles[originX, originY].frameX == 0);
-            DPoint projectileSpawn = new DPoint((originX * 16), (originY * 16 + 9));
+            bool isFacingLeft = (TerrariaUtils.Tiles[originX, originY].frameX == 0);
             float projectileSpeed;
               
-            if (isPointingLeft) {
+            /*if (isPointingLeft) {
               projectileSpawn.X -= trapConfig.ProjectileOffset;
               projectileSpeed = -trapConfig.ProjectileSpeed;
             } else {
               projectileSpawn.X += TerrariaUtils.TileSize + trapConfig.ProjectileOffset;
               projectileSpeed = trapConfig.ProjectileSpeed;
-            }
+            }*/
             
-            int projectileDamage = trapConfig.ProjectileDamage;
-            int projectileType = trapConfig.ProjectileType;
-            const float ProjectileKnockBack = 2f;
-            int projectileIndex = Projectile.NewProjectile(
+            float projectileAngle = trapConfig.ProjectileAngle;
+            if (isFacingLeft)
+              projectileAngle += 180f;
+
+            Vector2 normalizedPolarOffset = new Vector2(
+              (float)Math.Cos(Math.PI * projectileAngle / 180f),
+              (float)Math.Sin(Math.PI * projectileAngle / 180f)
+            );
+            Main.projectile[projectileIndex].SetDefaults(trapConfig.ProjectileType);
+            Vector2 projectileSpawn = new Vector2(
+              (originX * TerrariaUtils.TileSize + (trapConfig.ProjectileOffset * normalizedPolarOffset.X)), 
+              (originY * TerrariaUtils.TileSize + (trapConfig.ProjectileOffset * normalizedPolarOffset.Y))
+            );
+            projectileSpawn = projectileSpawn.Add(new Vector2(
+              TerrariaUtils.TileSize / 2 - Main.projectile[projectileIndex].width / 2, 
+              TerrariaUtils.TileSize / 2 - Main.projectile[projectileIndex].height / 2
+            ));
+            Main.projectile[projectileIndex].position.X = projectileSpawn.X;
+            Main.projectile[projectileIndex].position.Y = projectileSpawn.Y;
+            Main.projectile[projectileIndex].owner = Main.myPlayer;
+            Main.projectile[projectileIndex].velocity.X = (trapConfig.ProjectileSpeed * normalizedPolarOffset.X);
+            Main.projectile[projectileIndex].velocity.Y = (trapConfig.ProjectileSpeed * normalizedPolarOffset.Y);
+            Main.projectile[projectileIndex].damage = trapConfig.ProjectileDamage;
+            Main.projectile[projectileIndex].knockBack = trapConfig.ProjectileKnockback;
+            Main.projectile[projectileIndex].identity = projectileIndex;
+            Main.projectile[projectileIndex].timeLeft = trapConfig.ProjectileLifeTime;
+            Main.projectile[projectileIndex].wet = Collision.WetCollision(
+              Main.projectile[projectileIndex].position, Main.projectile[projectileIndex].width, Main.projectile[projectileIndex].height
+            );
+            TSPlayer.All.SendData(PacketTypes.ProjectileNew, string.Empty, projectileIndex);
+            
+            this.Result.SignaledDartTraps++;
+
+            /*int projectileIndex = Projectile.NewProjectile(
               projectileSpawn.X, projectileSpawn.Y, projectileSpeed, 0f, projectileType, projectileDamage, 
               ProjectileKnockBack, Main.myPlayer
-            );
-            Main.projectile[projectileIndex].timeLeft = trapConfig.ProjectileLifeTime;
+            );*/
 
             this.Result.SignaledDartTraps++;
           }
