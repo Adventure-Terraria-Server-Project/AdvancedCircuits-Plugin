@@ -1070,11 +1070,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!WorldGen.checkMech(originX, originY, 300))
             return true;
 
-          string signText = null;
-          if (!this.CircuitHandler.PluginCooperationHandler.IsInfiniteSignsAvailable)
-            signText = Main.sign[Sign.ReadSign(originX, originY)].text;
-          else
-            signText = this.CircuitHandler.PluginCooperationHandler.InfiniteSigns_GetSignText(new DPoint(originX, originY));
+          string signText = Main.sign[Sign.ReadSign(originX, originY)].text;
 
           if (signText == null)
             return true;

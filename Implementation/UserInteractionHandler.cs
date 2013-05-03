@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using DPoint = System.Drawing.Point;
@@ -44,11 +45,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: RootCommand]
-    private readonly Command rootCommand;
+    #region [Property: WorldMetadata]
+    private readonly WorldMetadata worldMetadata;
 
-    protected Command RootCommand {
-      get { return this.rootCommand; }
+    public WorldMetadata WorldMetadata {
+      get { return this.worldMetadata; }
+    }
+    #endregion
+
+    #region [Property: PluginCooperationHandler]
+    private PluginCooperationHandler pluginCooperationHandler;
+
+    public PluginCooperationHandler PluginCooperationHandler {
+      get { return this.pluginCooperationHandler; }
     }
     #endregion
 
@@ -63,21 +72,27 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     #region [Method: Constructor]
     public UserInteractionHandler(
-      PluginTrace pluginTrace, PluginInfo pluginInfo, Configuration config, Action reloadConfigurationCallback
-    ): 
-      base(pluginTrace
-    ) {
+      PluginTrace pluginTrace, PluginInfo pluginInfo, Configuration config, 
+      WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler, Action reloadConfigurationCallback
+    ): base(pluginTrace) {
+      Contract.Requires<ArgumentNullException>(pluginTrace != null);
+      Contract.Requires<ArgumentNullException>(config != null);
+      Contract.Requires<ArgumentNullException>(worldMetadata != null);
+      Contract.Requires<ArgumentNullException>(pluginCooperationHandler != null);
+      Contract.Requires<ArgumentNullException>(reloadConfigurationCallback != null);
+
       this.pluginTrace = pluginTrace;
       this.pluginInfo = pluginInfo;
       this.config = config;
+      this.worldMetadata = worldMetadata;
+      this.pluginCooperationHandler = pluginCooperationHandler;
       this.reloadConfigurationCallback = reloadConfigurationCallback;
 
-      this.rootCommand = new Command(this.RootCommand_Exec, "advancedcircuits", "aci", "ac");
-      Commands.ChatCommands.Add(this.RootCommand);
+      this.RegisterCommand(new[] { "advancedcircuits", "ac" }, this.RootCommand_Exec);
     }
     #endregion
 
-    #region [Methods: RootCommand_Exec, TryExecuteSubCommand]
+    #region [Command Handling /advancedcircuits]
     private void RootCommand_Exec(CommandArgs args) {
       if (args == null || this.IsDisposed)
         return;
@@ -92,7 +107,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       args.Player.SendMessage(this.PluginInfo.ToString(), Color.White);
       args.Player.SendMessage(this.PluginInfo.Description, Color.White);
       args.Player.SendMessage(string.Empty, Color.Yellow);
-      args.Player.SendMessage("Write \"/aci commands\" to see a list of sub-commands.", Color.Yellow);
+      args.Player.SendMessage("Write \"/ac commands\" to see a list of sub-commands.", Color.Yellow);
       args.Player.SendMessage("For help and support refer to the TShock forums.", Color.Yellow);
     }
 
@@ -101,11 +116,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case "commands":
         case "cmds":
           args.Player.SendMessage("Available Sub-Commands:", Color.White);
-          args.Player.SendMessage("/aci blocks", Color.Yellow);
-          args.Player.SendMessage("/aci toggle|switch", Color.Yellow);
+          args.Player.SendMessage("/ac blocks", Color.Yellow);
+          args.Player.SendMessage("/ac toggle|switch", Color.Yellow);
 
           if (args.Player.Group.HasPermission(UserInteractionHandler.ReloadCfg_Permission))
-            args.Player.SendMessage("/aci reloadcfg", Color.Yellow);
+            args.Player.SendMessage("/ac reloadcfg", Color.Yellow);
 
           return true;
         case "reloadcfg":
@@ -130,82 +145,215 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case "blocks":
         case "ores":
         case "tiles":
-          int page = 1;
-          if (args.Parameters.Count >= 2) {
-            if (args.Parameters[1] == "2")
-              page = 2;
-          }
+          int pageNumber;
+          if (!PaginationUtil.TryParsePageNumber(args.Parameters, 1, args.Player, out pageNumber))
+            return true;
 
-          if (page == 1) {
-            args.Player.SendMessage("Copper Ore - OR-Gate", Color.White);
-            args.Player.SendMessage("Silver Ore - AND-Gate", Color.White);
-            args.Player.SendMessage("Gold Ore - XOR-Gate", Color.White);
-            args.Player.SendMessage("Obsidian - NOT-Gate / NOT-Port", Color.White);
-            args.Player.SendMessage("Iron Ore - Swapper", Color.White);
-            args.Player.SendMessage("Spike - Crossover Bridge", Color.White);
-            args.Player.SendMessage("Type \"/ac blocks 2\" for the next page.", Color.Yellow);
-          }
-
-          if (page == 2) {
-            args.Player.SendMessage("Glass - Input Port", Color.White);
-            args.Player.SendMessage("Cobalt Ore - Modifier", Color.White);
-            args.Player.SendMessage("Active Stone - Active Stone and Block Activator", Color.White);
-            args.Player.SendMessage("Meteorite - Wireless Transmitter", Color.White);
-          }
+          PaginationUtil.SendPage(
+            args.Player, pageNumber, 
+            new List<string>() {
+              "Copper Ore - OR-Gate",
+              "Silver Ore - AND-Gate",
+              "Gold Ore - XOR-Gate",
+              "Obsidian - NOT-Gate / NOT-Port",
+              "Iron Ore - Swapper",
+              "Spike - Crossover Bridge",
+              "Glass - Input Port",
+              "Cobalt Ore - Modifier",
+              "Active Stone - Active Stone and Block Activator",
+              "Meteorite - Wireless Transmitter"
+            },
+            new PaginationUtil.Settings {
+              HeaderFormat = "Advanced Circuits Special Blocks (Page {0} of {1})",
+              HeaderTextColor = Color.Lime,
+              LineTextColor = Color.LightGray,
+              MaxLinesPerPage = 4,
+            }
+          );
 
           return true;
         case "toggle":
         case "switch":
           args.Player.SendInfoMessage("Place or destroy a wire on the component you want to toggle.");
 
-          PlayerCommandInteraction interaction = this.StartOrResetCommandInteraction(args.Player);
-          interaction.TimeExpiredCallback = (player) => {
-            player.SendErrorMessage("Waited too long, no component will be toggled.");
-          };
+          if (args.Parameters.Count > 3) {
+            args.Player.SendErrorMessage("Proper syntax: /ac switch [state] [+p]");
+            args.Player.SendInfoMessage("Type /ac switch help to get more help to this command.");
+            return true;
+          }
 
+          bool persistentMode = false;
+          bool? newState = null;
+          if (args.Parameters.Count > 1) {
+            int newStateRaw;
+            if (int.TryParse(args.Parameters[1], out newStateRaw))
+              newState = (newStateRaw == 1);
+
+            persistentMode = args.ContainsParameter("+p", StringComparison.InvariantCultureIgnoreCase);
+          }
+
+          PlayerCommandInteraction interaction = this.StartOrResetCommandInteraction(args.Player);
+          interaction.DoesNeverComplete = persistentMode;
           interaction.TileEditCallback = (player, editType, blockType, location, blockStyle) => {
-            if (editType == TileEditType.PlaceWire || editType == TileEditType.DestroyWire) {
+            if (
+              editType == TileEditType.TileKill || 
+              editType == TileEditType.TileKillNoItem || 
+              editType == TileEditType.PlaceWire || 
+              editType == TileEditType.DestroyWire
+            ) {
               CommandInteractionResult result = new CommandInteractionResult { IsHandled = true, IsInteractionCompleted = true };
               Tile tile = TerrariaUtils.Tiles[location];
 
-              if (!tile.active)
-                return new CommandInteractionResult { IsHandled = false, IsInteractionCompleted = false };
-
-              if (TShock.CheckTilePermission(args.Player, location.X, location.Y)) {
-                player.SendErrorMessage("This tile is protected.");
+              if (
+                TShock.CheckTilePermission(args.Player, location.X, location.Y) ||
+                this.PluginCooperationHandler.Protector__CheckProtected(args.Player, location, false)
+              ) {
+                player.SendErrorMessage("This object is protected.");
                 player.SendTileSquare(location, 1);
                 return result;
               }
 
-              if (!TerrariaUtils.Tiles.IsMultistateObject((BlockType)tile.type)) {
+              BlockType hitBlockType = (BlockType)tile.type;
+              if (tile.active && hitBlockType == BlockType.ActiveStone) {
+                if (newState == null || newState == false)
+                  TerrariaUtils.Tiles.SetBlock(location, BlockType.InactiveStone);
+              } else if (hitBlockType == BlockType.InactiveStone) {
+                if (tile.active &&  newState == null || newState == true)
+                  TerrariaUtils.Tiles.SetBlock(location, BlockType.ActiveStone);
+              } else if (tile.active && TerrariaUtils.Tiles.IsMultistateObject(hitBlockType)) {
+                ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(location);
+                bool currentState = TerrariaUtils.Tiles.ObjectHasActiveState(measureData);
+                if (newState == null)
+                  newState = !TerrariaUtils.Tiles.ObjectHasActiveState(measureData);
+
+                if (currentState != newState.Value)
+                  TerrariaUtils.Tiles.SetObjectState(measureData, newState.Value);
+                else
+                  args.Player.SendTileSquare(location, 1);
+              } else if (
+                hitBlockType == AdvancedCircuits.BlockType_ORGate ||
+                hitBlockType == AdvancedCircuits.BlockType_ANDGate ||
+                hitBlockType == AdvancedCircuits.BlockType_XORGate
+              ) {
+                if (
+                  TShock.CheckTilePermission(args.Player, location.X, location.Y) ||
+                  this.PluginCooperationHandler.Protector__CheckProtected(args.Player, location, false)
+                ) {
+                  player.SendErrorMessage("This gate is protected.");
+                  player.SendTileSquare(location, 1);
+                  return result;
+                }
+
+                int modifiers = AdvancedCircuits.CountComponentModifiers(location, new DPoint(1, 1));
+                if (modifiers == 1) {
+                  player.SendErrorMessage("The gate has one modifier, there's no point in initializing it.");
+                  args.Player.SendTileSquare(location, 1);
+                  return result;
+                }
+
+                GateStateMetadata gateState;
+                if (!this.WorldMetadata.GateStates.TryGetValue(location, out gateState)) {
+                  gateState = new GateStateMetadata();
+                  this.WorldMetadata.GateStates.Add(location, gateState);
+                }
+
+                List<DPoint> gatePortLocations = new List<DPoint>(AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1)));
+                for (int i = 0; i < 4; i++) {
+                  Tile gatePort = TerrariaUtils.Tiles[gatePortLocations[i]];
+                  if (!gatePort.active || gatePort.type != (int)AdvancedCircuits.BlockType_InputPort)
+                    continue;
+
+                  if (newState == null) {
+                    if (gateState.PortStates[i] == null)
+                      gateState.PortStates[i] = true;
+                    else
+                      gateState.PortStates[i] = !gateState.PortStates[i];
+                  } else {
+                    gateState.PortStates[i] = newState.Value;
+                  }
+                }
+
+                player.SendSuccessMessage("The states of this gate's ports are now:");
+                this.SendGatePortStatesInfo(args.Player, gateState);
+                args.Player.SendTileSquare(location, 1);
+              } else if (tile.active && tile.type == (int)AdvancedCircuits.BlockType_InputPort) {
+                foreach (DPoint adjacentTileLocation in AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1))) {
+                  Tile adjacentTile = TerrariaUtils.Tiles[adjacentTileLocation];
+                  if (!adjacentTile.active || !AdvancedCircuits.IsLogicalGate((BlockType)adjacentTile.type))
+                    continue;
+
+                  if (
+                    TShock.CheckTilePermission(args.Player, adjacentTileLocation.X, adjacentTileLocation.Y) ||
+                    this.PluginCooperationHandler.Protector__CheckProtected(args.Player, adjacentTileLocation, false)
+                  ) {
+                    player.SendErrorMessage("This gate is protected.");
+                    player.SendTileSquare(location, 1);
+                    return result;
+                  }
+
+                  int modifiers = AdvancedCircuits.CountComponentModifiers(adjacentTileLocation, new DPoint(1, 1));
+                  if (modifiers == 1) {
+                    player.SendErrorMessage("The gate has one modifier, there's no point in initializing it.");
+                    args.Player.SendTileSquare(location, 1);
+                    return result;
+                  }
+
+                  GateStateMetadata gateState;
+                  if (!this.WorldMetadata.GateStates.TryGetValue(adjacentTileLocation, out gateState)) {
+                    gateState = new GateStateMetadata();
+                    this.WorldMetadata.GateStates.Add(adjacentTileLocation, gateState);
+                  }
+
+                  int portIndex;
+                  switch (AdvancedCircuits.DirectionFromTileLocations(adjacentTileLocation, location)) {
+                    case Direction.Up:
+                      portIndex = 0;
+                      break;
+                    case Direction.Down:
+                      portIndex = 1;
+                      break;
+                    case Direction.Left:
+                      portIndex = 2;
+                      break;
+                    case Direction.Right:
+                      portIndex = 3;
+                      break;
+                    default:
+                      return result;
+                  }
+
+                  if (newState == null) {
+                    if (gateState.PortStates[portIndex] == null)
+                      gateState.PortStates[portIndex] = true;
+                    else
+                      gateState.PortStates[portIndex] = !gateState.PortStates[portIndex];
+                  } else {
+                    gateState.PortStates[portIndex] = newState.Value;
+                  }
+
+                  player.SendSuccessMessage("The states of this gate's ports are now:");
+                  this.SendGatePortStatesInfo(args.Player, gateState);
+                  args.Player.SendTileSquare(location, 1);
+                  return result;
+                }
+
                 player.SendErrorMessage(string.Format(
-                  "The state of the tile \"{0}\" can not be changed.", TerrariaUtils.Tiles.GetBlockTypeName((BlockType)tile.type)
+                  "The state of \"{0}\" can not be changed.", TerrariaUtils.Tiles.GetBlockTypeName(hitBlockType)
                 ));
+
                 player.SendTileSquare(location, 1);
-                return result;
               }
-              
-              ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(location);
-              bool newState = !TerrariaUtils.Tiles.ObjectHasActiveState(measureData);
-              TerrariaUtils.Tiles.SetObjectState(measureData, newState);
 
-              string newStateString;
-              if (newState)
-                newStateString = "active";
-              else
-                newStateString = "inactive";
-
-              player.SendInfoMessage(string.Format(
-                "{0}'s state changed to \"{1}\".", AdvancedCircuits.GetComponentName((BlockType)tile.type), newStateString
-              ));
-
-              player.SendTileSquare(location, 1);
               return result;
             }
 
             return new CommandInteractionResult { IsHandled = false, IsInteractionCompleted = false };
           };
+          interaction.TimeExpiredCallback = (player) => {
+            player.SendErrorMessage("Waited too long, no component will be toggled.");
+          };
 
+          args.Player.SendSuccessMessage("Hit an object to change its state.");
           return true;
       }
 
@@ -566,15 +714,28 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    private void SendGatePortStatesInfo(TSPlayer player, GateStateMetadata gateState) {
+      player.SendMessage("Top Port: " + this.GatePortStateToString(gateState.PortStates[0]), Color.LightGray);
+      player.SendMessage("Left Port: " + this.GatePortStateToString(gateState.PortStates[2]), Color.LightGray);
+      player.SendMessage("Bottom Port: " + this.GatePortStateToString(gateState.PortStates[1]), Color.LightGray);
+      player.SendMessage("Right Port: " + this.GatePortStateToString(gateState.PortStates[3]), Color.LightGray);
+    }
+
+    private string GatePortStateToString(bool? portState) {
+      if (portState == null)
+        return "not initialized";
+      else if (portState.Value)
+        return "1";
+      else
+        return "0";
+    }
+
     #region [IDisposable Implementation]
     protected override void Dispose(bool isDisposing) {
       if (this.IsDisposed)
         return;
     
       if (isDisposing) {
-        if (Commands.ChatCommands.Contains(this.RootCommand))
-          Commands.ChatCommands.Remove(this.RootCommand);
-
         this.reloadConfigurationCallback = null;
       }
     

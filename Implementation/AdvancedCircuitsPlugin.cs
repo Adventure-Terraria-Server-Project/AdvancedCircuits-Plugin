@@ -242,7 +242,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           );
         }
       };
-      this.userInteractionHandler = new UserInteractionHandler(this.Trace, this.PluginInfo, this.Config, reloadConfiguration);
+      this.userInteractionHandler = new UserInteractionHandler(
+        this.Trace, this.PluginInfo, this.Config, this.WorldMetadataHandler.Metadata, this.PluginCooperationHandler, 
+        reloadConfiguration
+      );
     }
     #endregion
 

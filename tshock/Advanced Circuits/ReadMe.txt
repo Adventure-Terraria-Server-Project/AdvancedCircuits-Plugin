@@ -73,7 +73,7 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 Changelog
 --------------------------------------------------------------
-Version 1.2 [01.05.2013]
+Version 1.2 [02.05.2013]
   -Added Wireless Transmitter Component (Meteorite).
   -Pumps can now be configured using 5 different profiles 
    (default + 4 modifiers).
@@ -84,6 +84,11 @@ Version 1.2 [01.05.2013]
    Activators.
   -Block Activators with one modifier will now replace already
    existing blocks.
+  -Added persistent mode for /ac switch.
+  -/ac switch might now toggle active stone.
+  -/ac switch might now set Logical-Gate port states.
+  -Added Protector cooperation to check whether tiles to 
+   change using /ac switch are protected.
   -Some minor improvements, fixed some typos.
   -Updated for Plugins Common Lib 1.8.
 Version 1.1.1 [25.11.2012]

@@ -27,7 +27,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
 
-    #region [Methods: IsPortDefiningComponentBlock, IsModifierSupportingComponentBlock]
+    #region [Methods: IsPortDefiningComponentBlock, IsModifierSupportingComponentBlock, IsCustomActivatableBlock, IsLogicalGate]
     public static bool IsPortDefiningComponentBlock(BlockType blockType) {
       return (
         blockType == BlockType.Switch ||
@@ -82,6 +82,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == BlockType.InactiveStone ||
         blockType == BlockType.DemoniteBrick ||
         (blockType >= BlockType.RedCandyCaneBlock && blockType <= BlockType.SnowBrick)
+      );
+    }
+
+    public static bool IsLogicalGate(BlockType blockType) {
+      return (
+        blockType == AdvancedCircuits.BlockType_ORGate ||
+        blockType == AdvancedCircuits.BlockType_ANDGate ||
+        blockType == AdvancedCircuits.BlockType_XORGate
       );
     }
     #endregion

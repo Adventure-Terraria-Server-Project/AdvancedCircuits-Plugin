@@ -9,14 +9,16 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using TShockAPI;
 using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class PluginCooperationHandler {
     #region [Constants]
-    private const string InfiniteSignsGuid = "d1c86597-66c0-4590-aace-7b381d332294";
-    private const string InfiniteSignsClassName = "InfiniteSigns.InfiniteSigns";
+    private const string ProtectorGuid = "0d1df7a2-004f-4e62-830a-49477ea0b9be";
+    private const string ProtectorClassName = "Terraria.Plugins.CoderCow.Protector.ProtectorPlugin";
+    private const string Protector_ProtectionEntryClassName = "Terraria.Plugins.CoderCow.Protector.ProtectionEntry";
     #endregion
 
     #region [Property: PluginTrace]
@@ -27,15 +29,25 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: InfiniteSignsPlugin]
-    private readonly dynamic infiniteSignsPlugin;
+    #region [Properties: ProtectorAssembly, ProtectorPlugin, ProtectionManager, IsProtectorAvailable]
+    private readonly Assembly protectorAssembly;
+    private dynamic protectionManager;
+    private readonly dynamic protectorPlugin;
 
-    protected dynamic InfiniteSignsPlugin {
-      get { return this.infiniteSignsPlugin; }
+    protected Assembly ProtectorAssembly {
+      get { return this.protectorAssembly; }
     }
 
-    public bool IsInfiniteSignsAvailable {
-      get { return (this.infiniteSignsPlugin != null); }
+    protected dynamic ProtectorPlugin {
+      get { return this.protectorPlugin; }
+    }
+
+    protected dynamic ProtectionManager {
+      get { return this.protectionManager; }
+    }
+
+    public bool IsProtectorAvailable {
+      get { return (this.ProtectorPlugin != null); }
     }
     #endregion
 
@@ -53,26 +65,34 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           continue;
 
         string assemblyGuid = guidAttributes[0].Value;
-        if (!assemblyGuid.Equals(PluginCooperationHandler.InfiniteSignsGuid, StringComparison.InvariantCultureIgnoreCase))
+        if (!assemblyGuid.Equals(PluginCooperationHandler.ProtectorGuid, StringComparison.InvariantCultureIgnoreCase))
           continue;
 
-        Type pluginType = assembly.GetType(PluginCooperationHandler.InfiniteSignsClassName);
-        this.infiniteSignsPlugin = pluginType.InvokeMember("LatestInstance", BindingFlags.Static | BindingFlags.GetField | BindingFlags.Public, null, null, null);
+        this.protectorAssembly = assembly;
+
+        Type pluginType = assembly.GetType(PluginCooperationHandler.ProtectorClassName);
+        this.protectorPlugin = pluginType.InvokeMember("LatestInstance", BindingFlags.Static | BindingFlags.GetProperty | BindingFlags.Public, null, null, null);
+        this.protectionManager = this.protectorPlugin.ProtectionManager;
       }
     }
     #endregion
 
-    #region [Infinite Signs]
-    public string InfiniteSigns_GetSignText(DPoint location) {
-      if (!this.IsInfiniteSignsAvailable)
-        return null;
+    #region [Protector]
+    private MethodInfo checkBlockAccessMethodInfo;
+    public bool Protector__CheckProtected(TSPlayer player, DPoint tileLocation, bool fullAccessRequired) {
+      if (!this.IsProtectorAvailable)
+        return false;
       
-      try {
-        return this.InfiniteSignsPlugin.GetSignText(location.X, location.Y);
-      } catch (Exception ex) {
-        this.PluginTrace.WriteLineError("An exception was thrown when cooperating with a plugin:\n{0}", ex.ToString());
-        return null;
+      if (checkBlockAccessMethodInfo == null) {
+        Type protectionManagerType = this.ProtectionManager.GetType();
+        this.checkBlockAccessMethodInfo = protectionManagerType.GetMethod(
+          "CheckBlockAccess", new[] { typeof(TSPlayer), typeof(DPoint), typeof(bool) }
+        );
       }
+
+      return !this.checkBlockAccessMethodInfo.Invoke(
+        this.ProtectionManager, new object[] { player, tileLocation, fullAccessRequired }
+      );
     }
     #endregion
   }
