@@ -1174,6 +1174,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       BlockActivatorMode blockActivatorModeToRegister = BlockActivatorMode.Default;
       switch (measureData.BlockType) {
         case BlockType.XSecondTimer: {
+          if (!portTile.active || portTile.type != (int)AdvancedCircuits.BlockType_InputPort)
+            return false;
+
           bool currentState = (TerrariaUtils.Tiles.ObjectHasActiveState(measureData));
           if (currentState != signal)
             TerrariaUtils.Tiles.SetObjectState(measureData, signal);
