@@ -66,21 +66,27 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == BlockType.DirtBlock ||
         blockType == BlockType.StoneBlock ||
         blockType == BlockType.WoodPlatform ||
+        blockType == BlockType.DemoniteOre ||
+        blockType == BlockType.CorruptGrass ||
         blockType == BlockType.EbonstoneBlock ||
         blockType == BlockType.Wood ||
         (blockType >= BlockType.GrayBrick && blockType <= BlockType.BlueBrick) ||
-        (blockType >= BlockType.GreenBrick && blockType <= BlockType.Spike) ||
-        blockType == BlockType.SandBlock ||
-        blockType == BlockType.Glass ||
-        blockType == BlockType.AshBlock ||
-        blockType == BlockType.MudBlock ||
+        (blockType >= BlockType.GreenBrick && blockType <= BlockType.WaterCandle) ||
+        (blockType >= BlockType.Cobweb && blockType <= BlockType.Glass) ||
+        (blockType >= BlockType.Obsidian && blockType <= BlockType.JungleGrass) ||
+        blockType == BlockType.JungleVine ||
+        (blockType >= BlockType.SapphireBlock && blockType <= BlockType.MushroomGrass) ||
         blockType == BlockType.ObsidianBrick ||
         blockType == BlockType.HellstoneBrick ||
+        blockType == BlockType.HallowedGrass ||
         blockType == BlockType.EbonsandBlock ||
+        blockType == BlockType.HallowedVine ||
         (blockType >= BlockType.PearlsandBlock && blockType <= BlockType.WoodenBeam) ||
+        blockType == BlockType.IceBlock ||
         blockType == BlockType.ActiveStone ||
         blockType == BlockType.InactiveStone ||
         blockType == BlockType.DemoniteBrick ||
+        blockType == BlockType.Explosives ||
         (blockType >= BlockType.RedCandyCaneBlock && blockType <= BlockType.SnowBrick)
       );
     }

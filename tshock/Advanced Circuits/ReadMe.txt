@@ -82,8 +82,12 @@ Version 1.2 [04.05.2013]
    Block Activators.
   -Added sand, pearlsand and ebonsand support to Block 
    Activators.
+  -Made some more general block types work with Block 
+   Activators (including obsidian).
   -Block Activators with one modifier will now replace already
    existing blocks.
+  -If a chest is above a block to be modified by a Block
+   Activator, the related block will not be changed anymore.
   -Projectile knockback and angle can now be defined for 
    Dart Traps, also offset and speed are now of type float 
    instead of integer.

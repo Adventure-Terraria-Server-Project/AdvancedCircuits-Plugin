@@ -569,36 +569,39 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         if (rootBranch.BlockActivator != null) {
           Tile blockActivatorTile = TerrariaUtils.Tiles[rootBranch.BlockActivatorLocation];
           if (tile.wall == blockActivatorTile.wall) {
-            if (
-              signal == SignalType.Off && tile.active && AdvancedCircuits.IsCustomActivatableBlock((BlockType)tile.type)
-            ) {
-              if (rootBranch.BlockActivator.RegisteredInactiveBlocks.Count > this.CircuitHandler.Config.BlockActivatorConfig.MaxChangeableBlocks) {
-                this.Result.WarnReason = CircuitWarnReason.BlockActivatorChangedTooManyBlocks;
-                return;
-              }
+            Tile tileAbove = TerrariaUtils.Tiles[tileLocation.OffsetEx(0, -1)];
+            if (!tileAbove.active || tileAbove.type != (int)BlockType.Chest) {
+              if (
+                signal == SignalType.Off && tile.active && AdvancedCircuits.IsCustomActivatableBlock((BlockType)tile.type)
+              ) {
+                if (rootBranch.BlockActivator.RegisteredInactiveBlocks.Count > this.CircuitHandler.Config.BlockActivatorConfig.MaxChangeableBlocks) {
+                  this.Result.WarnReason = CircuitWarnReason.BlockActivatorChangedTooManyBlocks;
+                  return;
+                }
 
-              rootBranch.BlockActivator.RegisteredInactiveBlocks.Add(tileLocation, (BlockType)tile.type);
+                rootBranch.BlockActivator.RegisteredInactiveBlocks.Add(tileLocation, (BlockType)tile.type);
 
-              tile.type = 0;
-              tile.active = false;
-              tile.frameX = -1;
-              tile.frameY = -1;
-              tile.frameNumber = 0;
-              this.TilesToFrameOnPost.Add(tileLocation);
-              
-              return;
-            } else if (
-              signal == SignalType.On && (rootBranch.BlockActivatorMode == BlockActivatorMode.ReplaceBlocks || !tile.active)
-            ) {
-              BlockType registeredBlockType;
-              if (rootBranch.BlockActivator.RegisteredInactiveBlocks.TryGetValue(tileLocation, out registeredBlockType)) {
-                rootBranch.BlockActivator.RegisteredInactiveBlocks.Remove(tileLocation);
-
-                tile.type = (byte)registeredBlockType;
-                tile.active = true;
+                tile.type = 0;
+                tile.active = false;
+                tile.frameX = -1;
+                tile.frameY = -1;
+                tile.frameNumber = 0;
                 this.TilesToFrameOnPost.Add(tileLocation);
-
+              
                 return;
+              } else if (
+                signal == SignalType.On && (rootBranch.BlockActivatorMode == BlockActivatorMode.ReplaceBlocks || !tile.active)
+              ) {
+                BlockType registeredBlockType;
+                if (rootBranch.BlockActivator.RegisteredInactiveBlocks.TryGetValue(tileLocation, out registeredBlockType)) {
+                  rootBranch.BlockActivator.RegisteredInactiveBlocks.Remove(tileLocation);
+
+                  tile.type = (byte)registeredBlockType;
+                  tile.active = true;
+                  this.TilesToFrameOnPost.Add(tileLocation);
+
+                  return;
+                }
               }
             }
           }
@@ -942,16 +945,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               return true;
 
             bool isFacingLeft = (TerrariaUtils.Tiles[originX, originY].frameX == 0);
-            float projectileSpeed;
-              
-            /*if (isPointingLeft) {
-              projectileSpawn.X -= trapConfig.ProjectileOffset;
-              projectileSpeed = -trapConfig.ProjectileSpeed;
-            } else {
-              projectileSpawn.X += TerrariaUtils.TileSize + trapConfig.ProjectileOffset;
-              projectileSpeed = trapConfig.ProjectileSpeed;
-            }*/
-            
             float projectileAngle = trapConfig.ProjectileAngle;
             if (isFacingLeft)
               projectileAngle += 180f;
