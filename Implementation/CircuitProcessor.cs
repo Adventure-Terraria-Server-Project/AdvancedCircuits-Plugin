@@ -1097,12 +1097,21 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           )
             return true;
 
-          if (!WorldGen.checkMech(originX, originY, 300))
+          string signText = Main.sign[Sign.ReadSign(originX, originY)].text;
+          if (signText == null)
             return true;
 
-          string signText = Main.sign[Sign.ReadSign(originX, originY)].text;
+          if (
+            this.CircuitHandler.PluginCooperationHandler.IsSignCommandsAvailable &&
+            this.CircuitHandler.PluginCooperationHandler.SignCommands_CheckIsSignCommand(signText)
+          ) {
+            this.CircuitHandler.PluginCooperationHandler.SignCommands_ExecuteSignCommand(
+              this.TriggeringPlayer, measureData.OriginTileLocation, signText
+            );
+            return true;
+          }
 
-          if (signText == null)
+          if (!WorldGen.checkMech(originX, originY, 300))
             return true;
 
           string fullText = this.CircuitHandler.Config.SignPrefix + signText;

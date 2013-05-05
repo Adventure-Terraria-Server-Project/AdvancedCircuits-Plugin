@@ -205,8 +205,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               Tile tile = TerrariaUtils.Tiles[location];
 
               if (
-                TShock.CheckTilePermission(args.Player, location.X, location.Y) ||
-                this.PluginCooperationHandler.Protector__CheckProtected(args.Player, location, false)
+                TShock.CheckTilePermission(args.Player, location.X, location.Y) || (
+                  this.PluginCooperationHandler.IsProtectorAvailable &&
+                  this.PluginCooperationHandler.Protector__CheckProtected(args.Player, location, false)
+                )
               ) {
                 player.SendErrorMessage("This object is protected.");
                 player.SendTileSquare(location, 1);
@@ -217,9 +219,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               if (tile.active && hitBlockType == BlockType.ActiveStone) {
                 if (newState == null || newState == false)
                   TerrariaUtils.Tiles.SetBlock(location, BlockType.InactiveStone);
+                else
+                  args.Player.SendTileSquare(location, 1);
               } else if (hitBlockType == BlockType.InactiveStone) {
                 if (tile.active &&  newState == null || newState == true)
                   TerrariaUtils.Tiles.SetBlock(location, BlockType.ActiveStone);
+                else
+                  args.Player.SendTileSquare(location, 1);
               } else if (tile.active && TerrariaUtils.Tiles.IsMultistateObject(hitBlockType)) {
                 ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(location);
                 bool currentState = TerrariaUtils.Tiles.ObjectHasActiveState(measureData);
@@ -236,8 +242,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 hitBlockType == AdvancedCircuits.BlockType_XORGate
               ) {
                 if (
-                  TShock.CheckTilePermission(args.Player, location.X, location.Y) ||
-                  this.PluginCooperationHandler.Protector__CheckProtected(args.Player, location, false)
+                  TShock.CheckTilePermission(args.Player, location.X, location.Y) || (
+                    this.PluginCooperationHandler.IsProtectorAvailable &&
+                    this.PluginCooperationHandler.Protector__CheckProtected(args.Player, location, false)
+                  )
                 ) {
                   player.SendErrorMessage("This gate is protected.");
                   player.SendTileSquare(location, 1);
@@ -283,8 +291,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                     continue;
 
                   if (
-                    TShock.CheckTilePermission(args.Player, adjacentTileLocation.X, adjacentTileLocation.Y) ||
-                    this.PluginCooperationHandler.Protector__CheckProtected(args.Player, adjacentTileLocation, false)
+                    TShock.CheckTilePermission(args.Player, adjacentTileLocation.X, adjacentTileLocation.Y) || (
+                      this.PluginCooperationHandler.IsProtectorAvailable &&
+                      this.PluginCooperationHandler.Protector__CheckProtected(args.Player, adjacentTileLocation, false)
+                    )
                   ) {
                     player.SendErrorMessage("This gate is protected.");
                     player.SendTileSquare(location, 1);

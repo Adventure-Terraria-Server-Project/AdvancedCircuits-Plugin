@@ -9,18 +9,16 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using TShockAPI;
-using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
+
+using Terraria.Plugins.Common;
+using Terraria.Plugins.CoderCow.Protector;
+using SignCommands;
+
+using TShockAPI;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class PluginCooperationHandler {
-    #region [Constants]
-    private const string ProtectorGuid = "0d1df7a2-004f-4e62-830a-49477ea0b9be";
-    private const string ProtectorClassName = "Terraria.Plugins.CoderCow.Protector.ProtectorPlugin";
-    private const string Protector_ProtectionEntryClassName = "Terraria.Plugins.CoderCow.Protector.ProtectionEntry";
-    #endregion
-
     #region [Property: PluginTrace]
     private readonly PluginTrace pluginTrace;
 
@@ -29,25 +27,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Properties: ProtectorAssembly, ProtectorPlugin, ProtectionManager, IsProtectorAvailable]
-    private readonly Assembly protectorAssembly;
-    private dynamic protectionManager;
-    private readonly dynamic protectorPlugin;
-
-    protected Assembly ProtectorAssembly {
-      get { return this.protectorAssembly; }
-    }
-
-    protected dynamic ProtectorPlugin {
-      get { return this.protectorPlugin; }
-    }
-
-    protected dynamic ProtectionManager {
-      get { return this.protectionManager; }
-    }
+    #region [Property: IsProtectorAvailable]
+    private readonly bool isProtectorAvailable;
 
     public bool IsProtectorAvailable {
-      get { return (this.ProtectorPlugin != null); }
+      get { return this.isProtectorAvailable; }
+    }
+    #endregion
+
+    #region [Property: IsSignCommandsAvailable]
+    private readonly bool isSignCommandsAvailable;
+
+    public bool IsSignCommandsAvailable {
+      get { return this.isSignCommandsAvailable; }
     }
     #endregion
 
@@ -56,43 +48,47 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public PluginCooperationHandler(PluginTrace pluginTrace) {
       Contract.Requires<ArgumentNullException>(pluginTrace != null);
 
+      const string ProtectorSomeTypeQualifiedName = 
+        "Terraria.Plugins.CoderCow.Protector.ProtectorPlugin, Protector";
+      const string SignCommandsSomeTypeQualifiedName = "SignCommands.scSign, SignCommands";
+
       this.pluginTrace = pluginTrace;
-
-      Assembly[] domainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-      foreach (Assembly assembly in domainAssemblies) {
-        GuidAttribute[] guidAttributes = (GuidAttribute[])assembly.GetCustomAttributes(typeof(GuidAttribute), true);
-        if (guidAttributes.Length == 0)
-          continue;
-
-        string assemblyGuid = guidAttributes[0].Value;
-        if (!assemblyGuid.Equals(PluginCooperationHandler.ProtectorGuid, StringComparison.InvariantCultureIgnoreCase))
-          continue;
-
-        this.protectorAssembly = assembly;
-
-        Type pluginType = assembly.GetType(PluginCooperationHandler.ProtectorClassName);
-        this.protectorPlugin = pluginType.InvokeMember("LatestInstance", BindingFlags.Static | BindingFlags.GetProperty | BindingFlags.Public, null, null, null);
-        this.protectionManager = this.protectorPlugin.ProtectionManager;
-      }
+      
+      this.isProtectorAvailable = (Type.GetType(ProtectorSomeTypeQualifiedName, false) != null);
+      this.isSignCommandsAvailable = (Type.GetType(SignCommandsSomeTypeQualifiedName, false) != null);
     }
     #endregion
 
     #region [Protector]
-    private MethodInfo checkBlockAccessMethodInfo;
     public bool Protector__CheckProtected(TSPlayer player, DPoint tileLocation, bool fullAccessRequired) {
-      if (!this.IsProtectorAvailable)
-        return false;
-      
-      if (checkBlockAccessMethodInfo == null) {
-        Type protectionManagerType = this.ProtectionManager.GetType();
-        this.checkBlockAccessMethodInfo = protectionManagerType.GetMethod(
-          "CheckBlockAccess", new[] { typeof(TSPlayer), typeof(DPoint), typeof(bool) }
-        );
+      try {
+        return !ProtectorPlugin.LatestInstance.ProtectionManager.CheckBlockAccess(player, tileLocation, fullAccessRequired);
+      } catch (Exception ex) {
+        throw new CooperatingPluginException(null, ex);
       }
+    }
+    #endregion
 
-      return !this.checkBlockAccessMethodInfo.Invoke(
-        this.ProtectionManager, new object[] { player, tileLocation, fullAccessRequired }
-      );
+    #region [SignCommands]
+    public bool SignCommands_CheckIsSignCommand(string text) {
+      try {
+        return text.StartsWith(SignCommands.SignCommands.getConfig.DefineSignCommands, StringComparison.CurrentCultureIgnoreCase);
+      } catch (Exception ex) {
+        throw new CooperatingPluginException(ex);
+      }
+    }
+
+    public void SignCommands_ExecuteSignCommand(TSPlayer player, DPoint signLocation, string text) {
+      scPlayer scPlayer = SignCommands.SignCommands.scPlayers[player.Index];
+      if (scPlayer == null)
+        throw new InvalidOperationException("Sign Commands does not recognize the given player.");
+
+      try {
+        scSign scSign = new scSign(text, new Point(signLocation.X, signLocation.Y));
+        scSign.ExecuteCommands(scPlayer);
+      } catch (Exception ex) {
+        throw new CooperatingPluginException(null, ex);
+      }
     }
     #endregion
   }

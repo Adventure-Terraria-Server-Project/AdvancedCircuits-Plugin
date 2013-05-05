@@ -73,10 +73,15 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 Changelog
 --------------------------------------------------------------
-Version 1.2 [04.05.2013]
+Version 1.2 [06.05.2013]
   -Added Wireless Transmitter Component (Meteorite).
   -Pumps can now be configured using 5 different profiles 
    (default + 4 modifiers).
+  -Added SignCommands cooperation. If a Sign Command is written
+   on a sign triggered by a 1 signal in an Advanced Circuit, 
+   then this Sign Command will be executed.
+  -Added Protector cooperation to check whether tiles to 
+   change using /ac switch are protected.
   -Block Activators will now work through Crossover Bridges.
   -Tiles affected by gravity will now work properly with 
    Block Activators.
@@ -96,8 +101,6 @@ Version 1.2 [04.05.2013]
   -Added persistent mode to /ac switch.
   -/ac switch might now toggle active stone.
   -/ac switch might now set Logical-Gate port states.
-  -Added Protector cooperation to check whether tiles to 
-   change using /ac switch are protected.
   -Some minor improvements, fixed some typos.
   -Updated for Plugins Common Lib 1.8.
 Version 1.1.1 [25.11.2012]

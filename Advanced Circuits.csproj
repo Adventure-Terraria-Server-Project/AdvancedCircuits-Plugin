@@ -179,6 +179,14 @@
       <HintPath>References\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Protector">
+      <HintPath>References\Protector.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SignCommands">
+      <HintPath>References\SignCommands.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -226,6 +234,7 @@
     <Compile Include="Implementation\AdvancedCircuitsPlugin.cs" />
     <Compile Include="Implementation\#Data\#World\WorldMetadata.cs" />
     <Compile Include="Implementation\WorldMetadataHandler.cs" />
+    <Compile Include="Implementation\_Exception\CooperatingPluginException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
