@@ -204,6 +204,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Implementation\#Data\#Config\BlockActivatorConfig.cs" />
+    <Compile Include="Implementation\#Data\#Config\_Statues\BuffPlayerStatueAction.cs" />
     <Compile Include="Implementation\#Data\#Config\_Statues\NullStatueAction.cs" />
     <Compile Include="Implementation\#Data\#Config\ExplosivesConfig.cs" />
     <Compile Include="Implementation\#Data\#Config\_Statues\MoveNpcStatueAction.cs" />

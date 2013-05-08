@@ -116,7 +116,7 @@
     <WirelessTransmitterConfig Profile="Default">
       <Network>1</Network>
       <Range>140</Range>
-      <Cooldown>10</Cooldown>
+      <Cooldown>0</Cooldown>
       <WirePermission></WirePermission>
       <TriggerPermission></TriggerPermission>
     </WirelessTransmitterConfig>
@@ -168,6 +168,13 @@
         CheckRange - The range in tiles to check if the given amount of items are already present, if they are, then no 
                      new item will be spawned.
         CheckAmount - The amount of items to check for in the given range.
+        
+      BuffPlayerAction
+        Buffs nearby players with a specific buff.
+        
+        BuffId - The id or name of the buff.
+        BuffTime - How long the buff will last in milliseconds.
+        Radius - The radius in which buffs are applied to players in tiles.
   -->
   <StatueConfigs>
     <!-- These Statues are configured to equal to Terraria's defaults, change them if you want. -->
@@ -175,18 +182,6 @@
       <Cooldown>600</Cooldown>
       
       <Actions ProcessingMethod="ExecuteAll">
-        <NullAction />
-        <MoveNpcAction>
-          <NpcId>22</NpcId>
-          <SpawnIfNotExistent>true</SpawnIfNotExistent>
-          <CheckRange>0</CheckRange>
-        </MoveNpcAction>
-        <SpawnNpcAction>
-          <NpcId>1</NpcId>
-          <Amount>2</Amount>
-          <CheckRange>0</CheckRange>
-          <CheckAmount>0</CheckAmount>
-        </SpawnNpcAction>
         <SpawnItemAction>
           <ItemId>184</ItemId>
           <Amount>3</Amount>
@@ -422,6 +417,11 @@
           <CheckRange>25</CheckRange>
           <CheckAmount>4</CheckAmount>
         </SpawnNpcAction>
+        <BuffPlayerAction>
+          <BuffId>Shine</BuffId>
+          <BuffTime>3600</BuffTime>
+          <Radius>10</Radius>
+        </BuffPlayerAction>
       </Actions>
     </StatueConfig>
   </StatueConfigs>

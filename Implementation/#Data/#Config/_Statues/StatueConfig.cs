@@ -97,6 +97,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           case "SpawnItemAction":
             resultingStatueConfig.Actions.Add(SpawnItemStatueAction.FromXmlElement(actionNode));
             break;
+          case "BuffPlayerAction":
+            resultingStatueConfig.Actions.Add(BuffPlayerStatueAction.FromXmlElement(actionNode));
+            break;
         }
       }
 

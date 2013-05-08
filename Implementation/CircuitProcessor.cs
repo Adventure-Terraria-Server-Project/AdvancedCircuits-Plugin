@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Text;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
@@ -1001,8 +1002,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           StatueConfig statueConfig;
           if (
             this.CircuitHandler.Config.StatueConfigs.TryGetValue(statueStyle, out statueConfig) &&
-            statueConfig.Actions.Count > 0 &&
-            WorldGen.checkMech(originX, originY, statueConfig.Cooldown)
+            statueConfig.Actions.Count > 0 && (
+              statueConfig.Cooldown == 0 ||
+              WorldGen.checkMech(originX, originY, statueConfig.Cooldown)
+            )
           ) {
             if (this.Result.SignaledStatues > this.CircuitHandler.Config.MaxStatuesPerCircuit) {
               this.Result.WarnReason = CircuitWarnReason.SignalesTooManyStatues;
@@ -1030,8 +1033,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               }
               if (!isPlayerInRange)
                 return true;
-
-              Console.WriteLine(isPlayerInRange.ToString());
             }
 
             if (statueConfig.ActionsProcessingMethod == ActionListProcessingMethod.ExecuteAll) {
@@ -1119,6 +1120,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       MoveNpcStatueAction moveNpcAction = (statueAction as MoveNpcStatueAction);
       SpawnNpcStatueAction spawnNpcAction = (statueAction as SpawnNpcStatueAction);
       SpawnItemStatueAction spawnItemAction = (statueAction as SpawnItemStatueAction);
+      BuffPlayerStatueAction buffPlayerAction = (statueAction as BuffPlayerStatueAction);
 
       DPoint spawnLocation = new DPoint((statueLocation.X + 1) * 16, (statueLocation.Y + 1) * 16);
       if (moveNpcAction != null) {
@@ -1178,8 +1180,20 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return;
         }
 
-        for (int i = 0; i < spawnItemAction.Amount; i++)
-          Item.NewItem(spawnLocation.X, spawnLocation.Y, 0, 0, (int)spawnItemAction.ItemType);
+        if (spawnItemAction.Amount <= 5) {
+          for (int i = 0; i < spawnItemAction.Amount; i++)
+            Item.NewItem(spawnLocation.X, spawnLocation.Y, 0, 0, (int)spawnItemAction.ItemType);
+        } else {
+          Item.NewItem(spawnLocation.X, spawnLocation.Y, 0, 0, (int)spawnItemAction.ItemType, spawnItemAction.Amount);
+        }
+      } else if (buffPlayerAction != null) {
+        foreach (TSPlayer player in TShock.Players) {
+          if (player == null || !player.Active)
+            continue;
+
+          if (Math.Sqrt(Math.Pow(player.TileX - spawnLocation.X, 2) + Math.Pow(player.TileY - spawnLocation.Y, 2)) <= buffPlayerAction.Radius)
+            player.SetBuff(buffPlayerAction.BuffId, buffPlayerAction.BuffTime);
+        }
       }
     }
 

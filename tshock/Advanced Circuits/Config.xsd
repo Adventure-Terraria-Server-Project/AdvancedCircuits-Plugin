@@ -34,8 +34,8 @@
   </xs:simpleType>
   <xs:simpleType name="Cooldown">
     <xs:restriction base="xs:integer">
-      <xs:minInclusive value="1" />
-      <xs:maxInclusive value="5000" />
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="20000" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="Degree">
@@ -228,6 +228,16 @@
                                 <xs:element name="Amount" type="xs:nonNegativeInteger" />
                                 <xs:element name="CheckRange" type="xs:int" />
                                 <xs:element name="CheckAmount" type="xs:int" />
+                              </xs:all>
+                            </xs:complexType>
+                          </xs:element>
+
+                          <xs:element name="BuffPlayerAction">
+                            <xs:complexType>
+                              <xs:all>
+                                <xs:element name="BuffId" type="xs:string" />
+                                <xs:element name="BuffTime" type="xs:nonNegativeInteger" />
+                                <xs:element name="Radius" type="xs:int" />
                               </xs:all>
                             </xs:complexType>
                           </xs:element>

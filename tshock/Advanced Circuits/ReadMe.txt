@@ -83,6 +83,7 @@ Version 1.2 [08.05.2013]
    on a sign triggered by a 1 signal in an Advanced Circuit, 
    then this Sign Command will be executed.
   -Added action lists for statues and improved existing actions.
+  -Added BuffPlayer statue action.
   -Added Protector cooperation to check whether tiles to 
    change using /ac switch are protected.
   -Block Activators will now work through Crossover Bridges.
