@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
@@ -160,23 +161,27 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.MetadataHandler.Metadata.WirelessTransmitters.Clear();
 
       this.config.StatueConfigs.Add(StatueStyle.Star, new StatueConfig {
-        ActionType = StatueActionType.MoveNPC,
-        ActionParam = 3,
-        ActionParam2 = 22
+        Actions = new Collection<NullStatueAction> {
+          new MoveNpcStatueAction {
+            NpcType = 22
+          }
+        }
       });
       this.config.StatueConfigs.Add(StatueStyle.Bat, new StatueConfig {
-        ActionType = StatueActionType.SpawnItem,
-        ActionParam = 1,
-        ActionParam2 = 3,
-        ActionParam3 = 15,
-        Cooldown = 1
+        Actions = new Collection<NullStatueAction> {
+          new SpawnItemStatueAction {
+            ItemType = ItemType.IronPickaxe,
+            Amount = 1
+          }
+        }
       });
       this.config.StatueConfigs.Add(StatueStyle.Slime, new StatueConfig {
-        ActionType = StatueActionType.SpawnMob,
-        ActionParam = 1,
-        ActionParam2 = 3,
-        ActionParam3 = 15,
-        Cooldown = 1
+        Actions = new Collection<NullStatueAction> {
+          new SpawnNpcStatueAction {
+            NpcType = 1,
+            Amount = 1
+          }
+        }
       });
 
       this.circuitHandler = new CircuitHandler(

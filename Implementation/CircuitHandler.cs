@@ -8,12 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Threading;
-using System.Threading.Tasks;
-using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
+
+using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitHandler {

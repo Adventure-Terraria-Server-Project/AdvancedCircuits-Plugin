@@ -204,8 +204,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Implementation\#Data\#Config\BlockActivatorConfig.cs" />
+    <Compile Include="Implementation\#Data\#Config\_Statues\NullStatueAction.cs" />
     <Compile Include="Implementation\#Data\#Config\ExplosivesConfig.cs" />
+    <Compile Include="Implementation\#Data\#Config\_Statues\MoveNpcStatueAction.cs" />
     <Compile Include="Implementation\#Data\#Config\PumpConfig.cs" />
+    <Compile Include="Implementation\#Data\#Config\_Statues\SpawnItemStatueAction.cs" />
+    <Compile Include="Implementation\#Data\#Config\_Statues\SpawnNpcStatueAction.cs" />
     <Compile Include="Implementation\#Data\#Config\WirelessTransmitterConfig.cs" />
     <Compile Include="Implementation\#Data\#World\BlockActivatorMetadata.cs" />
     <Compile Include="Implementation\#Data\#World\GrandfatherClockMetadata.cs" />
@@ -227,8 +231,8 @@
     <Compile Include="Implementation\#Data\#Config\DartTrapConfig.cs" />
     <Compile Include="Implementation\#Data\ComponentConfigProfile.cs" />
     <Compile Include="Implementation\#Data\#World\GateStateMetadata.cs" />
-    <Compile Include="Implementation\#Data\StatueActionType.cs" />
-    <Compile Include="Implementation\#Data\#Config\StatueConfig.cs" />
+    <Compile Include="Implementation\#Data\ActionListProcessingMethod.cs" />
+    <Compile Include="Implementation\#Data\#Config\_Statues\StatueConfig.cs" />
     <Compile Include="Implementation\#Data\#World\ActiveTimerMetadata.cs" />
     <Compile Include="Implementation\UserInteractionHandler.cs" />
     <Compile Include="Implementation\AdvancedCircuitsPlugin.cs" />

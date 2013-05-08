@@ -258,9 +258,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.GetDataHookHandler.HitSwitch += this.Net_HitSwitch;
       this.GetDataHookHandler.TileEdit += this.Net_TileEdit;
 
-      #if Testrun
       GameHooks.Update += this.Game_Update;
-      #endif
       WorldHooks.SaveWorld += this.World_SaveWorld;
     }
 

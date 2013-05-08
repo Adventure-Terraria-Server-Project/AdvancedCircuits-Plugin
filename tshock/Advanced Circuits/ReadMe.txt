@@ -73,13 +73,16 @@ https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 Changelog
 --------------------------------------------------------------
-Version 1.2 [06.05.2013]
+Version 1.2 [08.05.2013]
+  -Configuration file structure has changed, your old 
+   configuration has to be ported to the new version.
   -Added Wireless Transmitter Component (Meteorite).
   -Pumps can now be configured using 5 different profiles 
    (default + 4 modifiers).
   -Added SignCommands cooperation. If a Sign Command is written
    on a sign triggered by a 1 signal in an Advanced Circuit, 
    then this Sign Command will be executed.
+  -Added action lists for statues and improved existing actions.
   -Added Protector cooperation to check whether tiles to 
    change using /ac switch are protected.
   -Block Activators will now work through Crossover Bridges.

@@ -1005,7 +1005,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           StatueStyle statueStyle = TerrariaUtils.Tiles.GetStatueStyle(TerrariaUtils.Tiles[measureData.OriginTileLocation]);
           StatueConfig statueConfig;
           if (
-            this.CircuitHandler.Config.StatueConfigs.TryGetValue(statueStyle, out statueConfig) && statueConfig != null &&
+            this.CircuitHandler.Config.StatueConfigs.TryGetValue(statueStyle, out statueConfig) &&
+            statueConfig.Actions.Count > 0 &&
             WorldGen.checkMech(originX, originY, statueConfig.Cooldown)
           ) {
             if (this.Result.SignaledStatues > this.CircuitHandler.Config.MaxStatuesPerCircuit) {
@@ -1022,67 +1023,29 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               return true;
             }
 
-            DPoint spawnLocation = new DPoint((originX + 1) * 16, (originY + 1) * 16);
-            switch (statueConfig.ActionType) {
-              case StatueActionType.MoveNPC:
-                // Param1 = NPC group
-                // Param2 = Specific NPC id
-                  
-                List<int> npcIndexes = null;
-                switch (statueConfig.ActionParam) {
-                  // Random
-                  case 0:
-                    npcIndexes = new List<int>(TerrariaUtils.Npcs.EnumerateFriendlyNPCIndexes());
-                    break;
-                  // Female
-                  case 1:
-                    npcIndexes = new List<int>(TerrariaUtils.Npcs.EnumerateFriendlyFemaleNPCIndexes());
-                    break;
-                  // Male
-                  case 2:
-                    npcIndexes = new List<int>(TerrariaUtils.Npcs.EnumerateFriendlyMaleNPCIndexes());
-                    break;
-                  // Specific
-                  case 3:
-                    npcIndexes = new List<int>(TerrariaUtils.Npcs.EnumerateSpecificNPCIndexes(
-                      new List<int> { statueConfig.ActionParam2 }
-                    ));
-                    break;
+            if (statueConfig.PlayerCheckRange > 0) {
+              bool isPlayerInRange = false;
+              foreach (TSPlayer player in TShock.Players) {
+                if (player == null || !player.Active)
+                  continue;
+                if (Math.Sqrt(Math.Pow(player.TileX - originX, 2) + Math.Pow(player.TileY - originY, 2)) <= statueConfig.PlayerCheckRange) {
+                  isPlayerInRange = true;
+                  break;
                 }
+              }
+              if (!isPlayerInRange)
+                return true;
 
-                if (npcIndexes != null && npcIndexes.Count > 0) {
-                  Random rnd = new Random();
-                  int pickedIndex = npcIndexes[rnd.Next(npcIndexes.Count)];
-                  Main.npc[pickedIndex].position.X = (spawnLocation.X - (Main.npc[pickedIndex].width / 2));
-                  Main.npc[pickedIndex].position.Y = (spawnLocation.Y - (Main.npc[pickedIndex].height - 1));
+              Console.WriteLine(isPlayerInRange.ToString());
+            }
 
-                  NetMessage.SendData((int)PacketTypes.NpcUpdate, -1, -1, string.Empty, pickedIndex);
-                }
-                
-                break;
-              case StatueActionType.SpawnMob:
-                // Param1 = Mob type
-                // Param2 = Max mobs in range
-                // Param3 = Range to check
-                /*if (TerrariaUtils.Npcs.EnumerateNPCsInRange(spawnLocation, statueConfig.ActionParam3) < statueConfig.ActionParam2) {
-                  int mobIndex = NPC.NewNPC(spawnLocation.X, spawnLocation.Y, statueConfig.ActionParam);
-                  // Ensure that the spawned mob drops no money.
-                  Main.npc[mobIndex].value = 0.0f;
-                  Main.npc[mobIndex].npcSlots = 0.0f;
-                }*/
-
-                break;
-              case StatueActionType.SpawnItem:
-                // Param1 = Item type
-                // Param2 = Max mobs in range
-                // Param3 = Range to check
-                /*if (TerrariaUtils.Items.EnumerateItemsAroundPoint(spawnLocation, statueConfig.ActionParam, statueConfig.ActionParam3) < statueConfig.ActionParam2)
-                  Item.NewItem(spawnLocation.X, spawnLocation.Y, 0, 0, statueConfig.ActionParam);*/
-                  
-                break;
-              case StatueActionType.SpawnBoss:
-
-                break;
+            if (statueConfig.ActionsProcessingMethod == ActionListProcessingMethod.ExecuteAll) {
+              foreach (NullStatueAction action in statueConfig.Actions)
+                this.ExecuteStatueAction(measureData.OriginTileLocation, action);
+            } else {
+              Random rnd = new Random();
+              NullStatueAction randomAction = statueConfig.Actions[rnd.Next(0, statueConfig.Actions.Count)];
+              this.ExecuteStatueAction(measureData.OriginTileLocation, randomAction);
             }
 
             this.Result.SignaledStatues++;
@@ -1155,6 +1118,74 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
 
       return false;
+    }
+
+    private void ExecuteStatueAction(DPoint statueLocation, NullStatueAction statueAction) {
+      MoveNpcStatueAction moveNpcAction = (statueAction as MoveNpcStatueAction);
+      SpawnNpcStatueAction spawnNpcAction = (statueAction as SpawnNpcStatueAction);
+      SpawnItemStatueAction spawnItemAction = (statueAction as SpawnItemStatueAction);
+
+      DPoint spawnLocation = new DPoint((statueLocation.X + 1) * 16, (statueLocation.Y + 1) * 16);
+      if (moveNpcAction != null) {
+        int npcIndex = -1;
+        for (int i = 0; i < 200; i++) {
+          NPC npc = Main.npc[i];
+          if (!npc.active || npc.type != moveNpcAction.NpcType)
+            continue;
+
+          npcIndex = i;
+          break;
+        }
+
+        if (npcIndex == -1) {
+          if (!moveNpcAction.SpawnIfNotExistent)
+            return;
+
+          npcIndex = NPC.NewNPC(spawnLocation.X, spawnLocation.Y, moveNpcAction.NpcType);
+          NPC npc = Main.npc[npcIndex];
+
+          // Ensure that the spawned npc drops no money on death.
+          npc.value = 0.0f;
+          npc.npcSlots = 0.0f;
+        } else {
+          NPC npc = Main.npc[npcIndex];
+          npc.position.X = (spawnLocation.X - (npc.width / 2));
+          npc.position.Y = (spawnLocation.Y - (npc.height - 1));
+          TSPlayer.All.SendData(PacketTypes.NpcUpdate, string.Empty, npcIndex);
+        }
+      } else if (spawnNpcAction != null) {
+        if (spawnNpcAction.CheckRange > 0 && spawnNpcAction.CheckAmount > 0) {
+          int closeByNpcs = 0;
+          foreach (NPC closeByNpc in TerrariaUtils.Npcs.EnumerateNPCsInRange(spawnLocation, spawnNpcAction.CheckRange)) {
+            if (closeByNpc.type == spawnNpcAction.NpcType)
+              closeByNpcs++;
+          }
+          if (closeByNpcs >= spawnNpcAction.CheckAmount)
+            return;
+        }
+
+        for (int i = 0; i < spawnNpcAction.Amount; i++) {
+          int npcIndex = NPC.NewNPC(spawnLocation.X, spawnLocation.Y, spawnNpcAction.NpcType);
+          NPC npc = Main.npc[npcIndex];
+
+          // Ensure that the spawned npc drops no money on death.
+          npc.value = 0.0f;
+          npc.npcSlots = 0.0f;
+        }
+      } else if (spawnItemAction != null) {
+        if (spawnItemAction.CheckRange > 0 && spawnItemAction.CheckAmount > 0) {
+          int closeByItems = 0;
+          foreach (Item closeByItem in TerrariaUtils.Items.EnumerateItemsAroundPoint(spawnLocation, spawnItemAction.CheckRange * TerrariaUtils.TileSize)) {
+            if (closeByItem.type == (int)spawnItemAction.ItemType)
+              closeByItems++;
+          }
+          if (closeByItems >= spawnItemAction.CheckAmount)
+            return;
+        }
+
+        for (int i = 0; i < spawnItemAction.Amount; i++)
+          Item.NewItem(spawnLocation.X, spawnLocation.Y, 0, 0, (int)spawnItemAction.ItemType);
+      }
     }
 
     private bool SignalPortDefiningComponent(

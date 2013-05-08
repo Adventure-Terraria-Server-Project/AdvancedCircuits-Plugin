@@ -7,10 +7,8 @@
 using System;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  public enum StatueActionType {
-    MoveNPC,
-    SpawnMob,
-    SpawnItem,
-    SpawnBoss
+  public enum ActionListProcessingMethod {
+    ExecuteAll,
+    ExecuteOne
   }
 }

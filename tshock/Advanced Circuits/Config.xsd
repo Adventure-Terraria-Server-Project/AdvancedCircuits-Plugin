@@ -4,7 +4,7 @@
   xmlns="http://github.com/CoderCow/AdvancedCircuits-Plugin"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   
-  version="1.1"
+  version="1.2"
   targetNamespace="http://github.com/CoderCow/AdvancedCircuits-Plugin" 
   elementFormDefault="qualified"
 >
@@ -190,23 +190,59 @@
               <xs:element name="StatueConfig" minOccurs="0" maxOccurs="unbounded">
                 <xs:complexType>
                   <xs:all>
-                    <xs:element name="ActionType">
-                      <xs:simpleType>
-                        <xs:restriction base="xs:string">
-                          <xs:enumeration value="SpawnItem" />
-                          <xs:enumeration value="SpawnMob" />
-                          <xs:enumeration value="MoveNPC" />
-                        </xs:restriction>
-                      </xs:simpleType>
-                    </xs:element>
-
-                    <xs:element name="ActionParam" type="xs:int" />
-                    <xs:element name="ActionParam2" type="xs:int" minOccurs="0" />
-                    <xs:element name="ActionParam3" type="xs:int" minOccurs="0" />
-                    <xs:element name="ActionParam4" type="xs:int" minOccurs="0" />
+                    <xs:element name="PlayerCheckRange" type="xs:int" minOccurs="0" />
                     <xs:element name="Cooldown" type="Cooldown" />
                     <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
                     <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
+
+                    <xs:element name="Actions">
+                      <xs:complexType>
+                        <xs:choice minOccurs="0" maxOccurs="unbounded">
+                          <xs:element name="NullAction" />
+
+                          <xs:element name="MoveNpcAction">
+                            <xs:complexType>
+                              <xs:all>
+                                <xs:element name="NpcId" type="xs:int" />
+                                <xs:element name="SpawnIfNotExistent" type="FlexBool" />
+                                <xs:element name="CheckRange" type="xs:nonNegativeInteger" />
+                              </xs:all>
+                            </xs:complexType>
+                          </xs:element>
+
+                          <xs:element name="SpawnNpcAction">
+                            <xs:complexType>
+                              <xs:all>
+                                <xs:element name="NpcId" type="xs:int" />
+                                <xs:element name="Amount" type="xs:nonNegativeInteger" />
+                                <xs:element name="CheckRange" type="xs:int" />
+                                <xs:element name="CheckAmount" type="xs:int" />
+                              </xs:all>
+                            </xs:complexType>
+                          </xs:element>
+
+                          <xs:element name="SpawnItemAction">
+                            <xs:complexType>
+                              <xs:all>
+                                <xs:element name="ItemId" type="xs:int" />
+                                <xs:element name="Amount" type="xs:nonNegativeInteger" />
+                                <xs:element name="CheckRange" type="xs:int" />
+                                <xs:element name="CheckAmount" type="xs:int" />
+                              </xs:all>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:choice>
+
+                        <xs:attribute name="ProcessingMethod" use="required">
+                          <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                              <xs:enumeration value="ExecuteAll" />
+                              <xs:enumeration value="ExecuteOne" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
                   </xs:all>
 
                   <xs:attribute name="StatueType" use="required">
