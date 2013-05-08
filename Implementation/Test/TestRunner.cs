@@ -200,7 +200,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
     #region [Branched Processing Tests]
     private void BP_MultiBranches(TestContext context) {
       DPoint testOffset = new DPoint(49, 228);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X, testOffset.Y + 4);
@@ -226,7 +226,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void BP_SnackeBranches(TestContext context) {
       DPoint testOffset = new DPoint(57, 227);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X, testOffset.Y + 5);
@@ -246,7 +246,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void BP_WireBunch(TestContext context) {
       DPoint testOffset = new DPoint(71, 225);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
       this.config.MaxCircuitLength = 5000;
 
       context.Phase = "1";
@@ -326,7 +326,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void BP_MultiBranches2(TestContext context) {
       DPoint testOffset = new DPoint(85, 229);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
@@ -361,7 +361,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void BP_DoubleSignal(TestContext context) {
       DPoint testOffset = new DPoint(103, 229);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X, testOffset.Y + 3);
@@ -384,7 +384,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void BP_DoubleSignal2(TestContext context) {
       DPoint testOffset = new DPoint(110, 230);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X, testOffset.Y + 2);
@@ -407,7 +407,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void BP_Loop(TestContext context) {
       DPoint testOffset = new DPoint(120, 230);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X, testOffset.Y + 2);
@@ -416,7 +416,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void BP_ProcessingTime(TestContext context) {
       DPoint testOffset = new DPoint(129, 180);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       this.Config.MaxCircuitLength = 2000;
 
@@ -475,7 +475,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void Vanilla_BlockedDoorToggling1(TestContext context) {
       DPoint testOffset = new DPoint(92, 282);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X + 4, testOffset.Y + 3);
@@ -492,7 +492,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void Vanilla_BlockedDoorToggling2(TestContext context) {
       DPoint testOffset = new DPoint(104, 282);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X + 4, testOffset.Y + 3);
@@ -681,7 +681,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void AC_BlockedDoorToggling1(TestContext context) {
       DPoint testOffset = new DPoint(92, 345);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       TerrariaUtils.Tiles.SetObjectState(TerrariaUtils.Tiles.MeasureObject(new DPoint(testOffset.X + 4, testOffset.Y + 3)), false);
 
@@ -700,7 +700,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
     private void AC_BlockedDoorToggling2(TestContext context) {
       DPoint testOffset = new DPoint(104, 345);
-      CircuitProcessResult result;
+      CircuitProcessingResult result;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X + 4, testOffset.Y + 3);
@@ -2913,7 +2913,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       base.HandleGameUpdate();
     }
 
-    private CircuitProcessResult QuickProcessCircuit(int senderX, int senderY) {
+    private CircuitProcessingResult QuickProcessCircuit(int senderX, int senderY) {
       return this.GetProcessor(senderX, senderY).ProcessCircuit(this.GetTestPlayer());
     }
 
@@ -2925,7 +2925,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       return new CircuitProcessor(this.PluginTrace, this.CircuitHandler, new DPoint(senderX, senderY));
     }
 
-    private void Assert_SignaledComponents(CircuitProcessResult result, int expectedComponentCount) {
+    private void Assert_SignaledComponents(CircuitProcessingResult result, int expectedComponentCount) {
       if (result.SignaledComponentsCounter != expectedComponentCount) {
         throw new AssertException(string.Format(
           "The circuit signaled {0} components, but {1} were expected instead.", 
@@ -2934,7 +2934,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       }
     }
 
-    private void Assert_SignaledPortDefiningComponents(CircuitProcessResult result, int expectedComponentCount) {
+    private void Assert_SignaledPortDefiningComponents(CircuitProcessingResult result, int expectedComponentCount) {
       if (result.SignaledPortDefiningComponentsCounter != expectedComponentCount) {
         throw new AssertException(string.Format(
           "The circuit signaled {0} port defining components, but {1} were expected instead.", 
@@ -2943,7 +2943,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       }
     }
 
-    private void Assert_ProcessedBranches(CircuitProcessResult result, int expectedBranchCount) {
+    private void Assert_ProcessedBranches(CircuitProcessingResult result, int expectedBranchCount) {
       if (result.ProcessedBranchCount != expectedBranchCount) {
         throw new AssertException(string.Format(
           "The circuit processed {0} branches, but {1} were expected instead.", 
@@ -2953,7 +2953,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
     }
 
     private void Assert_Cancelled(
-      CircuitProcessResult result, CircuitCancellationReason expectedReason, BlockType expectedComponentType = BlockType.Invalid
+      CircuitProcessingResult result, CircuitCancellationReason expectedReason, BlockType expectedComponentType = BlockType.Invalid
     ) {
       if (result.CancellationReason != expectedReason) {
         if (expectedReason == CircuitCancellationReason.None) {

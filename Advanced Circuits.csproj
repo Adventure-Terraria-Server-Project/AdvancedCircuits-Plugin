@@ -223,7 +223,7 @@
     <Compile Include="Implementation\#Data\RootBranchProcessData.cs" />
     <Compile Include="Implementation\#Data\SignalType.cs" />
     <Compile Include="Implementation\AdvancedCircuits.cs" />
-    <Compile Include="Implementation\#Data\CircuitProcessResult.cs" />
+    <Compile Include="Implementation\#Data\CircuitProcessingResult.cs" />
     <Compile Include="Implementation\CircuitProcessor.cs" />
     <Compile Include="Implementation\PluginCooperationHandler.cs" />
     <Compile Include="Implementation\Test\TestRunner.cs" />

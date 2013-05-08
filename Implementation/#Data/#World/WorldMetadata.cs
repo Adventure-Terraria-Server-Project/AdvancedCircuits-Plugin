@@ -1,20 +1,15 @@
-﻿// This file is provided unter the terms of the 
-// Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-// To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/.
-// 
-// Written by CoderCow
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
-using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
 
 using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
+
+using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class WorldMetadata: IMetadataFile {

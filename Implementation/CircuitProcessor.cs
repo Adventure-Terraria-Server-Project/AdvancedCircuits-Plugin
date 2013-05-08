@@ -1,17 +1,12 @@
-﻿// This file is provided unter the terms of the 
-// Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-// To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/.
-// 
-// Written by CoderCow
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Text;
-using TShockAPI;
-using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
+
+using TShockAPI;
+
+using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitProcessor {
@@ -110,9 +105,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Properties: Result, IsAdvancedCircuit, TriggeringPlayer, TriggeredPassively, CircuitLength, IsCancellationPending]
-    private readonly CircuitProcessResult result;
+    private readonly CircuitProcessingResult result;
 
-    protected CircuitProcessResult Result {
+    protected CircuitProcessingResult Result {
       get { return this.result; }
     }
 
@@ -157,7 +152,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.circuitHandler = circuitHandler;
       this.senderMeasureData = TerrariaUtils.Tiles.MeasureObject(senderLocation);
       this.queuedRootBranches = new List<RootBranchProcessData>(20);
-      this.result = new CircuitProcessResult {
+      this.result = new CircuitProcessingResult {
         IsAdvancedCircuit = !TerrariaUtils.Tiles.IsObjectWired(this.SenderMeasureData),
         SenderLocation = this.SenderMeasureData.OriginTileLocation
       };
@@ -168,7 +163,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Methods: ProcessCircuit, ProcessRootBranch, ProcessSubBranches, ProcessTile, PostProcessCircuit]
-    public CircuitProcessResult ProcessCircuit(
+    public CircuitProcessingResult ProcessCircuit(
       TSPlayer player = null, SignalType? overrideSignal = null, bool switchSender = true, bool switchSenderLocalOnly = true
     ) {
       if (this.wasExecuted)

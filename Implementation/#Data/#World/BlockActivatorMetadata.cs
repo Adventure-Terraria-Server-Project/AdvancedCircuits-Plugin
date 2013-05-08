@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using Terraria.Plugins.Common;
 using DPoint = System.Drawing.Point;
+
+using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class BlockActivatorMetadata {

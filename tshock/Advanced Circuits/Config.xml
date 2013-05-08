@@ -42,7 +42,7 @@
 
   <BlockActivatorConfig>
     <MaxChangeableBlocks>100</MaxChangeableBlocks>
-    <Cooldown>5</Cooldown>
+    <Cooldown>60</Cooldown>
     <TriggerPermission></TriggerPermission>
   </BlockActivatorConfig>
 
