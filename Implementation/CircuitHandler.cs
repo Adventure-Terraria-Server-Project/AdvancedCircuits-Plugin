@@ -221,9 +221,50 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public bool HandleHitSwitch(TSPlayer player, DPoint tileLocation) {
+      if (
+        TerrariaUtils.Tiles[tileLocation].type == (int)BlockType.PressurePlate &&
+        AdvancedCircuits.CountComponentModifiers(tileLocation, new DPoint(1, 1)) == 2
+      )
+        return true;
+
       try {
         CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
         this.NotifyPlayer(processor.ProcessCircuit(player));
+        //  NetMessage.SendData((int)PacketTypes.HitSwitch, -1, e.Msg.whoAmI, string.Empty, x, y);
+      } catch (Exception ex) {
+        this.PluginTrace.WriteLineError(
+          "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
+          TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[tileLocation].type), tileLocation, ex.ToString()
+        );
+      }
+
+      return true;
+    }
+
+    public bool HandleDoorUse(TSPlayer player, DPoint tileLocation, bool isOpening) {
+      try {
+        CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
+        this.NotifyPlayer(processor.ProcessCircuit(player, AdvancedCircuits.BoolToSignal(isOpening)));
+        //  NetMessage.SendData((int)PacketTypes.HitSwitch, -1, e.Msg.whoAmI, string.Empty, x, y);
+      } catch (Exception ex) {
+        this.PluginTrace.WriteLineError(
+          "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
+          TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[tileLocation].type), tileLocation, ex.ToString()
+        );
+      }
+
+      return true;
+    }
+
+    public bool HandleTriggerPressurePlate(TSPlayer player, DPoint tileLocation, bool byProjectile = false) {
+      int modifiers = AdvancedCircuits.CountComponentModifiers(tileLocation, new DPoint(1, 1));
+      if (modifiers == 1 || (modifiers == 2 && byProjectile))
+        return true;
+
+      try {
+        CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
+        this.NotifyPlayer(processor.ProcessCircuit(player));
+        //  NetMessage.SendData((int)PacketTypes.HitSwitch, -1, e.Msg.whoAmI, string.Empty, x, y);
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
           "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 

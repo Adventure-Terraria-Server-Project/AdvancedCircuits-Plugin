@@ -36,7 +36,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == AdvancedCircuits.BlockType_CrossoverBridge ||
         blockType == BlockType.GrandfatherClock ||
         blockType == AdvancedCircuits.BlockType_BlockActivator ||
-        blockType == AdvancedCircuits.BlockType_WirelessTransmitter
+        blockType == AdvancedCircuits.BlockType_WirelessTransmitter ||
+        blockType == BlockType.DoorOpened ||
+        blockType == BlockType.DoorClosed
       );
     }
 
@@ -133,12 +135,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public static IEnumerable<DPoint> EnumerateComponentPortLocations(ObjectMeasureData measureData) {
-      return AdvancedCircuits.EnumerateComponentPortLocations(measureData.OriginTileLocation, measureData.Size);
+      DPoint componentOriginLocation = measureData.OriginTileLocation;
+      DPoint componentSize = measureData.Size;
+      if (measureData.BlockType == BlockType.DoorOpened)
+        componentSize = new DPoint(1, 3);
+
+      return AdvancedCircuits.EnumerateComponentPortLocations(componentOriginLocation, componentSize);
     }
 
     public static DPoint GetPortAdjacentComponentTileLocation(ObjectMeasureData measureData, DPoint portLocation) {
       DPoint origin = measureData.OriginTileLocation;
       DPoint size = measureData.Size;
+      if (measureData.BlockType == BlockType.DoorOpened)
+        size = new DPoint(1, 3);
 
       if (portLocation.X < origin.X)
         return new DPoint(origin.X, portLocation.Y);

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml.Schema;
 using DPoint = System.Drawing.Point;
 
@@ -254,9 +255,21 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.getDataHookHandler = new GetDataHookHandler(this.Trace, true);
       this.GetDataHookHandler.HitSwitch += this.Net_HitSwitch;
       this.GetDataHookHandler.TileEdit += this.Net_TileEdit;
+      this.GetDataHookHandler.DoorUse += this.Net_DoorUse;
 
       GameHooks.Update += this.Game_Update;
       WorldHooks.SaveWorld += this.World_SaveWorld;
+
+      try {
+        this.AddExperimentalHooks();
+      } catch {}
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void AddExperimentalHooks() {
+      NpcHooks.UseDoor += this.Npc_UseDoor;
+      NpcHooks.TriggerPressurePlate += this.Npc_TriggerPressurePlate;
+      ProjectileHooks.TriggerPressurePlate += this.Projectile_TriggerPressurePlate;
     }
 
     private void RemoveHooks() {
@@ -266,6 +279,17 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       GameHooks.Update -= this.Game_Update;
       WorldHooks.SaveWorld -= this.World_SaveWorld;
       GameHooks.PostInitialize -= this.Game_PostInitialize;
+
+      try {
+        this.RemoveExperimentalHooks();
+      } catch {}
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void RemoveExperimentalHooks() {
+      NpcHooks.UseDoor += this.Npc_UseDoor;
+      NpcHooks.TriggerPressurePlate += this.Npc_TriggerPressurePlate;
+      ProjectileHooks.TriggerPressurePlate += this.Projectile_TriggerPressurePlate;
     }
 
     private void Net_HitSwitch(object sender, TileLocationEventArgs e) {
@@ -274,7 +298,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       if (this.CircuitHandler != null)
         e.Handled = this.CircuitHandler.HandleHitSwitch(e.Player, e.Location);
-      //  NetMessage.SendData((int)PacketTypes.HitSwitch, -1, e.Msg.whoAmI, string.Empty, x, y);
+    }
+
+    private void Net_DoorUse(object sender, DoorUseEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+        return;
+
+      if (this.CircuitHandler != null)
+        e.Handled = this.CircuitHandler.HandleDoorUse(e.Player, e.Location, e.IsOpening);
     }
 
     private void Net_TileEdit(object sender, TileEditEventArgs e) {
@@ -304,8 +335,32 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       e.Handled = this.WorldMetadataHandler.HandleTileEdit(e.Player, e.EditType, e.BlockType, e.Location, e.ObjectStyle);
     }
 
+    private void Npc_TriggerPressurePlate(NpcTriggerPressurePlateEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+        return;
+
+      if (this.CircuitHandler != null)
+        e.Handled = this.CircuitHandler.HandleTriggerPressurePlate(TSPlayer.Server, new DPoint(e.X, e.Y));
+    }
+
+    private void Npc_UseDoor(NpcUseDoorEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+        return;
+
+      if (this.CircuitHandler != null)
+        e.Handled = this.CircuitHandler.HandleDoorUse(TSPlayer.Server, new DPoint(e.X, e.Y), e.IsOpening);
+    }
+
+    private void Projectile_TriggerPressurePlate(ProjectileTriggerPressurePlateEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+        return;
+
+      if (this.CircuitHandler != null)
+        e.Handled = this.CircuitHandler.HandleTriggerPressurePlate(TSPlayer.Server, new DPoint(e.X, e.Y), true);
+    }
+
     private void World_SaveWorld(bool resettime, HandledEventArgs e) {
-      if (this.isDisposed || e.Handled)
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
         return;
 
       try {
@@ -316,6 +371,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     private void Game_Update() {
+      if (this.isDisposed || !this.hooksEnabled)
+        return;
+
       if (this.CircuitHandler != null)
         this.CircuitHandler.HandleGameUpdate();
 

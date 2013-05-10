@@ -76,6 +76,8 @@ Changelog
 Version 1.2 [08.05.2013]
   -Configuration file structure has changed, your old 
    configuration has to be ported to the new version.
+  -Added full intergration support. AC will fully integrate
+   if you use the provided custom terraria server (optional).
   -Added Wireless Transmitter Component (Meteorite).
   -Pumps can now be configured using 5 different profiles 
    (default + 4 modifiers).
@@ -91,6 +93,8 @@ Version 1.2 [08.05.2013]
    Block Activators.
   -Added sand, pearlsand and ebonsand support to Block 
    Activators.
+  -Pressure plates support two modifiers now: One - They can 
+   only be triggered by players, Two - Only by npcs.
   -Made some more general block types work with Block 
    Activators (including obsidian).
   -Block Activators with one modifier will now replace already
@@ -102,6 +106,8 @@ Version 1.2 [08.05.2013]
    instead of integer.
   -Fixed projectile lifetime of dart trap configs sometimes not
    working.
+  -Fixed levers sometimes to be signaled by advanced circuits
+   even thought they were not wired by a port.
   -Added persistent mode to /ac switch.
   -/ac switch might now toggle active stone.
   -/ac switch might now set Logical-Gate port states.

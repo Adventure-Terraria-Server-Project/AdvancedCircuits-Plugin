@@ -153,8 +153,22 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.circuitHandler = circuitHandler;
       this.senderMeasureData = TerrariaUtils.Tiles.MeasureObject(senderLocation);
       this.queuedRootBranches = new List<RootBranchProcessData>(20);
+
+      bool isSenderWired;
+      if (this.SenderMeasureData.BlockType == BlockType.DoorOpened) {
+        isSenderWired = false;
+        for (int y = this.SenderMeasureData.OriginTileLocation.Y; y < this.SenderMeasureData.OriginTileLocation.Y + this.SenderMeasureData.Size.Y; y++) {
+          if (TerrariaUtils.Tiles[this.SenderMeasureData.OriginTileLocation.X, y].wire) {
+            isSenderWired = true;
+            break;
+          }
+        }
+      } else {
+        isSenderWired = TerrariaUtils.Tiles.IsObjectWired(this.SenderMeasureData);
+      }
+
       this.result = new CircuitProcessingResult {
-        IsAdvancedCircuit = !TerrariaUtils.Tiles.IsObjectWired(this.SenderMeasureData),
+        IsAdvancedCircuit = !isSenderWired,
         SenderLocation = this.SenderMeasureData.OriginTileLocation
       };
 
@@ -208,6 +222,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         } else {
           // Grandfather Clock is an Advanced Circuit component and thus wont work in Vanilla Circuits.
           if (senderBlockType == BlockType.GrandfatherClock)
+            return this.Result;
+          if (senderBlockType == BlockType.DoorOpened || senderBlockType == BlockType.DoorClosed)
             return this.Result;
 
           if (!this.CircuitHandler.Config.OverrideVanillaCircuits) {
@@ -825,44 +841,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
         case BlockType.DoorClosed:
         case BlockType.DoorOpened: {
-          bool currentState = (measureData.BlockType == BlockType.DoorOpened);
-          bool newState;
-          if (signal == SignalType.Swap)
-            newState = !currentState;
-          else
-            newState = AdvancedCircuits.SignalToBool(signal).Value;
+          if (this.IsAdvancedCircuit)
+            return false;
 
-          if (newState != currentState) {
-            int doorX = measureData.OriginTileLocation.X;
-            int doorY = measureData.OriginTileLocation.Y;
-
-            if (newState) {
-              // A door will always try to open to the opposite site of the sender's location that triggered the circuit first.
-              int direction = 1;
-              if (doorX < this.SenderMeasureData.OriginTileLocation.X)
-                direction = -1;
-
-              // If opening it towards one direction doesn't work, try the other.
-              currentState = WorldGen.OpenDoor(doorX, doorY, direction);
-              if (!currentState) {
-                direction *= -1;
-                currentState = WorldGen.OpenDoor(doorX, doorY, direction);
-              }
-
-              if (currentState) {
-                TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 0, doorX, doorY, direction);
-                // Because the door changed its sprite, we have to re-measure it now.
-                measureData = TerrariaUtils.Tiles.MeasureObject(measureData.OriginTileLocation);
-              }
-            } else {
-              if (WorldGen.CloseDoor(doorX, doorY, true))
-                TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 1, doorX, doorY);
-            }
-
-            WorldGen.numWire = 0;
-            WorldGen.numNoWire = 0;
-          }
-
+          this.OpenDoor(measureData, signal);
           return true;
         }
         case BlockType.InletPump:
@@ -1116,6 +1098,46 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return false;
     }
 
+    private void OpenDoor(ObjectMeasureData measureData, SignalType signal) {
+      bool currentState = (measureData.BlockType == BlockType.DoorOpened);
+      bool newState;
+      if (signal == SignalType.Swap)
+        newState = !currentState;
+      else
+        newState = AdvancedCircuits.SignalToBool(signal).Value;
+
+      if (newState != currentState) {
+        int doorX = measureData.OriginTileLocation.X;
+        int doorY = measureData.OriginTileLocation.Y;
+
+        if (newState) {
+          // A door will always try to open to the opposite site of the sender's location that triggered the circuit first.
+          int direction = 1;
+          if (doorX < this.SenderMeasureData.OriginTileLocation.X)
+            direction = -1;
+
+          // If opening it towards one direction doesn't work, try the other.
+          currentState = WorldGen.OpenDoor(doorX, doorY, direction);
+          if (!currentState) {
+            direction *= -1;
+            currentState = WorldGen.OpenDoor(doorX, doorY, direction);
+          }
+
+          if (currentState) {
+            TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 0, doorX, doorY, direction);
+            // Because the door changed its sprite, we have to re-measure it now.
+            measureData = TerrariaUtils.Tiles.MeasureObject(measureData.OriginTileLocation);
+          }
+        } else {
+          if (WorldGen.CloseDoor(doorX, doorY, true))
+            TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 1, doorX, doorY);
+        }
+
+        WorldGen.numWire = 0;
+        WorldGen.numNoWire = 0;
+      }
+    }
+
     private void ExecuteStatueAction(DPoint statueLocation, NullStatueAction statueAction) {
       MoveNpcStatueAction moveNpcAction = (statueAction as MoveNpcStatueAction);
       SpawnNpcStatueAction spawnNpcAction = (statueAction as SpawnNpcStatueAction);
@@ -1222,6 +1244,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       DPoint blockActivatorLocationToRegister = DPoint.Empty;
       BlockActivatorMode blockActivatorModeToRegister = BlockActivatorMode.Default;
       switch (measureData.BlockType) {
+        case BlockType.DoorOpened:
+        case BlockType.DoorClosed: {
+          for (int y = measureData.OriginTileLocation.Y; y < measureData.OriginTileLocation.Y + measureData.Size.Y; y++)
+            if (TerrariaUtils.Tiles[measureData.OriginTileLocation.X, y].wire)
+              return false;
+
+          this.OpenDoor(measureData, AdvancedCircuits.BoolToSignal(signal));
+          return true;
+        }
         case BlockType.XSecondTimer: {
           if (!portTile.active || portTile.type != (int)AdvancedCircuits.BlockType_InputPort)
             return false;
@@ -1239,6 +1270,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
         case BlockType.Switch:
         case BlockType.Lever: {
+          if (measureData.BlockType == BlockType.Lever && TerrariaUtils.Tiles.IsObjectWired(measureData))
+            return false;
+
           bool currentState = (TerrariaUtils.Tiles.ObjectHasActiveState(measureData));
           int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
 
