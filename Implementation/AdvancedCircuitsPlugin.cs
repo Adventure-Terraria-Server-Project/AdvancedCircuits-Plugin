@@ -19,7 +19,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
     #region [Constants]
     public const string TracePrefix = @"[Advanced Circuits] ";
-    public const string TriggCfg_Permission = "ac_reloadcfg";
     public const string ReloadCfg_Permission = "ac_reloadcfg";
     #endregion
 

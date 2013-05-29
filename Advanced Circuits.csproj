@@ -77,7 +77,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisLogFile>bin\Release\Advanced Circuits Plugin.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
@@ -182,10 +182,6 @@
       <HintPath>References\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Protector">
-      <HintPath>References\Protector.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="SignCommands">
       <HintPath>References\SignCommands.dll</HintPath>
       <Private>False</Private>
@@ -262,6 +258,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Guide.wld" />
+    <None Include="README.md" />
     <None Include="tshock\Advanced Circuits\Config.xsd">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -270,23 +267,19 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Plugin Common Library\Plugin Common Library.csproj">
-      <Project>{1D38E0CF-BF13-4229-860F-3809F39F0892}</Project>
+      <Project>{1d38e0cf-bf13-4229-860f-3809f39f0892}</Project>
       <Name>Plugin Common Library</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Protector\Protector.csproj">
+      <Project>{2c69c30b-4fc7-4edf-b9e6-e3b6441f0e84}</Project>
+      <Name>Protector</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF "$(ConfigurationName)" == "Release" (
-  SET WinRar=C:\Program Files\WinRAR\
-
-  CD "$(TargetDir)"
-  DEL "TShockAPI.*"
-
-  MKDIR "ServerPlugins"
-  MOVE "*.pdb" "ServerPlugins"
-  MOVE "*.dll" "ServerPlugins"
-
-  "%25WinRar%25\WinRAR.exe" M -R -AFZIP "$(ProjectName).zip" "*.*"
+    <PostBuildEvent>If "$(ConfigurationName)" == "Release" (
+  DEL "$(TargetDir)TShockAPI.xml"
 )</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -10,14 +10,6 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class UserInteractionHandler: UserInteractionHandlerBase, IDisposable {
-    #region [Property: PluginTrace]
-    private readonly PluginTrace pluginTrace;
-
-    protected PluginTrace PluginTrace {
-      get { return this.pluginTrace; }
-    }
-    #endregion
-
     #region [Property: PluginInfo]
     private readonly PluginInfo pluginInfo;
 
@@ -70,7 +62,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       Contract.Requires<ArgumentNullException>(pluginCooperationHandler != null);
       Contract.Requires<ArgumentNullException>(reloadConfigurationCallback != null);
 
-      this.pluginTrace = pluginTrace;
       this.pluginInfo = pluginInfo;
       this.config = config;
       this.worldMetadata = worldMetadata;

@@ -1,0 +1,332 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<xs:schema 
+  xmlns="http://github.com/CoderCow/AdvancedCircuits-Plugin"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  
+  version="1.2"
+  targetNamespace="http://github.com/CoderCow/AdvancedCircuits-Plugin" 
+  elementFormDefault="qualified"
+>
+  <xs:simpleType name="NetVersion">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="^\d+([.]\d+){0,3}$" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="FlexBool">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="True" />
+      <xs:enumeration value="False" />
+      <xs:enumeration value="true" />
+      <xs:enumeration value="false" />
+      <xs:enumeration value="0" />
+      <xs:enumeration value="1" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ModifierConfigProfile">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Default" />
+      <xs:enumeration value="OneModifier" />
+      <xs:enumeration value="TwoModifiers" />
+      <xs:enumeration value="ThreeModifiers" />
+      <xs:enumeration value="FourModifiers" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Cooldown">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="20000" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Degree">
+    <xs:restriction base="xs:float">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="360" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PumpLiquidAmount">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="1020" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="PumpLiquidLossValue">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="-1020" />
+      <xs:maxInclusive value="1020" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="WirelessNetwork">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="255" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="WirelessRange">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Terraria.BlockId">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="149" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Terraria.ProjectileId">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="1" />
+      <xs:maxInclusive value="111" />
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <xs:element name="AdvancedCircuitsConfiguration">
+    <xs:complexType>
+      <xs:all>
+        <xs:element name="OverrideVanillaCircuits" type="FlexBool" />
+        <xs:element name="AdvancedCircuitsEnabled" type="FlexBool" />
+        <xs:element name="MaxDartTrapsPerCircuit" type="xs:int" />
+        <xs:element name="MaxStatuesPerCircuit" type="xs:int" />
+        <xs:element name="MaxPumpsPerCircuit" type="xs:int" />
+        <xs:element name="MaxCircuitLength" type="xs:int" />
+        <xs:element name="BoulderWirePermission" type="xs:string" minOccurs="0" />
+
+        <xs:element name="SignConfig">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="ReadPrefix" type="xs:string" />
+              <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
+              <xs:element name="PassiveTriggerPermission" type="xs:string" minOccurs="0" />
+              <xs:element name="TriggerSignCommandPermission" type="xs:string" minOccurs="0" />
+            </xs:all>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="BlockActivatorConfig">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="MaxChangeableBlocks" type="xs:int" />
+              <xs:element name="Cooldown" type="Cooldown" />
+              <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
+            </xs:all>
+          </xs:complexType>
+        </xs:element>
+
+        <xs:element name="PumpConfigs">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="PumpConfig" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:all>
+                    <xs:element name="TransferableWater" type="PumpLiquidAmount" />
+                    <xs:element name="TransferableLava" type="PumpLiquidAmount" />
+                    <xs:element name="LossValue" type="PumpLiquidLossValue" />
+                    <xs:element name="Cooldown" type="Cooldown" />
+                    <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
+                    <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
+                  </xs:all>
+
+                  <xs:attribute name="Profile" type="ModifierConfigProfile" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+
+          <xs:unique name="PumpConfigProfileUnique">
+            <xs:selector xpath="PumpConfig" />
+            <xs:field xpath="@Profile" />
+          </xs:unique>
+        </xs:element>
+
+        <xs:element name="WirelessTransmitterConfigs">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="WirelessTransmitterConfig" minOccurs="1" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:all>
+                    <xs:element name="Network" type="WirelessNetwork" />
+                    <xs:element name="Range" type="WirelessRange" />
+                    <xs:element name="Cooldown" type="Cooldown" />
+                    <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
+                    <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
+                  </xs:all>
+
+                  <xs:attribute name="Profile" type="ModifierConfigProfile" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+
+          <xs:unique name="WirelessTransmitterConfigProfileUnique">
+            <xs:selector xpath="WirelessTransmitterConfig" />
+            <xs:field xpath="@Profile" />
+          </xs:unique>
+        </xs:element>
+
+        <xs:element name="DartTrapConfigs">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="DartTrapConfig" minOccurs="1" maxOccurs="unbounded">                
+                <xs:complexType>
+                  <xs:all>
+                    <xs:element name="ProjectileType" type="Terraria.ProjectileId" />
+                    <xs:element name="ProjectileDamage" type="xs:int" />
+                    <xs:element name="ProjectileSpeed" type="xs:float" />
+                    <xs:element name="ProjectileAngle" type="Degree" />
+                    <xs:element name="ProjectileOffset" type="xs:float" />
+                    <xs:element name="ProjectileLifeTime" type="xs:int" />
+                    <xs:element name="ProjectileKnockback" type="xs:float" />
+                    <xs:element name="Cooldown" type="Cooldown" />
+                    <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
+                    <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
+                  </xs:all>
+
+                  <xs:attribute name="Profile" type="ModifierConfigProfile" use="required" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+
+          <xs:unique name="DartTrapConfigProfileUnique">
+            <xs:selector xpath="DartTrapConfig" />
+            <xs:field xpath="@Profile" />
+          </xs:unique>
+        </xs:element>
+
+        <xs:element name="StatueConfigs">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="StatueConfig" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:all>
+                    <xs:element name="PlayerCheckRange" type="xs:int" minOccurs="0" />
+                    <xs:element name="Cooldown" type="Cooldown" />
+                    <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
+                    <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
+
+                    <xs:element name="Actions">
+                      <xs:complexType>
+                        <xs:choice minOccurs="0" maxOccurs="unbounded">
+                          <xs:element name="NullAction" />
+
+                          <xs:element name="MoveNpcAction">
+                            <xs:complexType>
+                              <xs:all>
+                                <xs:element name="NpcId" type="xs:int" />
+                                <xs:element name="SpawnIfNotExistent" type="FlexBool" />
+                                <xs:element name="CheckRange" type="xs:nonNegativeInteger" />
+                              </xs:all>
+                            </xs:complexType>
+                          </xs:element>
+
+                          <xs:element name="SpawnNpcAction">
+                            <xs:complexType>
+                              <xs:all>
+                                <xs:element name="NpcId" type="xs:int" />
+                                <xs:element name="Amount" type="xs:nonNegativeInteger" />
+                                <xs:element name="CheckRange" type="xs:int" />
+                                <xs:element name="CheckAmount" type="xs:int" />
+                              </xs:all>
+                            </xs:complexType>
+                          </xs:element>
+
+                          <xs:element name="SpawnItemAction">
+                            <xs:complexType>
+                              <xs:all>
+                                <xs:element name="ItemId" type="xs:int" />
+                                <xs:element name="Amount" type="xs:nonNegativeInteger" />
+                                <xs:element name="CheckRange" type="xs:int" />
+                                <xs:element name="CheckAmount" type="xs:int" />
+                              </xs:all>
+                            </xs:complexType>
+                          </xs:element>
+
+                          <xs:element name="BuffPlayerAction">
+                            <xs:complexType>
+                              <xs:all>
+                                <xs:element name="BuffId" type="xs:string" />
+                                <xs:element name="BuffTime" type="xs:nonNegativeInteger" />
+                                <xs:element name="Radius" type="xs:int" />
+                              </xs:all>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:choice>
+
+                        <xs:attribute name="ProcessingMethod" use="required">
+                          <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                              <xs:enumeration value="ExecuteAll" />
+                              <xs:enumeration value="ExecuteOne" />
+                            </xs:restriction>
+                          </xs:simpleType>
+                        </xs:attribute>
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:all>
+
+                  <xs:attribute name="StatueType" use="required">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:enumeration value="Armor" />
+                        <xs:enumeration value="Angel" />
+                        <xs:enumeration value="Star" />
+                        <xs:enumeration value="Sword" />
+                        <xs:enumeration value="Slime" />
+                        <xs:enumeration value="Goblin" />
+                        <xs:enumeration value="Shield" />
+                        <xs:enumeration value="Bat" />
+                        <xs:enumeration value="Fish" />
+                        <xs:enumeration value="Bunny" />
+                        <xs:enumeration value="Skeleton" />
+                        <xs:enumeration value="Reaper" />
+                        <xs:enumeration value="Woman" />
+                        <xs:enumeration value="Imp" />
+                        <xs:enumeration value="Gargoyle" />
+                        <xs:enumeration value="Gloom" />
+                        <xs:enumeration value="Hornet" />
+                        <xs:enumeration value="Bomb" />
+                        <xs:enumeration value="Crab" />
+                        <xs:enumeration value="Hammer" />
+                        <xs:enumeration value="Potion" />
+                        <xs:enumeration value="Spear" />
+                        <xs:enumeration value="Cross" />
+                        <xs:enumeration value="Jellyfish" />
+                        <xs:enumeration value="Bow" />
+                        <xs:enumeration value="Boomerang" />
+                        <xs:enumeration value="Boot" />
+                        <xs:enumeration value="Chest" />
+                        <xs:enumeration value="Bird" />
+                        <xs:enumeration value="Axe" />
+                        <xs:enumeration value="Corrupt" />
+                        <xs:enumeration value="Tree" />
+                        <xs:enumeration value="Anvil" />
+                        <xs:enumeration value="Pickaxe" />
+                        <xs:enumeration value="Mushroom" />
+                        <xs:enumeration value="Eyeball" />
+                        <xs:enumeration value="Pillar" />
+                        <xs:enumeration value="Heart" />
+                        <xs:enumeration value="Pot" />
+                        <xs:enumeration value="Sunflower" />
+                        <xs:enumeration value="King" />
+                        <xs:enumeration value="Queen" />
+                        <xs:enumeration value="Piranha" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+
+          <xs:unique name="StatueConfigProfileUnique">
+            <xs:selector xpath="StatueConfig" />
+            <xs:field xpath="@StatueType" />
+          </xs:unique>
+        </xs:element>
+      </xs:all>
+
+      <xs:attribute name="Version" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

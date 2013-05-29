@@ -1,5 +1,5 @@
 ﻿==============================================================
- Advanced Circuits Plugin for Terraria API
+ Advanced Circuits Plugin
    (c) CoderCow 2012-2013
 ==============================================================
 
@@ -25,13 +25,6 @@ NOTE: Before installing and configuring the plugin, read the
 "Known Problems" section first!
 
 Note: This plugin requires TShock 4 or higher in order to work.
-
-To learn more about Advanced Circuits, have a look on the 
-official wiki:
-https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
-
-Suggestions? Bugs? File issues here:
-https://github.com/CoderCow/AdvancedCircuits-Plugin/issues
 
 
 Features
@@ -76,6 +69,12 @@ executable provided with this plugin.
 You can also use the original TerrariaServer.exe included in
 the TShock package, but AC will then not be able to handle
 circuits triggered by npcs or projectiles.
+
+
+A Quickstart to Advanced Circuits
+--------------------------------------------------------------
+Have a look on the official wiki:
+https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
 
 
 Changelog
@@ -139,7 +138,6 @@ Version 1.2 [29.05.2013]
   -Some performance and stability improvements.
   -Some minor improvements, fixed some typos.
   -Updated for Plugin Common Lib 1.9.
-
 Version 1.1.1 [25.11.2012]
   -Fixed a wire processing bug causing some wires, depending 
    on their positioning and alignment, not to be signaled in 
@@ -147,7 +145,6 @@ Version 1.1.1 [25.11.2012]
   -Fixed a bug causing Block Activators not to properly check 
    whether the maximum of changeable blocks is reached or not.
   -Improved metadata handling.
-
 Version 1.1 [19.11.2012]
   -Updated for TShock 4.0.
   -Configuration file structure has changed, your old 
