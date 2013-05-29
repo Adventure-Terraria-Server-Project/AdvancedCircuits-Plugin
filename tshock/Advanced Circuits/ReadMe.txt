@@ -30,16 +30,17 @@ Note: This plugin requires TShock 4 or higher in order to work.
 Features
 --------------------------------------------------------------
 -Adds "Advanced Circuits", a more powerful wiring mechanism.
--Improves the existing Terraria wiring mechanics.
--Enables the server's owner to have more control over wiring.
+-Improves the existing (vanilla) Terraria wiring mechanics.
+-Enables the server's owner to have more control over wiring
+ and performance.
 
 
 Commands
 --------------------------------------------------------------
-/advancedcircuits|aci|ac (info)
-/advancedcircuits|aci|ac commands
-/advancedcircuits|aci|ac blocks
-/advancedcircuits|aci|ac reloadcfg
+/advancedcircuits|ac (info)
+/advancedcircuits|ac commands
+/advancedcircuits|ac blocks
+/advancedcircuits|ac reloadcfg
 
 
 Permissions
@@ -76,11 +77,15 @@ Changelog
 Version 1.2 [08.05.2013]
   -Configuration file structure has changed, your old 
    configuration has to be ported to the new version.
+  -World metadata file structure has changed, swappers states 
+   of previous versions will be discarded.
+  -Permission renamed: "advancedcircuits_reloadcfg" -> 
+   "ac_reloadcfg".
   -Added full intergration support. AC will fully integrate
    if you use the provided custom terraria server (optional).
   -Added Wireless Transmitter Component (Meteorite).
   -Pumps can now be configured using 5 different profiles 
-   (default + 4 modifiers).
+   (default + 4 Modifiers).
   -Added SignCommands cooperation. If a Sign Command is written
    on a sign triggered by a 1 signal in an Advanced Circuit, 
    then this Sign Command will be executed.
@@ -88,17 +93,31 @@ Version 1.2 [08.05.2013]
   -Added BuffPlayer statue action.
   -Added Protector cooperation to check whether tiles to 
    change using /ac switch are protected.
-  -Block Activators will now work through Crossover Bridges.
+  -Doors are now Port Defining Components and will send signals
+   when opened / closed. They also support one Modifier.
+  -Added two new Modifier functions to switches / levers.
+  -Added some sign configuration possibilities.
+  -Added persistent mode to /ac switch.
+  -/ac switch might now toggle active stone.
+  -/ac switch might now set Logical-Gate port states.
+  -Added up to four Modifiers support to Swappers, thus they 
+   can now also serve as easy counting units.
+  -Beside acting as XOR-Gate, gold ore may now also be used as 
+   a XOR-Port to set the incoming or outgoing signal for / 
+   of a Port Defining Component to 0.
+  -Block Activators will now work through most Port Defining
+   Components.
   -Tiles affected by gravity will now work properly with 
    Block Activators.
   -Added sand, pearlsand and ebonsand support to Block 
    Activators.
-  -Pressure plates support two modifiers now: One - They can 
+  -Pressure plates support two Modifiers now: One - They can 
    only be triggered by players, Two - Only by npcs.
   -Made some more general block types work with Block 
    Activators (including obsidian).
-  -Block Activators with one modifier will now replace already
+  -Block Activators with one Modifier will now replace already
    existing blocks.
+  -Pressure Plates will now ignore Input Ports (glass).
   -If a chest is above a block to be modified by a Block
    Activator, the related block will not be changed anymore.
   -Projectile knockback and angle can now be defined for 
@@ -106,11 +125,11 @@ Version 1.2 [08.05.2013]
    instead of integer.
   -Fixed projectile lifetime of dart trap configs sometimes not
    working.
+  -Fixed statues being unable to spawn mobs with ids below 0.
+  -Fixed a bug with music box switching.
   -Fixed levers sometimes to be signaled by advanced circuits
    even thought they were not wired by a port.
-  -Added persistent mode to /ac switch.
-  -/ac switch might now toggle active stone.
-  -/ac switch might now set Logical-Gate port states.
+  -Some performance and stability improvements.
   -Some minor improvements, fixed some typos.
   -Updated for Plugins Common Lib 1.8.
 Version 1.1.1 [25.11.2012]
@@ -130,7 +149,7 @@ Version 1.1 [19.11.2012]
    during a single circuit execution.
   -Added the new Port Defining Component "Block Activator" 
    (Active Stone).
-  -Beside acting as NOT-Gate, Obsidian may now also be used as 
+  -Beside acting as NOT-Gate, obsidian may now also be used as 
    a NOT-Port to invert the incoming or outgoing signal for / 
    of a Port Defining Component.
   -Signs will now state their text to the circuit triggering 

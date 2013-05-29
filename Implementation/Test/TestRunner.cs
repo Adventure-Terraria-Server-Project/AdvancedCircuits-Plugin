@@ -87,7 +87,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.cooperationHandler = cooperationHandler;
       return;
       this.RegisterTest(@"BP\Multi Branches", this.BP_MultiBranches);
-      this.RegisterTest(@"BP\Snacke Branches", this.BP_SnackeBranches);
+      this.RegisterTest(@"BP\Snake Branches", this.BP_SnakeBranches);
       this.RegisterTest(@"BP\Wire Bunch", this.BP_WireBunch);
       this.RegisterTest(@"BP\Multi Branches2", this.BP_MultiBranches2);
       this.RegisterTest(@"BP\Double Signal", this.BP_DoubleSignal);
@@ -100,7 +100,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.RegisterTest(@"Vanilla\Blocked Door Toggling 1", this.Vanilla_BlockedDoorToggling1);
       this.RegisterTest(@"Vanilla\Blocked Door Toggling 2", this.Vanilla_BlockedDoorToggling2);
       this.RegisterTest(@"Vanilla\Pumps", this.Vanilla_Pumps);
-      //this.RegisterTest(@"Vanilla\Statues", this.Vanilla_Statues);
+      this.RegisterTest(@"Vanilla\Statues", this.Vanilla_Statues);
       this.RegisterTest(@"Vanilla\ComponentActivation", this.Vanilla_ComponentActivation);
       this.RegisterTest(@"Vanilla\Timers", this.Vanilla_Timers);
 
@@ -109,7 +109,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.RegisterTest(@"AC\Blocked Door Toggling 1", this.AC_BlockedDoorToggling1);
       this.RegisterTest(@"AC\Blocked Door Toggling 2", this.AC_BlockedDoorToggling2);
       this.RegisterTest(@"AC\Pumps", this.AC_Pumps);
-      //this.RegisterTest(@"AC\Statues", this.AC_Statues);
+      this.RegisterTest(@"AC\Statues", this.AC_Statues);
       this.RegisterTest(@"AC\ComponentActivation", this.AC_ComponentActivation);
 
       this.RegisterTest(@"AC\Single Tile Trigger Ports", this.AC_SingleTileTriggerPorts);
@@ -141,7 +141,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.RegisterTest(@"AC\NOT Ports 2", this.AC_NOTPorts2);
       this.RegisterTest(@"AC\NOT Ports 3", this.AC_NOTPorts3);
       this.RegisterTest(@"AC\Switch Forwarding", this.AC_SwitchForwarding);
-      //this.RegisterTest(@"AC\Grandfather Clock", this.AC_GrandfatherClock);
+      this.RegisterTest(@"AC\Grandfather Clock", this.AC_GrandfatherClock);
       this.RegisterTest(@"AC\Block Activator", this.AC_BlockActivator);
       this.RegisterTest(@"AC\Boulder", this.AC_Boulder);
       this.RegisterTest(@"AC\Wireless Transmitter", this.AC_WirelessTransmitter);
@@ -154,7 +154,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.config = new Configuration();
       this.config.OverrideVanillaCircuits = true;
 
-      this.MetadataHandler.Metadata.ActiveSwapperLocations.Clear();
+      this.MetadataHandler.Metadata.Swappers.Clear();
       this.MetadataHandler.Metadata.ActiveTimers.Clear();
       this.MetadataHandler.Metadata.Clocks.Clear();
       this.MetadataHandler.Metadata.GateStates.Clear();
@@ -224,7 +224,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.Assert_ProcessedBranches(result, 6);
     }
 
-    private void BP_SnackeBranches(TestContext context) {
+    private void BP_SnakeBranches(TestContext context) {
       DPoint testOffset = new DPoint(57, 227);
       CircuitProcessingResult result;
 
@@ -687,13 +687,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X + 4, testOffset.Y + 3);
-      this.Assert_SignaledComponents(result, 2);
+      this.Assert_SignaledComponents(result, 0);
+      this.Assert_SignaledPortDefiningComponents(result, 2);
       TAssert.IsBlockType(testOffset.X + 2, testOffset.Y + 3, BlockType.DoorOpened);
       TAssert.IsBlockType(testOffset.X + 6, testOffset.Y + 3, BlockType.DoorOpened);
 
       context.Phase = "2";
       result = this.QuickProcessCircuit(testOffset.X + 4, testOffset.Y + 3);
-      this.Assert_SignaledComponents(result, 2);
+      this.Assert_SignaledComponents(result, 0);
+      this.Assert_SignaledPortDefiningComponents(result, 2);
       TAssert.IsBlockType(testOffset.X + 1, testOffset.Y + 3, BlockType.DoorClosed);
       TAssert.IsBlockType(testOffset.X + 7, testOffset.Y + 3, BlockType.DoorClosed);
     }
@@ -704,19 +706,22 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X + 4, testOffset.Y + 3);
-      this.Assert_SignaledComponents(result, 2);
+      this.Assert_SignaledComponents(result, 0);
+      this.Assert_SignaledPortDefiningComponents(result, 2);
       TAssert.IsBlockType(testOffset.X + 1, testOffset.Y + 3, BlockType.DoorClosed);
       TAssert.IsBlockType(testOffset.X + 7, testOffset.Y + 3, BlockType.DoorClosed);
 
       context.Phase = "2";
       result = this.QuickProcessCircuit(testOffset.X + 4, testOffset.Y + 3);
-      this.Assert_SignaledComponents(result, 2);
+      this.Assert_SignaledComponents(result, 0);
+      this.Assert_SignaledPortDefiningComponents(result, 2);
       TAssert.IsBlockType(testOffset.X, testOffset.Y + 3, BlockType.DoorOpened);
       TAssert.IsBlockType(testOffset.X + 8, testOffset.Y + 3, BlockType.DoorOpened);
 
       context.Phase = "3";
       result = this.QuickProcessCircuit(testOffset.X + 4, testOffset.Y + 3);
-      this.Assert_SignaledComponents(result, 2);
+      this.Assert_SignaledComponents(result, 0);
+      this.Assert_SignaledPortDefiningComponents(result, 2);
       TAssert.IsBlockType(testOffset.X + 1, testOffset.Y + 3, BlockType.DoorClosed);
       TAssert.IsBlockType(testOffset.X + 7, testOffset.Y + 3, BlockType.DoorClosed);
     }
@@ -2679,7 +2684,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.QuickProcessCircuit(testOffset.X + 11, testOffset.Y + 10);
       for (int x = 0; x < 4; x++) {
         for (int y = 0; y < 4; y++) {
-          TAssert.IsBlockType(activationFieldOffset.X + x, activationFieldOffset.Y + y, BlockType.GrayBrick);
+          if (x < 2) {
+            TAssert.IsBlockType(activationFieldOffset.X + x, activationFieldOffset.Y + y, BlockType.GrayBrick);
+          } else {
+            TAssert.IsTileInactive(activationFieldOffset.X + x, activationFieldOffset.Y + y);
+          }
         }
       }
     }

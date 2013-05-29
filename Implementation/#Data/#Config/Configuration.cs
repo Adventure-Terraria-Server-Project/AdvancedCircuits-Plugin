@@ -68,21 +68,21 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Property: SignPrefix]
-    private string signPrefix;
-
-    public string SignPrefix {
-      get { return this.signPrefix; }
-      set { this.signPrefix = value; }
-    }
-    #endregion
-
     #region [Property: BoulderWirePermission]
     private string boulderWirePermission;
 
     public string BoulderWirePermission {
       get { return this.boulderWirePermission; }
       set { this.boulderWirePermission = value; }
+    }
+    #endregion
+
+    #region [Property: SignConfig]
+    private SignConfig signConfig;
+
+    public SignConfig SignConfig {
+      get { return this.signConfig; }
+      set { this.signConfig = value; }
     }
     #endregion
 
@@ -151,8 +151,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.maxStatuesPerCircuit = 10;
       this.maxPumpsPerCircuit = 4;
       this.maxCircuitLength = 400;
-      this.signPrefix = "Sign: ";
 
+      this.signConfig = new SignConfig();
       this.blockActivatorConfig = new BlockActivatorConfig();
 
       this.pumpConfigs = new Dictionary<ComponentConfigProfile,PumpConfig>();
@@ -163,8 +163,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (fillDictionaries)
         this.dartTrapConfigs.Add(ComponentConfigProfile.Default, new DartTrapConfig());
 
-      this.statueConfigs = new Dictionary<StatueStyle,StatueConfig>();
-
       this.wirelessTransmitterConfigs = new Dictionary<ComponentConfigProfile,WirelessTransmitterConfig>();
       if (fillDictionaries)
         this.wirelessTransmitterConfigs.Add(ComponentConfigProfile.Default, new WirelessTransmitterConfig());
@@ -172,6 +170,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.explosivesConfigs = new Dictionary<ComponentConfigProfile,ExplosivesConfig>();
       if (fillDictionaries)
         this.explosivesConfigs.Add(ComponentConfigProfile.Default, new ExplosivesConfig());
+
+      this.statueConfigs = new Dictionary<StatueStyle,StatueConfig>();
     }
 
     public static Configuration Read(string filePath) {
@@ -210,8 +210,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       resultingConfig.maxStatuesPerCircuit    = int.Parse(rootElement["MaxStatuesPerCircuit"].InnerText);
       resultingConfig.maxPumpsPerCircuit      = int.Parse(rootElement["MaxPumpsPerCircuit"].InnerText);
       resultingConfig.maxCircuitLength        = int.Parse(rootElement["MaxCircuitLength"].InnerText);
-      resultingConfig.signPrefix              = rootElement["SignPrefix"].InnerText;
       resultingConfig.boulderWirePermission   = rootElement["BoulderWirePermission"].InnerText;
+      resultingConfig.signConfig              = SignConfig.FromXmlElement(rootElement["SignConfig"]);
       resultingConfig.blockActivatorConfig    = BlockActivatorConfig.FromXmlElement(rootElement["BlockActivatorConfig"]);
 
       XmlElement pumpConfigsNode = rootElement["PumpConfigs"];
@@ -260,8 +260,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         if (statueConfigElement == null)
           continue;
 
-        StatueStyle statueType = (StatueStyle)Enum.Parse(typeof(StatueStyle), statueConfigElement.Attributes["StatueType"].Value);
-        resultingConfig.statueConfigs.Add(statueType, StatueConfig.FromXmlElement(statueConfigElement));
+        StatueStyle statueStyle = (StatueStyle)Enum.Parse(typeof(StatueStyle), statueConfigElement.Attributes["StatueType"].Value);
+        resultingConfig.statueConfigs.Add(statueStyle, StatueConfig.FromXmlElement(statueConfigElement));
       }
 
       return resultingConfig;

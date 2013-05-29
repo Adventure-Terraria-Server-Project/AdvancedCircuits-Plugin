@@ -19,6 +19,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
     #region [Constants]
     public const string TracePrefix = @"[Advanced Circuits] ";
+    public const string TriggCfg_Permission = "ac_reloadcfg";
+    public const string ReloadCfg_Permission = "ac_reloadcfg";
     #endregion
 
     #region [Properties: Static AdvancedCircuitsDataDirectory, Static ConfigFilePath, Static WorldMetadataDirectory]
@@ -215,9 +217,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.worldMetadataHandler = new WorldMetadataHandler(this.Trace, AdvancedCircuitsPlugin.WorldMetadataDirectory);
 
       try {
-        if (this.WorldMetadataHandler.RequiresMetadataInitialization())
-          this.Trace.WriteLineInfo("Starting one time metadata initialization...");
-
         this.WorldMetadataHandler.InitOrReadMetdata();
         return true;
       } catch (Exception ex) {
@@ -256,6 +255,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.GetDataHookHandler.HitSwitch += this.Net_HitSwitch;
       this.GetDataHookHandler.TileEdit += this.Net_TileEdit;
       this.GetDataHookHandler.DoorUse += this.Net_DoorUse;
+      this.GetDataHookHandler.SendTileSquare += this.Net_SendTileSquare;
 
       GameHooks.Update += this.Game_Update;
       WorldHooks.SaveWorld += this.World_SaveWorld;
@@ -287,9 +287,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void RemoveExperimentalHooks() {
-      NpcHooks.UseDoor += this.Npc_UseDoor;
-      NpcHooks.TriggerPressurePlate += this.Npc_TriggerPressurePlate;
-      ProjectileHooks.TriggerPressurePlate += this.Projectile_TriggerPressurePlate;
+      NpcHooks.UseDoor -= this.Npc_UseDoor;
+      NpcHooks.TriggerPressurePlate -= this.Npc_TriggerPressurePlate;
+      ProjectileHooks.TriggerPressurePlate -= this.Projectile_TriggerPressurePlate;
     }
 
     private void Net_HitSwitch(object sender, TileLocationEventArgs e) {
@@ -305,27 +305,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
 
       if (this.CircuitHandler != null)
-        e.Handled = this.CircuitHandler.HandleDoorUse(e.Player, e.Location, e.IsOpening);
+        e.Handled = this.CircuitHandler.HandleDoorUse(e.Player, e.Location, e.IsOpening, null, e.Direction);
     }
 
     private void Net_TileEdit(object sender, TileEditEventArgs e) {
       if (this.isDisposed || !this.hooksEnabled || e.Handled)
         return;
-
-      #if DEBUG || Testrun
-      if (e.EditType == TileEditType.DestroyWire) {
-        e.Player.SendMessage(e.Location.ToString(), Color.Aqua);
-
-        if (!TerrariaUtils.Tiles[e.Location].active)
-          return;
-
-        ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(e.Location);
-        e.Player.SendInfoMessage(string.Format(
-          "Origin X: {0}, Origin Y: {1}, Active: {2}", measureData.OriginTileLocation.X, measureData.OriginTileLocation.Y, 
-          TerrariaUtils.Tiles.ObjectHasActiveState(measureData)
-        ));
-      }
-      #endif
 
       if (this.UserInteractionHandler.HandleTileEdit(e.Player, e.EditType, e.BlockType, e.Location, e.ObjectStyle)) {
         e.Handled = true;
@@ -333,6 +318,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
       
       e.Handled = this.WorldMetadataHandler.HandleTileEdit(e.Player, e.EditType, e.BlockType, e.Location, e.ObjectStyle);
+    }
+
+    private void Net_SendTileSquare(object sender, SendTileSquareEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+        return;
+
+      e.Handled = this.CircuitHandler.HandleSendTileSquare(e.Player, e.Location, e.Size);
     }
 
     private void Npc_TriggerPressurePlate(NpcTriggerPressurePlateEventArgs e) {
@@ -348,7 +340,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
 
       if (this.CircuitHandler != null)
-        e.Handled = this.CircuitHandler.HandleDoorUse(TSPlayer.Server, new DPoint(e.X, e.Y), e.IsOpening);
+        e.Handled = this.CircuitHandler.HandleDoorUse(TSPlayer.Server, new DPoint(e.X, e.Y), e.IsOpening, e.Npc);
     }
 
     private void Projectile_TriggerPressurePlate(ProjectileTriggerPressurePlateEventArgs e) {

@@ -66,8 +66,11 @@
     <CodeContractsBaseLineFile />
     <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
-    <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
+    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
     <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
+    <CodeContractsMissingPublicRequiresAsWarnings>True</CodeContractsMissingPublicRequiresAsWarnings>
+    <CodeContractsSQLServerOption />
+    <CodeContractsFailBuildOnWarnings>False</CodeContractsFailBuildOnWarnings>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -185,7 +188,7 @@
     </Reference>
     <Reference Include="SignCommands">
       <HintPath>References\SignCommands.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -204,6 +207,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Implementation\#Data\#Config\BlockActivatorConfig.cs" />
+    <Compile Include="Implementation\#Data\#Config\SignConfig.cs" />
     <Compile Include="Implementation\#Data\#Config\_Statues\BuffPlayerStatueAction.cs" />
     <Compile Include="Implementation\#Data\#Config\_Statues\NullStatueAction.cs" />
     <Compile Include="Implementation\#Data\#Config\ExplosivesConfig.cs" />

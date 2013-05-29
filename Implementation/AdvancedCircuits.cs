@@ -22,12 +22,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
 
-    #region [Methods: IsPortDefiningComponentBlock, IsModifierSupportingComponentBlock, IsCustomActivatableBlock, IsLogicalGate]
+    #region [Methods: IsPortDefiningComponentBlock, IsModifierSupportingComponent, IsCustomActivatableBlock, IsLogicalGate, IsOriginSenderComponent]
     public static bool IsPortDefiningComponentBlock(BlockType blockType) {
       return (
         blockType == BlockType.Switch ||
         blockType == BlockType.Lever ||
         blockType == BlockType.XSecondTimer ||
+        blockType == BlockType.DoorOpened ||
+        blockType == BlockType.DoorClosed ||
         blockType == AdvancedCircuits.BlockType_ORGate ||
         blockType == AdvancedCircuits.BlockType_ANDGate ||
         blockType == AdvancedCircuits.BlockType_XORGate ||
@@ -36,18 +38,18 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == AdvancedCircuits.BlockType_CrossoverBridge ||
         blockType == BlockType.GrandfatherClock ||
         blockType == AdvancedCircuits.BlockType_BlockActivator ||
-        blockType == AdvancedCircuits.BlockType_WirelessTransmitter ||
-        blockType == BlockType.DoorOpened ||
-        blockType == BlockType.DoorClosed
+        blockType == AdvancedCircuits.BlockType_WirelessTransmitter
       );
     }
 
-    public static bool IsModifierSupportingComponentBlock(BlockType blockType) {
+    public static bool IsModifierSupportingComponent(BlockType blockType) {
       return (
         blockType == BlockType.XSecondTimer ||
         blockType == BlockType.Switch ||
         blockType == BlockType.Lever ||
         blockType == BlockType.GrandfatherClock ||
+        blockType == BlockType.DoorOpened ||
+        blockType == BlockType.DoorClosed ||
         blockType == AdvancedCircuits.BlockType_ANDGate ||
         blockType == AdvancedCircuits.BlockType_XORGate ||
         blockType == AdvancedCircuits.BlockType_ORGate ||
@@ -95,6 +97,18 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == AdvancedCircuits.BlockType_XORGate
       );
     }
+
+    public static bool IsOriginSenderComponent(BlockType blockType) {
+      return (
+        blockType == BlockType.XSecondTimer ||
+        blockType == BlockType.Switch ||
+        blockType == BlockType.Lever ||
+        blockType == BlockType.PressurePlate ||
+        blockType == BlockType.GrandfatherClock ||
+        blockType == BlockType.DoorOpened ||
+        blockType == BlockType.DoorClosed
+      );
+    }
     #endregion
 
     #region [Method: GetComponentName]
@@ -112,6 +126,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return "Swapper";
         case AdvancedCircuits.BlockType_CrossoverBridge:
           return "Crossover Bridge";
+        case AdvancedCircuits.BlockType_WirelessTransmitter:
+          return "Wireless Transmitter";
         default:
           return TerrariaUtils.Tiles.GetBlockTypeName(blockType);
       }
@@ -204,19 +220,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     public static IEnumerable<DPoint> EnumerateModifierAdjacentComponents(DPoint modifierLocation) {
       Tile possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X - 1, modifierLocation.Y - 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock((BlockType)possibleComponentTile.type))
+      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X - 1, modifierLocation.Y - 1);
 
       possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X + 1, modifierLocation.Y - 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock((BlockType)possibleComponentTile.type))
+      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X + 1, modifierLocation.Y - 1);
 
       possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X + 1, modifierLocation.Y + 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock((BlockType)possibleComponentTile.type))
+      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X + 1, modifierLocation.Y + 1);
 
       possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X - 1, modifierLocation.Y + 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponentBlock((BlockType)possibleComponentTile.type))
+      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X - 1, modifierLocation.Y + 1);
     }
     #endregion

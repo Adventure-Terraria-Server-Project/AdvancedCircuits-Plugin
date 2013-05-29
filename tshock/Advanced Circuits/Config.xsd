@@ -46,7 +46,7 @@
   </xs:simpleType>
   <xs:simpleType name="PumpLiquidAmount">
     <xs:restriction base="xs:integer">
-      <xs:minInclusive value="1" />
+      <xs:minInclusive value="0" />
       <xs:maxInclusive value="1020" />
     </xs:restriction>
   </xs:simpleType>
@@ -90,8 +90,18 @@
         <xs:element name="MaxStatuesPerCircuit" type="xs:int" />
         <xs:element name="MaxPumpsPerCircuit" type="xs:int" />
         <xs:element name="MaxCircuitLength" type="xs:int" />
-        <xs:element name="SignPrefix" type="xs:string" />
         <xs:element name="BoulderWirePermission" type="xs:string" minOccurs="0" />
+
+        <xs:element name="SignConfig">
+          <xs:complexType>
+            <xs:all>
+              <xs:element name="ReadPrefix" type="xs:string" />
+              <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
+              <xs:element name="PassiveTriggerPermission" type="xs:string" minOccurs="0" />
+              <xs:element name="TriggerSignCommandPermission" type="xs:string" minOccurs="0" />
+            </xs:all>
+          </xs:complexType>
+        </xs:element>
 
         <xs:element name="BlockActivatorConfig">
           <xs:complexType>

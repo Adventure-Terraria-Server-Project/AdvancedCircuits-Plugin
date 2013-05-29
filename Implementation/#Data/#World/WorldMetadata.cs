@@ -18,7 +18,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Property: Version]
-    private readonly string version;
+    private string version;
 
     public string Version {
       get { return this.version; }
@@ -26,7 +26,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Property: GateStates]
-    private readonly Dictionary<DPoint,GateStateMetadata> gateStates;
+    private Dictionary<DPoint,GateStateMetadata> gateStates;
 
     public Dictionary<DPoint,GateStateMetadata> GateStates {
       get { return this.gateStates; }
@@ -34,7 +34,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Property: ActiveTimers]
-    private readonly Dictionary<DPoint,ActiveTimerMetadata> activeTimers;
+    private Dictionary<DPoint,ActiveTimerMetadata> activeTimers;
 
     public Dictionary<DPoint,ActiveTimerMetadata> ActiveTimers {
       get { return this.activeTimers; }
@@ -42,23 +42,23 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Property: Clocks]
-    private readonly Dictionary<DPoint,GrandfatherClockMetadata> clocks;
+    private Dictionary<DPoint,GrandfatherClockMetadata> clocks;
 
     public Dictionary<DPoint,GrandfatherClockMetadata> Clocks {
       get { return this.clocks; }
     }
     #endregion
 
-    #region [Property: ActiveSwapperLocations]
-    private readonly Collection<DPoint> activeSwapperLocations;
+    #region [Property: Swappers]
+    private Dictionary<DPoint,int> swappers;
 
-    public Collection<DPoint> ActiveSwapperLocations {
-      get { return this.activeSwapperLocations; }
+    public Dictionary<DPoint,int> Swappers {
+      get { return this.swappers; }
     }
     #endregion
 
     #region [Property: BlockActivators]
-    private readonly Dictionary<DPoint, BlockActivatorMetadata> blockActivators;
+    private Dictionary<DPoint, BlockActivatorMetadata> blockActivators;
 
     public Dictionary<DPoint,BlockActivatorMetadata> BlockActivators {
       get { return this.blockActivators; }
@@ -66,7 +66,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Property: WirelessTransmitters]
-    private readonly Dictionary<DPoint,string> wirelessTransmitters;
+    private Dictionary<DPoint,string> wirelessTransmitters;
 
     public Dictionary<DPoint,string> WirelessTransmitters {
       get { return this.wirelessTransmitters; }
@@ -88,15 +88,31 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Method: Constructor]
+    #region [Methods: Constructor, EnsureMetadata]
     public WorldMetadata() {
+      this.EnsureMetadata();
+    }
+
+    public void EnsureMetadata() {
       this.version = WorldMetadata.CurrentVersion;
-      this.gateStates = new Dictionary<DPoint,GateStateMetadata>();
-      this.activeTimers = new Dictionary<DPoint,ActiveTimerMetadata>();
-      this.clocks = new Dictionary<DPoint,GrandfatherClockMetadata>();
-      this.activeSwapperLocations = new Collection<DPoint>();
-      this.blockActivators = new Dictionary<DPoint,BlockActivatorMetadata>();
-      this.wirelessTransmitters = new Dictionary<DPoint,string>();
+
+      if (this.gateStates == null)
+        this.gateStates = new Dictionary<DPoint,GateStateMetadata>();
+
+      if (this.activeTimers == null)
+        this.activeTimers = new Dictionary<DPoint,ActiveTimerMetadata>();
+
+      if (this.clocks == null)
+        this.clocks = new Dictionary<DPoint,GrandfatherClockMetadata>();
+
+      if (this.swappers == null)
+        this.swappers = new Dictionary<DPoint,int>();
+
+      if (this.blockActivators == null)
+        this.blockActivators = new Dictionary<DPoint,BlockActivatorMetadata>();
+
+      if (this.wirelessTransmitters == null)
+        this.wirelessTransmitters = new Dictionary<DPoint,string>();
     }
     #endregion
   }

@@ -75,7 +75,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Methods: HandleGameUpdate, HandleHitSwitch]
+    #region [Methods: HandleGameUpdate, HandleHitSwitch, HandleDoorUse, HandleSendTileSquare, HandleTriggerPressurePlate]
     private int frameCounter;
     private bool isDayTime;
     private bool isDaylight = true;
@@ -230,7 +230,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       try {
         CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
         this.NotifyPlayer(processor.ProcessCircuit(player));
-        //  NetMessage.SendData((int)PacketTypes.HitSwitch, -1, e.Msg.whoAmI, string.Empty, x, y);
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
           "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
@@ -238,22 +237,54 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         );
       }
 
+      NetMessage.SendData((int)PacketTypes.HitSwitch, -1, player.Index, string.Empty, tileLocation.X, tileLocation.Y);
       return true;
     }
 
-    public bool HandleDoorUse(TSPlayer player, DPoint tileLocation, bool isOpening) {
+    public bool HandleDoorUse(
+      TSPlayer player, DPoint tileLocation, bool isOpening, NPC npc = null, Direction direction = Direction.Unknown
+    ) {
+      int modifiers = AdvancedCircuits.CountComponentModifiers(tileLocation, new DPoint(1, 1));
+      if (modifiers == 1 && npc != null)
+        return false;
+      if (modifiers == 2 && npc == null)
+        return false;
+      if (modifiers == 3 && (npc == null || npc.friendly))
+        return false;
+
       try {
         CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
-        this.NotifyPlayer(processor.ProcessCircuit(player, AdvancedCircuits.BoolToSignal(isOpening)));
-        //  NetMessage.SendData((int)PacketTypes.HitSwitch, -1, e.Msg.whoAmI, string.Empty, x, y);
+        this.NotifyPlayer(processor.ProcessCircuit(player, AdvancedCircuits.BoolToSignal(isOpening), false));
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
-          "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
+          "DoorUse for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
           TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[tileLocation].type), tileLocation, ex.ToString()
         );
       }
 
-      return true;
+      return false;
+    }
+
+    // This is a work around a lame bug. Each time a door is used, a send tile square packet is sent after the door use packet, 
+    // for whatever reason, and thus this tile square contains "older" data than the server might have at this time because 
+    // the server might have processed a circuit already before this tile square packet arrives. So we try to check for this 
+    // specific packet and ignore it, so that it will not overwrite our and the clients tiles with old data.
+    // This might also fix the bug where doors randomly disappear when used.
+    public bool HandleSendTileSquare(TSPlayer player, DPoint tileLocation, short size) {
+      if (size == 5) {
+        int y = tileLocation.Y + 2;
+        for (int x = tileLocation.X + 1; x < tileLocation.X + 4; x++) {
+          if (
+            TerrariaUtils.Tiles[x, y].active && (
+              TerrariaUtils.Tiles[x, y].type == (int)BlockType.DoorOpened ||
+              TerrariaUtils.Tiles[x, y].type == (int)BlockType.DoorClosed
+            )
+          )
+            return true;
+        }
+      }
+
+      return false;
     }
 
     public bool HandleTriggerPressurePlate(TSPlayer player, DPoint tileLocation, bool byProjectile = false) {
@@ -264,7 +295,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       try {
         CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
         this.NotifyPlayer(processor.ProcessCircuit(player));
-        //  NetMessage.SendData((int)PacketTypes.HitSwitch, -1, e.Msg.whoAmI, string.Empty, x, y);
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
           "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
@@ -317,30 +347,21 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       switch (result.CancellationReason) {
         case CircuitCancellationReason.ExceededMaxLength:
-          player.SendErrorMessage("Error: Circuit execution was cancelled because it exceeded");
-          player.SendErrorMessage(string.Format("the maximum length of {0} wires.", this.Config.MaxCircuitLength));
+          player.SendErrorMessage("Error: Circuit execution was cancelled because it exceeded the maximum length of ");
+          player.SendErrorMessage(string.Format("{0} wires.", this.Config.MaxCircuitLength));
           break;
         case CircuitCancellationReason.SignaledSameComponentTooOften:
           if (result.CancellationRelatedComponentType == BlockType.Invalid) {
-            player.SendErrorMessage("Error: Circuit execution was cancelled because a component");
-            player.SendErrorMessage("was signaled too often.");
+            player.SendErrorMessage("Error: Circuit execution was cancelled because a component was signaled too often.");
           } else {
             player.SendErrorMessage("Error: Circuit execution was cancelled because the component");
             player.SendErrorMessage(string.Format(
-              "\"{0}\" was signaled too often. Check up your circuit for loops.", AdvancedCircuits.GetComponentName(result.CancellationRelatedComponentType)
+              "\"{0}\" was signaled too often. Check your circuit for loops.", AdvancedCircuits.GetComponentName(result.CancellationRelatedComponentType)
             ));
           }
           
           break;
       }
-
-      #if Debug || Testrun
-      player.SendInfoMessage(string.Format(
-        "Length: {0}, Branches: {1}, Comps: {2}, PD-Comps: {3}, Time: {4}ms", 
-        result.CircuitLength, result.ProcessedBranchCount, result.SignaledComponentsCounter, 
-        result.SignaledPortDefiningComponentsCounter, result.ProcessingTime.TotalMilliseconds
-      ));
-      #endif
     }
     #endregion
   }

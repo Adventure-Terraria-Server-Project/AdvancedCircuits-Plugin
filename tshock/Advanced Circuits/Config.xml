@@ -29,11 +29,25 @@
   <MaxDartTrapsPerCircuit>10</MaxDartTrapsPerCircuit>
   <MaxStatuesPerCircuit>10</MaxStatuesPerCircuit>
   <MaxPumpsPerCircuit>4</MaxPumpsPerCircuit>
-  <!--
-    The prefix to display in front of the text stated by signaled signs.
-  -->
-  <SignPrefix>Sign: </SignPrefix>
   <BoulderWirePermission></BoulderWirePermission>
+  
+  <SignConfig>
+    <!--
+      The prefix to display in front of the text stated by signaled signs.
+    -->
+    <ReadPrefix>Sign: </ReadPrefix>
+    <WirePermission></WirePermission>
+    <!--
+      If a sign is signaled passively (without direct interaction of a player, like by a Timer for example), then that
+      player has to have this permission to have the text shown to them or a sign command executed for them.
+    -->
+    <PassiveTriggerPermission></PassiveTriggerPermission>
+
+    <!--
+      The permissions required to trigger a sign having sign commands on it.
+    -->
+    <TriggerSignCommandPermission></TriggerSignCommandPermission>
+  </SignConfig>
   
   <!--
     The maximum amount of wires a circuit can be made of. Terrarias default is 1000. Recommended is 600.
@@ -42,7 +56,7 @@
 
   <BlockActivatorConfig>
     <MaxChangeableBlocks>100</MaxChangeableBlocks>
-    <Cooldown>60</Cooldown>
+    <Cooldown>0</Cooldown>
     <TriggerPermission></TriggerPermission>
   </BlockActivatorConfig>
 
@@ -85,6 +99,7 @@
       <ProjectileLifeTime>150</ProjectileLifeTime>
       <ProjectileKnockback>2</ProjectileKnockback>
       <Cooldown>180</Cooldown>
+      <WirePermission>Test</WirePermission>
     </DartTrapConfig>
     <DartTrapConfig Profile="OneModifier">
       <ProjectileType>75</ProjectileType>
@@ -116,6 +131,13 @@
     <WirelessTransmitterConfig Profile="Default">
       <Network>1</Network>
       <Range>140</Range>
+      <Cooldown>0</Cooldown>
+      <WirePermission></WirePermission>
+      <TriggerPermission></TriggerPermission>
+    </WirelessTransmitterConfig>
+    <WirelessTransmitterConfig Profile="OneModifier">
+      <Network>2</Network>
+      <Range>0</Range>
       <Cooldown>0</Cooldown>
       <WirePermission></WirePermission>
       <TriggerPermission></TriggerPermission>
@@ -173,7 +195,7 @@
         Buffs nearby players with a specific buff.
         
         BuffId - The id or name of the buff.
-        BuffTime - How long the buff will last in milliseconds.
+        BuffTime - How long the buff will last in frames (60 frames = 1 second).
         Radius - The radius in which buffs are applied to players in tiles.
   -->
   <StatueConfigs>

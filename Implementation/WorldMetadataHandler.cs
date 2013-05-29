@@ -23,39 +23,41 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     protected override IMetadataFile InitMetadata() {
       WorldMetadata metadata = new WorldMetadata();
 
-      List<DPoint> ignoredTiles = new List<DPoint>();
+      this.PluginTrace.WriteLineInfo("Starting one time metadata initialization...");
       for (int x = 0; x < Main.maxTilesX - 1; x++) {
         for (int y = 0; y < Main.maxTilesY - 1; y++) {
           if (!TerrariaUtils.Tiles[x, y].active)
             continue;
 
           DPoint tileLocation = new DPoint(x, y);
-          if (ignoredTiles.Contains(tileLocation))
-            continue;
-
           switch ((BlockType)TerrariaUtils.Tiles[x, y].type) {
             case BlockType.XSecondTimer: {
               // Is active timer?
               if (TerrariaUtils.Tiles[x, y].frameY > 0)
-                metadata.ActiveTimers.Add(tileLocation, new ActiveTimerMetadata());
-
-              ignoredTiles.Add(tileLocation);
+                if (!metadata.ActiveTimers.ContainsKey(tileLocation))
+                  metadata.ActiveTimers.Add(tileLocation, new ActiveTimerMetadata());
 
               break;
             }
             case BlockType.GrandfatherClock: {
               ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(tileLocation);
 
-              metadata.Clocks.Add(measureData.OriginTileLocation, new GrandfatherClockMetadata(null));
-              for (int sx = 0; sx < measureData.Size.X; sx++)
-                for (int sy = 0; sy < measureData.Size.Y; sy++)
-                  ignoredTiles.Add(new DPoint(x + sx, y + sy));
+              if (!metadata.Clocks.ContainsKey(measureData.OriginTileLocation))
+                metadata.Clocks.Add(measureData.OriginTileLocation, new GrandfatherClockMetadata(null));
+
+              break;
+            }
+            case AdvancedCircuits.BlockType_WirelessTransmitter: {
+              foreach (DPoint portLocation in AdvancedCircuits.EnumerateComponentPortLocations(tileLocation, new DPoint(1, 1)))
+                if (TerrariaUtils.Tiles[portLocation].wire && !metadata.WirelessTransmitters.ContainsKey(tileLocation))
+                  metadata.WirelessTransmitters.Add(tileLocation, "{Server}");
 
               break;
             }
           }
         }
       }
+      this.PluginTrace.WriteLineInfo("Metadata initialization complete.");
 
       return metadata;
     }
@@ -63,7 +65,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     protected override IMetadataFile ReadMetadataFromFile(string filePath) {
       WorldMetadata metadata = WorldMetadata.Read(filePath);
 
-      // Invalidate Gates if necessary.
+      // Invalidate Gates
       List<DPoint> gateLocations = new List<DPoint>(metadata.GateStates.Keys);
       foreach (DPoint gateLocation in gateLocations) {
         Tile tile = TerrariaUtils.Tiles[gateLocation];
@@ -77,7 +79,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
       }
 
-      // Invalidate active Timers.
+      // Invalidate Active Timers
       List<DPoint> activeTimerLocations = new List<DPoint>(metadata.ActiveTimers.Keys);
       foreach (DPoint activeTimerLocation in activeTimerLocations) {
         Tile tile = TerrariaUtils.Tiles[activeTimerLocation];
@@ -85,7 +87,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           metadata.ActiveTimers.Remove(activeTimerLocation);
       }
 
-      // Invalidate Grandfather Clocks.
+      // Invalidate Grandfather Clocks
       List<DPoint> clockLocations = new List<DPoint>(metadata.Clocks.Keys);
       for (int i = 0; i < clockLocations.Count; i++) {
         Tile tile = TerrariaUtils.Tiles[clockLocations[i]];
@@ -93,14 +95,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           clockLocations.RemoveAt(i--);
       }
 
-      // Invalidate active Swappers.
-      for (int i = 0; i < metadata.ActiveSwapperLocations.Count; i++) {
-        Tile tile = TerrariaUtils.Tiles[metadata.ActiveSwapperLocations[i]];
+      // Invalidate Swappers
+      List<DPoint> swapperLocations = new List<DPoint>(metadata.Swappers.Keys);
+      foreach (DPoint swapperLocation in swapperLocations) {
+        Tile tile = TerrariaUtils.Tiles[swapperLocation];
         if (!tile.active || tile.type != (int)AdvancedCircuits.BlockType_Swapper)
-          metadata.ActiveSwapperLocations.RemoveAt(i--);
+          metadata.Swappers.Remove(swapperLocation);
       }
 
-      // Invalidate Wireless Transmitters.
+      // Invalidate Wireless Transmitters
       List<DPoint> wirelessTransmitterLocations = new List<DPoint>(metadata.WirelessTransmitters.Keys);
       foreach (DPoint transmitterLocation in wirelessTransmitterLocations) {
         Tile tile = TerrariaUtils.Tiles[transmitterLocation];
@@ -164,8 +167,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               break;
             }
             case AdvancedCircuits.BlockType_Swapper: {
-              if (this.Metadata.ActiveSwapperLocations.Contains(location))
-                this.Metadata.ActiveSwapperLocations.Remove(location);
+              if (this.Metadata.Swappers.ContainsKey(location))
+                this.Metadata.Swappers.Remove(location);
 
               break;
             }

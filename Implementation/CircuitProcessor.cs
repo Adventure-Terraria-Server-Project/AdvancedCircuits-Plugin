@@ -16,6 +16,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public const int PortDefiningComponentSignalMaximum = 5;
     #endregion
 
+    #region [Property: Static Random]
+    private static Random random;
+
+    protected static Random Random {
+      get {
+        if (CircuitProcessor.random == null)
+          CircuitProcessor.random = new Random();
+        
+        return CircuitProcessor.random;
+      }
+    }
+    #endregion
+
     #region [Property: PluginTrace]
     private readonly PluginTrace pluginTrace;
 
@@ -41,19 +54,31 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Property: QueuedRootBranches]
-    private readonly List<RootBranchProcessData> queuedRootBranches;
+    [ThreadStatic]
+    private static List<RootBranchProcessData> queuedRootBranches;
 
     protected List<RootBranchProcessData> QueuedRootBranches {
-      get { return this.queuedRootBranches; }
+      get {
+        if (CircuitProcessor.queuedRootBranches == null)
+          CircuitProcessor.queuedRootBranches = new List<RootBranchProcessData>(40);
+
+        return CircuitProcessor.queuedRootBranches;
+      }
     }
     #endregion
 
     #region [Property: PortDefiningComponentSignalCounter]
-    private readonly Dictionary<DPoint,int> portDefiningComponentSignalCounter;
+    [ThreadStatic]
+    private static Dictionary<DPoint,int> portDefiningComponentSignalCounter;
 
     // Stores the amount of times a single port defining component was signaled during the current circuit execution.
     protected Dictionary<DPoint,int> PortDefiningComponentSignalCounter {
-      get { return this.portDefiningComponentSignalCounter; }
+      get {
+        if (CircuitProcessor.portDefiningComponentSignalCounter == null)
+          CircuitProcessor.portDefiningComponentSignalCounter = new Dictionary<DPoint,int>();
+
+        return CircuitProcessor.portDefiningComponentSignalCounter;
+      }
     }
     #endregion
 
@@ -98,14 +123,20 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Property: TemporaryGateStates]
-    private Dictionary<DPoint, GateStateMetadata> temporaryGateStates;
+    [ThreadStatic]
+    private static Dictionary<DPoint,GateStateMetadata> temporaryGateStates;
 
     protected Dictionary<DPoint,GateStateMetadata> TemporaryGateStates {
-      get { return this.temporaryGateStates; }
+      get {
+        if (CircuitProcessor.temporaryGateStates == null)
+          CircuitProcessor.temporaryGateStates = new Dictionary<DPoint,GateStateMetadata>();
+
+        return CircuitProcessor.temporaryGateStates;
+      }
     }
     #endregion
 
-    #region [Properties: Result, IsAdvancedCircuit, TriggeringPlayer, TriggeredPassively, CircuitLength, IsCancellationPending]
+    #region [Properties: Result, IsAdvancedCircuit, TriggeringPlayer, IsTriggeredPassively, CircuitLength, IsCancellationPending]
     private readonly CircuitProcessingResult result;
 
     protected CircuitProcessingResult Result {
@@ -121,7 +152,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       set { this.result.TriggeringPlayer = value; }
     }
 
-    public bool TriggeredPassively {
+    public bool IsTriggeredPassively {
       get { return this.result.TriggeredPassively; }
       set { this.result.TriggeredPassively = value; }
     }
@@ -139,20 +170,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     private bool wasExecuted;
 
 
-    #region [Method: Constructor]
-    public CircuitProcessor(PluginTrace pluginTrace, CircuitHandler circuitHandler, DPoint senderLocation) {
+    #region [Methods: Constructors]
+    public CircuitProcessor(PluginTrace pluginTrace, CircuitHandler circuitHandler, ObjectMeasureData senderMeasureData) {
       Contract.Requires<ArgumentNullException>(pluginTrace != null);
       Contract.Requires<ArgumentNullException>(circuitHandler != null);
 
       this.pluginTrace = pluginTrace;
-
-      Tile senderTile = TerrariaUtils.Tiles[senderLocation];
-      if (!senderTile.active)
-        throw new ArgumentException("No tile at the given sender location.", "senderLocation");
-
       this.circuitHandler = circuitHandler;
-      this.senderMeasureData = TerrariaUtils.Tiles.MeasureObject(senderLocation);
-      this.queuedRootBranches = new List<RootBranchProcessData>(20);
+      this.senderMeasureData = senderMeasureData;
 
       bool isSenderWired;
       if (this.SenderMeasureData.BlockType == BlockType.DoorOpened) {
@@ -171,9 +196,23 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         IsAdvancedCircuit = !isSenderWired,
         SenderLocation = this.SenderMeasureData.OriginTileLocation
       };
+    }
 
-      if (this.IsAdvancedCircuit)
-        this.portDefiningComponentSignalCounter = new Dictionary<DPoint,int>(20);
+    public CircuitProcessor(
+      PluginTrace pluginTrace, CircuitHandler circuitHandler, DPoint senderLocation
+    ): this(
+      pluginTrace, circuitHandler, CircuitProcessor.CircuitProcessorCtor_MeasureSender(senderLocation)
+    ) {
+      Contract.Requires<ArgumentNullException>(pluginTrace != null);
+      Contract.Requires<ArgumentNullException>(circuitHandler != null);
+    }
+
+    private static ObjectMeasureData CircuitProcessorCtor_MeasureSender(DPoint senderLocation) {
+      Tile senderTile = TerrariaUtils.Tiles[senderLocation];
+      if (!senderTile.active)
+        throw new ArgumentException("No tile at the given sender location.", "senderLocation");
+
+      return TerrariaUtils.Tiles.MeasureObject(senderLocation);
     }
     #endregion
 
@@ -188,12 +227,18 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.SignaledInletPumps.Clear();
       this.SignaledOutletPumps.Clear();
       this.TilesToFrameOnPost.Clear();
+      this.QueuedRootBranches.Clear();
+
+      if (this.IsAdvancedCircuit) {
+        this.PortDefiningComponentSignalCounter.Clear();
+        this.TemporaryGateStates.Clear();
+      }
 
       DateTime processingStartTime = DateTime.Now;
       BlockType senderBlockType = this.SenderMeasureData.BlockType;
 
       this.TriggeringPlayer = player;
-      this.TriggeredPassively = (senderBlockType == BlockType.XSecondTimer || senderBlockType == BlockType.GrandfatherClock);
+      this.IsTriggeredPassively = (senderBlockType == BlockType.XSecondTimer || senderBlockType == BlockType.GrandfatherClock);
 
       SignalType signal = SignalType.Swap;
       try {
@@ -241,7 +286,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           switchSender && (
             senderBlockType == BlockType.Switch || 
             senderBlockType == BlockType.Lever || 
-            senderBlockType == BlockType.XSecondTimer
+            senderBlockType == BlockType.XSecondTimer ||
+            senderBlockType == BlockType.DoorOpened ||
+            senderBlockType == BlockType.DoorClosed
           )
         ) {
           bool newSenderState;
@@ -256,7 +303,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (senderBlockType == BlockType.XSecondTimer) {
             this.RegisterUnregisterTimer(this.SenderMeasureData, newSenderState);
 
-            // Timers do not execute circuits as they are switched.
+            // Timers do not execute circuits when they are switched.
             return this.Result;
           }
         }
@@ -283,8 +330,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           );
 
           SignalType portSignal = signal;
-          if (this.IsAdvancedCircuit && portTile.active && portTile.type == (int)AdvancedCircuits.BlockType_NOTGate)
-            portSignal = AdvancedCircuits.BoolToSignal(!AdvancedCircuits.SignalToBool(portSignal).Value);
+          if (this.IsAdvancedCircuit && portTile.active) {
+            if (portTile.type == (int)AdvancedCircuits.BlockType_NOTGate)
+              portSignal = AdvancedCircuits.BoolToSignal(!AdvancedCircuits.SignalToBool(portSignal).Value);
+            else if (portTile.type == (int)AdvancedCircuits.BlockType_XORGate)
+              portSignal = SignalType.Off;
+          }
 
           this.QueuedRootBranches.Add(new RootBranchProcessData(portAdjacentTileLocation, portLocation, portSignal));
         }
@@ -299,7 +350,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           }
         } else {
           // We know that the sender must have at least one of its tiles wired, we are too lazy to count them though, so we just
-          // expect the wiring of the sender as 1.
+          // expect the wiring of the sender to be 1.
           this.CircuitLength++;
 
           RootBranchProcessData dummyRoot = new RootBranchProcessData(
@@ -354,7 +405,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
 
       Tile startTile = TerrariaUtils.Tiles[rootBranch.FirstWireLocation];
-      if (!startTile.wire || (this.IsAdvancedCircuit && startTile.type == (int)AdvancedCircuits.BlockType_InputPort))
+      if (
+        !startTile.wire || (
+          this.IsAdvancedCircuit && 
+          this.SenderMeasureData.BlockType != BlockType.PressurePlate &&
+          startTile.type == (int)AdvancedCircuits.BlockType_InputPort
+        )
+      )
         return;
 
       SignalType signal = rootBranch.Signal;
@@ -547,9 +604,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return;
         }
 
-        if (rootBranch.SignaledComponentLocations.Contains(acComponentMeasureData.OriginTileLocation))
-          return;
-
         int componentSignalCounter;
         this.PortDefiningComponentSignalCounter.TryGetValue(acComponentMeasureData.OriginTileLocation, out componentSignalCounter);
         if (componentSignalCounter > CircuitProcessor.PortDefiningComponentSignalMaximum) {
@@ -557,6 +611,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           this.Result.CancellationRelatedComponentType = acComponentMeasureData.BlockType;
           return;
         }
+
+        if (
+          AdvancedCircuits.IsOriginSenderComponent((BlockType)tile.type) &&
+          rootBranch.SignaledComponentLocations.Contains(acComponentMeasureData.OriginTileLocation)
+        )
+          return;
 
         if (this.SignalPortDefiningComponent(
           rootBranch, acComponentMeasureData, adjacentTileLocation, AdvancedCircuits.SignalToBool(signal).Value
@@ -700,6 +760,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             maxTransferableLiquid = pumpConfig.TransferableLava;
 
           totalLoss += pumpConfig.LossValue;
+          if (totalLoss < 0)
+            inputableLiquid += Math.Abs(totalLoss);
+          
           inputableLiquid = Math.Min(inputableLiquid, maxTransferableLiquid);
         }
         if (this.SignaledInletPumps.Count > 0) {
@@ -729,43 +792,50 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (this.SignaledOutletPumps.Count > 0) {
             // Take the input liquid.
             int liquidToTransfer = Math.Min(inputableLiquid, outputableLiquid);
-            int liquidToInput = liquidToTransfer;
-            for (int i = 0; i < this.SignaledInletPumps.Count; i++) {
-              DPoint inletPumpLocation = this.SignaledInletPumps[i];
-              ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(inletPumpLocation);
+            if (liquidToTransfer > 0) {
+              int liquidToInput = liquidToTransfer;
+              // Produce liquid?
+              if (totalLoss < 0)
+                liquidToInput += totalLoss;
 
-              foreach (DPoint pumpTileLocation in TerrariaUtils.Tiles.EnumerateObjectTileLocations(measureData)) {
-                Tile pumpTile = TerrariaUtils.Tiles[pumpTileLocation];
-                if (pumpTile.liquid <= liquidToInput) {
-                  liquidToInput -= pumpTile.liquid;
-                  pumpTile.liquid = 0;
-                } else {
-                  pumpTile.liquid -= (byte)liquidToInput;
-                  liquidToInput = 0;
-                }
+              for (int i = 0; i < this.SignaledInletPumps.Count; i++) {
+                DPoint inletPumpLocation = this.SignaledInletPumps[i];
+                ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(inletPumpLocation);
 
-                WorldGen.SquareTileFrame(pumpTileLocation.X, pumpTileLocation.Y, true);
-              }
-            }
-            liquidToTransfer -= totalLoss;
-
-            // Output the liquid.
-            for (int i = 0; i < this.SignaledOutletPumps.Count; i++) {
-              DPoint outletPumpLocation = this.SignaledOutletPumps[i];
-
-              for (int y = 1; y >= 0; y--) {
-                for (int x = 0; x < 2; x++) {
-                  DPoint pumpTileLocation = new DPoint(outletPumpLocation.X + x, outletPumpLocation.Y + y);
+                foreach (DPoint pumpTileLocation in TerrariaUtils.Tiles.EnumerateObjectTileLocations(measureData)) {
                   Tile pumpTile = TerrariaUtils.Tiles[pumpTileLocation];
-                  if (pumpTile.liquid == 255)
-                    continue;
-
-                  byte transferedLiquid = (byte)Math.Min(liquidToTransfer, 255 - pumpTile.liquid);
-                  pumpTile.lava = !transferWater.Value;
-                  pumpTile.liquid += transferedLiquid;
-                  liquidToTransfer = Math.Max(liquidToTransfer - transferedLiquid, 0);
+                  if (pumpTile.liquid <= liquidToInput) {
+                    liquidToInput -= pumpTile.liquid;
+                    pumpTile.liquid = 0;
+                  } else {
+                    pumpTile.liquid -= (byte)liquidToInput;
+                    liquidToInput = 0;
+                  }
 
                   WorldGen.SquareTileFrame(pumpTileLocation.X, pumpTileLocation.Y, true);
+                }
+              }
+              if (totalLoss > 0)
+                liquidToTransfer -= totalLoss;
+
+              // Output the liquid.
+              for (int i = 0; i < this.SignaledOutletPumps.Count; i++) {
+                DPoint outletPumpLocation = this.SignaledOutletPumps[i];
+
+                for (int y = 1; y >= 0; y--) {
+                  for (int x = 0; x < 2; x++) {
+                    DPoint pumpTileLocation = new DPoint(outletPumpLocation.X + x, outletPumpLocation.Y + y);
+                    Tile pumpTile = TerrariaUtils.Tiles[pumpTileLocation];
+                    if (pumpTile.liquid == 255)
+                      continue;
+
+                    byte transferedLiquid = (byte)Math.Min(liquidToTransfer, 255 - pumpTile.liquid);
+                    pumpTile.lava = !transferWater.Value;
+                    pumpTile.liquid += transferedLiquid;
+                    liquidToTransfer = Math.Max(liquidToTransfer - transferedLiquid, 0);
+
+                    WorldGen.SquareTileFrame(pumpTileLocation.X, pumpTileLocation.Y, true);
+                  }
                 }
               }
             }
@@ -805,7 +875,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (measureData.BlockType == BlockType.XSecondTimer) {
             // Directly wired Timers in an Advanced Circuit are not meant to be switched.
             if (this.IsAdvancedCircuit)
-              return true;
+              return false;
 
             if (newState != currentState)
               this.RegisterUnregisterTimer(measureData, newState);
@@ -813,7 +883,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           if (newState != currentState)
             TerrariaUtils.Tiles.SetObjectState(measureData, newState, !localOnly);
-
+          
           return true;
         }
         case BlockType.ActiveStone:
@@ -850,16 +920,20 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case BlockType.InletPump:
         case BlockType.OutletPump: {
           if (signal == SignalType.Off)
-            return true;
+            return false;
 
           PumpConfig pumpConfig;
           ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigProfile(
             AdvancedCircuits.CountComponentModifiers(measureData)
           );
           if (
-            (this.CircuitHandler.Config.PumpConfigs.TryGetValue(configProfile, out pumpConfig) ||
-            (this.CircuitHandler.Config.PumpConfigs.TryGetValue(ComponentConfigProfile.Default, out pumpConfig))) &&
-            WorldGen.checkMech(originX, originY, pumpConfig.Cooldown)
+            (
+              this.CircuitHandler.Config.PumpConfigs.TryGetValue(configProfile, out pumpConfig) ||
+              this.CircuitHandler.Config.PumpConfigs.TryGetValue(ComponentConfigProfile.Default, out pumpConfig)
+            ) &&
+              pumpConfig.Cooldown == 0 ||
+              WorldGen.checkMech(originX, originY, pumpConfig.Cooldown
+            )
           ) {
             if (this.Result.SignaledPumps > this.CircuitHandler.Config.MaxPumpsPerCircuit) {
               this.Result.WarnReason = CircuitWarnReason.SignalesTooManyPumps;
@@ -887,16 +961,20 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
         case BlockType.DartTrap: {
           if (signal == SignalType.Off)
-            return true;
+            return false;
 
           DartTrapConfig trapConfig;
           ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigProfile(
             AdvancedCircuits.CountComponentModifiers(measureData)
           );
           if (
-            (this.CircuitHandler.Config.DartTrapConfigs.TryGetValue(configProfile, out trapConfig) ||
-            (this.CircuitHandler.Config.DartTrapConfigs.TryGetValue(ComponentConfigProfile.Default, out trapConfig))) &&
-            WorldGen.checkMech(originX, originY, trapConfig.Cooldown)
+            (
+              this.CircuitHandler.Config.DartTrapConfigs.TryGetValue(configProfile, out trapConfig) ||
+              this.CircuitHandler.Config.DartTrapConfigs.TryGetValue(ComponentConfigProfile.Default, out trapConfig)
+            ) &&
+              trapConfig.Cooldown == 0 ||
+              WorldGen.checkMech(originX, originY, trapConfig.Cooldown
+            )
           ) {
             if (this.Result.SignaledDartTraps > this.CircuitHandler.Config.MaxDartTrapsPerCircuit) {
               this.Result.WarnReason = CircuitWarnReason.SignalesTooManyDartTraps;
@@ -955,20 +1033,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             TSPlayer.All.SendData(PacketTypes.ProjectileNew, string.Empty, projectileIndex);
             
             this.Result.SignaledDartTraps++;
-
-            /*int projectileIndex = Projectile.NewProjectile(
-              projectileSpawn.X, projectileSpawn.Y, projectileSpeed, 0f, projectileType, projectileDamage, 
-              ProjectileKnockBack, Main.myPlayer
-            );*/
-
-            this.Result.SignaledDartTraps++;
           }
           
           return true;
         }
         case BlockType.Explosives: {
           if (signal == SignalType.Off)
-            return true;
+            return false;
 
           WorldGen.KillTile(originX, originY, false, false, true);
           TSPlayer.All.SendTileSquareEx(originX, originY, 1);
@@ -978,7 +1049,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
         case BlockType.Statue: {
           if (signal == SignalType.Off)
-            return true;
+            return false;
 
           StatueStyle statueStyle = TerrariaUtils.Tiles.GetStatueStyle(TerrariaUtils.Tiles[measureData.OriginTileLocation]);
           StatueConfig statueConfig;
@@ -1021,8 +1092,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               foreach (NullStatueAction action in statueConfig.Actions)
                 this.ExecuteStatueAction(measureData.OriginTileLocation, action);
             } else {
-              Random rnd = new Random();
-              NullStatueAction randomAction = statueConfig.Actions[rnd.Next(0, statueConfig.Actions.Count)];
+              NullStatueAction randomAction = statueConfig.Actions[CircuitProcessor.Random.Next(0, statueConfig.Actions.Count)];
               this.ExecuteStatueAction(measureData.OriginTileLocation, randomAction);
             }
 
@@ -1033,19 +1103,36 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
         case BlockType.Sign: {
           if (
-            !this.IsAdvancedCircuit || signal == SignalType.Off || this.TriggeringPlayer == TSPlayer.Server || 
-            this.TriggeredPassively
+            !this.IsAdvancedCircuit || signal == SignalType.Off || this.TriggeringPlayer == TSPlayer.Server
           )
-            return true;
+            return false;
 
+          if (
+            this.IsTriggeredPassively && !string.IsNullOrEmpty(this.CircuitHandler.Config.SignConfig.PassiveTriggerPermission) &&
+            !this.TriggeringPlayer.Group.HasPermission(this.CircuitHandler.Config.SignConfig.PassiveTriggerPermission)
+          ) {
+            this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
+            this.Result.WarnRelatedComponentType = BlockType.Sign;
+            return false;
+          }
+          
           string signText = Main.sign[Sign.ReadSign(originX, originY)].text;
           if (signText == null)
-            return true;
+            return false;
 
           if (
             this.CircuitHandler.PluginCooperationHandler.IsSignCommandsAvailable &&
             this.CircuitHandler.PluginCooperationHandler.SignCommands_CheckIsSignCommand(signText)
           ) {
+            if (
+              !string.IsNullOrEmpty(this.CircuitHandler.Config.SignConfig.TriggerSignCommandPermission) &&
+              !this.TriggeringPlayer.Group.HasPermission(this.CircuitHandler.Config.SignConfig.TriggerSignCommandPermission)
+            ) {
+              this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
+              this.Result.WarnRelatedComponentType = BlockType.Sign;
+              return false;
+            }
+
             this.CircuitHandler.PluginCooperationHandler.SignCommands_ExecuteSignCommand(
               this.TriggeringPlayer, measureData.OriginTileLocation, signText
             );
@@ -1055,7 +1142,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!WorldGen.checkMech(originX, originY, 300))
             return true;
 
-          string fullText = this.CircuitHandler.Config.SignPrefix + signText;
+          string fullText = this.CircuitHandler.Config.SignConfig.ReadPrefix + signText;
           int lineStartIndex = 0;
           int lineLength = 0;
           for (int i = 0; i < fullText.Length; i++) {
@@ -1086,7 +1173,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
         case BlockType.Boulder: {
           if (!this.IsAdvancedCircuit || signal == SignalType.Off)
-            return true;
+            return false;
 
           WorldGen.KillTile(originX, originY, false, false, true);
           TSPlayer.All.SendTileSquareEx(originX, originY, 2);
@@ -1161,9 +1248,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return;
 
           npcIndex = NPC.NewNPC(spawnLocation.X, spawnLocation.Y, moveNpcAction.NpcType);
-          NPC npc = Main.npc[npcIndex];
+          if (npcIndex == 200)
+            return;
 
-          // Ensure that the spawned npc drops no money on death.
+          NPC npc = Main.npc[npcIndex];
+          if (moveNpcAction.NpcType < 0)
+            npc.netDefaults(moveNpcAction.NpcType);
+
+          // Ensure that the spawned npc drops nothing on death.
           npc.value = 0.0f;
           npc.npcSlots = 0.0f;
         } else {
@@ -1175,7 +1267,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       } else if (spawnNpcAction != null) {
         if (spawnNpcAction.CheckRange > 0 && spawnNpcAction.CheckAmount > 0) {
           int closeByNpcs = 0;
-          foreach (NPC closeByNpc in TerrariaUtils.Npcs.EnumerateNPCsInRange(spawnLocation, spawnNpcAction.CheckRange)) {
+          foreach (NPC closeByNpc in TerrariaUtils.Npcs.EnumerateNPCsAroundPoint(spawnLocation, spawnNpcAction.CheckRange * TerrariaUtils.TileSize)) {
             if (closeByNpc.type == spawnNpcAction.NpcType)
               closeByNpcs++;
           }
@@ -1185,9 +1277,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
         for (int i = 0; i < spawnNpcAction.Amount; i++) {
           int npcIndex = NPC.NewNPC(spawnLocation.X, spawnLocation.Y, spawnNpcAction.NpcType);
-          NPC npc = Main.npc[npcIndex];
+          if (npcIndex == 200)
+            return;
 
-          // Ensure that the spawned npc drops no money on death.
+          NPC npc = Main.npc[npcIndex];
+          if (spawnNpcAction.NpcType < 0)
+            npc.netDefaults(spawnNpcAction.NpcType);
+
+          // Ensure that the spawned npc drops nothing on death.
           npc.value = 0.0f;
           npc.npcSlots = 0.0f;
         }
@@ -1213,7 +1310,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (player == null || !player.Active)
             continue;
 
-          if (Math.Sqrt(Math.Pow(player.TileX - spawnLocation.X, 2) + Math.Pow(player.TileY - spawnLocation.Y, 2)) <= buffPlayerAction.Radius)
+          if (Math.Sqrt(Math.Pow(player.TileX - statueLocation.X, 2) + Math.Pow(player.TileY - statueLocation.Y, 2)) <= buffPlayerAction.Radius)
             player.SetBuff(buffPlayerAction.BuffId, buffPlayerAction.BuffTime);
         }
       }
@@ -1234,6 +1331,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         measureData.BlockType != AdvancedCircuits.BlockType_NOTGate
       ) {
         signal = !signal;
+      } else if (
+        portTile.active && portTile.type == (int)AdvancedCircuits.BlockType_XORGate && 
+        measureData.BlockType != AdvancedCircuits.BlockType_XORGate
+      ) {
+        signal = false;
       }
 
       List<DPoint> componentPorts = null;
@@ -1243,6 +1345,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       BlockActivatorMetadata blockActivatorToRegister = null;
       DPoint blockActivatorLocationToRegister = DPoint.Empty;
       BlockActivatorMode blockActivatorModeToRegister = BlockActivatorMode.Default;
+
       switch (measureData.BlockType) {
         case BlockType.DoorOpened:
         case BlockType.DoorClosed: {
@@ -1250,8 +1353,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             if (TerrariaUtils.Tiles[measureData.OriginTileLocation.X, y].wire)
               return false;
 
+          if (measureData.BlockType == BlockType.DoorOpened) {
+            // Extra check needed if a port of the door is really hit. This is because doors define ports differently than
+            // other components if they are opened.
+            componentPorts = new List<DPoint>(AdvancedCircuits.EnumerateComponentPortLocations(measureData));
+            if (!componentPorts.Contains(portLocation))
+              return false;
+          }
+
           this.OpenDoor(measureData, AdvancedCircuits.BoolToSignal(signal));
-          return true;
+          break;
         }
         case BlockType.XSecondTimer: {
           if (!portTile.active || portTile.type != (int)AdvancedCircuits.BlockType_InputPort)
@@ -1273,13 +1384,48 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (measureData.BlockType == BlockType.Lever && TerrariaUtils.Tiles.IsObjectWired(measureData))
             return false;
 
+          bool isInputPort = (portTile.active && portTile.type == (int)AdvancedCircuits.BlockType_InputPort);
           bool currentState = (TerrariaUtils.Tiles.ObjectHasActiveState(measureData));
-          int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
+          if (isInputPort) {
+            if (currentState != signal)
+              TerrariaUtils.Tiles.SetObjectState(measureData, signal);
 
-          if (currentState != signal)
-            TerrariaUtils.Tiles.SetObjectState(measureData, signal);
-          else if (modifiers == 0)
             return true;
+          } else {
+            int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
+            switch (modifiers) {
+              case 0:
+                if (currentState == signal)
+                  return true;
+
+                TerrariaUtils.Tiles.SetObjectState(measureData, signal);
+                break;
+              case 1:
+                if (currentState != signal)
+                  TerrariaUtils.Tiles.SetObjectState(measureData, signal);
+
+                break;
+              case 2:
+                if (currentState != signal)
+                  return true;
+
+                break;
+              case 3:
+                if (currentState != signal)
+                  return true;
+
+                if (CircuitProcessor.Random.Next(0, 2) == 0)
+                  outputSignal = !signal;
+
+                break;
+            }
+
+            if (modifiers != 1) {
+              blockActivatorToRegister = rootBranch.BlockActivator;
+              blockActivatorLocationToRegister = rootBranch.BlockActivatorLocation;
+              blockActivatorModeToRegister = rootBranch.BlockActivatorMode;
+            }
+          }
 
           break;
         }
@@ -1288,6 +1434,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return false;
 
           outputSignal = !signal;
+
+          blockActivatorToRegister = rootBranch.BlockActivator;
+          blockActivatorLocationToRegister = rootBranch.BlockActivatorLocation;
+          blockActivatorModeToRegister = rootBranch.BlockActivatorMode;
+
           break;
         }
         case AdvancedCircuits.BlockType_ANDGate:
@@ -1306,9 +1457,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               }
               break;
             case 1:
-              if (this.temporaryGateStates == null)
-                this.temporaryGateStates = new Dictionary<DPoint,GateStateMetadata>();
-
               if (!temporaryGateStates.TryGetValue(componentLocation, out metadata)) {
                 metadata = new GateStateMetadata();
                 temporaryGateStates.Add(componentLocation, metadata);
@@ -1352,6 +1500,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               outputSignal = (signaledPorts != 0 && signaledPorts < inputPorts);
               break;
           }
+
+          blockActivatorToRegister = rootBranch.BlockActivator;
+          blockActivatorLocationToRegister = rootBranch.BlockActivatorLocation;
+          blockActivatorModeToRegister = rootBranch.BlockActivatorMode;
           
           break;
         }
@@ -1359,14 +1511,37 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!signal)
             return false;
 
-          int activeSwapperIndex = this.CircuitHandler.WorldMetadata.ActiveSwapperLocations.IndexOf(componentLocation);
-          if (activeSwapperIndex == -1) {
-            this.CircuitHandler.WorldMetadata.ActiveSwapperLocations.Add(componentLocation);
-            outputSignal = false;
+          int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
+          int swapperCounterValue;
+          if (!this.CircuitHandler.WorldMetadata.Swappers.TryGetValue(componentLocation, out swapperCounterValue)) {
+            this.CircuitHandler.WorldMetadata.Swappers.Add(componentLocation, 1);
+
+            if (modifiers == 0)
+              outputSignal = false;
+            else
+              return true;
           } else {
-            this.CircuitHandler.WorldMetadata.ActiveSwapperLocations.RemoveAt(activeSwapperIndex);
-            outputSignal = true;
+            swapperCounterValue++;
+
+            bool sendSignal = true;
+            int swapperCounterMax = modifiers + 1;
+            if (swapperCounterValue == swapperCounterMax) {
+              outputSignal = false;
+            } else if (swapperCounterValue >= swapperCounterMax * 2) {
+              outputSignal = true;
+              swapperCounterValue = 0;
+            } else {
+              sendSignal = false;
+            }
+
+            this.CircuitHandler.WorldMetadata.Swappers[componentLocation] = swapperCounterValue;
+            if (!sendSignal)
+              return true;
           }
+
+          blockActivatorToRegister = rootBranch.BlockActivator;
+          blockActivatorLocationToRegister = rootBranch.BlockActivatorLocation;
+          blockActivatorModeToRegister = rootBranch.BlockActivatorMode;
 
           break;
         }
@@ -1390,6 +1565,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           blockActivatorToRegister = rootBranch.BlockActivator;
           blockActivatorLocationToRegister = rootBranch.BlockActivatorLocation;
+          blockActivatorModeToRegister = rootBranch.BlockActivatorMode;
 
           break;
         }
@@ -1451,8 +1627,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             AdvancedCircuits.CountComponentModifiers(measureData)
           );
           if (
-            (this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(configProfile, out transmitterConfig) ||
-            (this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(ComponentConfigProfile.Default, out transmitterConfig))) && (
+            (
+              this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(configProfile, out transmitterConfig) ||
+              this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(ComponentConfigProfile.Default, out transmitterConfig)
+            ) && (
               transmitterConfig.Cooldown == 0 ||
               WorldGen.checkMech(componentLocation.X, componentLocation.Y, transmitterConfig.Cooldown)
             )
@@ -1467,16 +1645,23 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               return true;
             }
 
+            string sendingTransmitterOwner;
+            if (!this.CircuitHandler.WorldMetadata.WirelessTransmitters.TryGetValue(componentLocation, out sendingTransmitterOwner))
+              return false;
+
             bool isBroadcasting = (transmitterConfig.Network == 0);
-            double squareRange = Math.Pow(transmitterConfig.Range + 1, 2);
+            double sendingSquareRange = 0;
+            if (transmitterConfig.Range > 0)
+              sendingSquareRange = Math.Pow(transmitterConfig.Range + 1, 2);
+
             DPoint portOffset = new DPoint(portLocation.X - componentLocation.X, portLocation.Y - componentLocation.Y);
             foreach (KeyValuePair<DPoint,string> pair in this.CircuitHandler.WorldMetadata.WirelessTransmitters) {
               DPoint receivingTransmitterLocation = pair.Key;
               if (receivingTransmitterLocation == componentLocation)
                 continue;
 
-              string owningPlayerName = pair.Value;
-              if (owningPlayerName != this.TriggeringPlayer.Name)
+              string receivingTransmitterOwner = pair.Value;
+              if (receivingTransmitterOwner != sendingTransmitterOwner)
                 continue;
 
               Tile transmitterTile = TerrariaUtils.Tiles[receivingTransmitterLocation];
@@ -1484,7 +1669,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 continue;
 
               if (
-                squareRange <= (
+                sendingSquareRange > 0 &&
+                sendingSquareRange <= (
                   Math.Pow(receivingTransmitterLocation.X - componentLocation.X, 2) + 
                   Math.Pow(receivingTransmitterLocation.Y - componentLocation.Y, 2)
                 )
@@ -1511,6 +1697,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               bool portOutputSignal = outputSignal;
               if (outputPortTile.active && outputPortTile.type == (int)AdvancedCircuits.BlockType_NOTGate)
                 portOutputSignal = !portOutputSignal;
+              else if (outputPortTile.active && outputPortTile.type == (int)AdvancedCircuits.BlockType_XORGate)
+                portOutputSignal = false;
 
               this.QueuedRootBranches.Add(new RootBranchProcessData(
                 receivingTransmitterLocation, outputPortLocation, AdvancedCircuits.BoolToSignal(portOutputSignal)
@@ -1535,6 +1723,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       for (int i = 0; i < componentPorts.Count; i++) {
         DPoint port = componentPorts[i];
+        // A component shouldn't send a signal through a port where it just received one.
         if (port == portLocation) {
           componentPorts.RemoveAt(i--);
           continue;
@@ -1555,6 +1744,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           measureData.BlockType != AdvancedCircuits.BlockType_NOTGate
         ) {
           portOutputSignal = !portOutputSignal;
+        } else if (
+          portTile.active && portTile.type == (int)AdvancedCircuits.BlockType_XORGate && 
+          measureData.BlockType != AdvancedCircuits.BlockType_XORGate
+        ) {
+          portOutputSignal = false;
         }
 
         RootBranchProcessData newRootBranch = new RootBranchProcessData(
