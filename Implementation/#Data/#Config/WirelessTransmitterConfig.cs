@@ -60,6 +60,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       resultingConfig.network = int.Parse(xmlData["Network"].InnerText);
       resultingConfig.range = int.Parse(xmlData["Range"].InnerText);
       resultingConfig.cooldown = int.Parse(xmlData["Cooldown"].InnerText);
+
       if (xmlData["WirePermission"] != null)
         resultingConfig.wirePermission = xmlData["WirePermission"].InnerText;
       if (xmlData["TriggerPermission"] != null)

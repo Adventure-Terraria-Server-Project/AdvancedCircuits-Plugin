@@ -18,7 +18,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public const BlockType BlockType_InputPort           = BlockType.Glass;
     public const BlockType BlockType_Modifier            = BlockType.CobaltOre;
     public const BlockType BlockType_BlockActivator      = BlockType.ActiveStone;
-    public const BlockType BlockType_WirelessTransmitter = BlockType.Meteorite;
+    public const BlockType BlockType_WirelessTransmitter = BlockType.AdamantiteOre;
     #endregion
 
 

@@ -141,7 +141,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               "Glass - Input Port",
               "Cobalt Ore - Modifier",
               "Active Stone - Active Stone and Block Activator",
-              "Meteorite - Wireless Transmitter"
+              "Adamantite Ore - Wireless Transmitter"
             },
             new PaginationUtil.Settings {
               HeaderFormat = "Advanced Circuits Special Blocks (Page {0} of {1})",
@@ -351,7 +351,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Methods: HandleTileEdit, HandleTilePlacing, HandleWirePlacing]
+    #region [Methods: HandleTileEdit, HandleTilePlacing, HandleTileDestruction, HandleWirePlacing]
     public override bool HandleTileEdit(TSPlayer player, TileEditType editType, BlockType blockType, DPoint location, int objectStyle) {
       if (this.IsDisposed)
         return false;
@@ -615,6 +615,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return false;
 
       foreach (DPoint anyComponentLocation in AdvancedCircuits.EnumerateModifierAdjacentComponents(location)) {
+        if (!TerrariaUtils.Tiles[anyComponentLocation].active)
+          continue;
+
         BlockType blockType = (BlockType)TerrariaUtils.Tiles[anyComponentLocation].type;
         if (
           blockType != BlockType.DartTrap && 
@@ -624,6 +627,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           blockType != AdvancedCircuits.BlockType_WirelessTransmitter
         )
           continue;
+
+        if (blockType == AdvancedCircuits.BlockType_WirelessTransmitter) {
+          bool isWired = false;
+          foreach (DPoint pdcPortLocation in AdvancedCircuits.EnumerateComponentPortLocations(anyComponentLocation, new DPoint(1, 1))) {
+            if (TerrariaUtils.Tiles[pdcPortLocation].wire) {
+              isWired = true;
+              break;
+            }
+          }
+
+          if (!isWired)
+            return false;
+        }
 
         player.SendErrorMessage(string.Format(
           "Please remove the component \"{0}\" first before removing its modifier.", AdvancedCircuits.GetComponentName(blockType)

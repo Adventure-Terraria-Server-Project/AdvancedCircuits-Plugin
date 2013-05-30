@@ -13,6 +13,6 @@ Note: This plugin requires Terraria Server API 1.12 and TShock 4 in order to wor
 
 More information to this plugin can be found [here](tshock/Advanced Circuits/ReadMe.txt).
 
-To learn more about how to use Advanced Circuits, have a look on the [official wiki](wiki).
+To learn more about how to use Advanced Circuits, have a look on the [official wiki](https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki).
 
-Suggestions? Bugs? File issues [here](issues).
+Suggestions? Bugs? File issues [here](https://github.com/CoderCow/AdvancedCircuits-Plugin/issues).

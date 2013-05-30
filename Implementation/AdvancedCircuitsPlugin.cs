@@ -357,7 +357,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       try {
         this.WorldMetadataHandler.WriteMetadata();
       } catch (Exception ex) {
-        this.Trace.WriteLineError("A Save World Handler caused an exception:\n{0}", ex.ToString());
+        this.Trace.WriteLineError("A Save World Handler has thrown an exception:\n{0}", ex.ToString());
       }
     }
 
@@ -365,13 +365,17 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.isDisposed || !this.hooksEnabled)
         return;
 
-      if (this.CircuitHandler != null)
-        this.CircuitHandler.HandleGameUpdate();
+      try {
+        if (this.CircuitHandler != null)
+          this.CircuitHandler.HandleGameUpdate();
 
-      #if Testrun
-      if (this.testRunner.IsRunning)
-        this.testRunner.HandleGameUpdate();
-      #endif
+        #if Testrun
+        if (this.testRunner.IsRunning)
+          this.testRunner.HandleGameUpdate();
+        #endif
+      } catch (Exception ex) {
+        this.Trace.WriteLineError("A Game Update Handler has thrown an exception:\n{0}", ex.ToString());
+      }
     }
     #endregion
 

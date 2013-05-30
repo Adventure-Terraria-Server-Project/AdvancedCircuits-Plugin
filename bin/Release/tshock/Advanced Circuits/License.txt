@@ -1,4 +1,4 @@
-﻿The Advanced Circuits library and all its containing source code is licensed 
+﻿The Advanced Circuits and Plugins Common libraries and all its containing source code is licensed 
 under the Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License. 
 To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/3.0/.
 

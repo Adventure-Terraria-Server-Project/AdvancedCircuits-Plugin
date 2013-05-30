@@ -41,7 +41,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     public static BlockActivatorConfig FromXmlElement(XmlElement xmlData) {
       BlockActivatorConfig resultingBlockActivatorConfig = new BlockActivatorConfig();
-      resultingBlockActivatorConfig.triggerPermission = xmlData["TriggerPermission"].InnerText;
+      if (xmlData["TriggerPermission"] != null)
+        resultingBlockActivatorConfig.triggerPermission = xmlData["TriggerPermission"].InnerText;
       resultingBlockActivatorConfig.maxChangeableBlocks = int.Parse(xmlData["MaxChangeableBlocks"].InnerText);
       resultingBlockActivatorConfig.cooldown = int.Parse(xmlData["Cooldown"].InnerText);
 

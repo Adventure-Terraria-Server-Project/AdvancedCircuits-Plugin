@@ -49,9 +49,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public static SignConfig FromXmlElement(XmlElement xmlData) {
       SignConfig resultingSignConfig = new SignConfig();
       resultingSignConfig.readPrefix = xmlData["ReadPrefix"].InnerText;
-      resultingSignConfig.wirePermission = xmlData["WirePermission"].InnerText;
-      resultingSignConfig.passiveTriggerPermission = xmlData["PassiveTriggerPermission"].InnerText;
-      resultingSignConfig.triggerSignCommandPermission = xmlData["TriggerSignCommandPermission"].InnerText;
+
+      if (xmlData["WirePermission"] != null)
+        resultingSignConfig.wirePermission = xmlData["WirePermission"].InnerText;
+      if (xmlData["PassiveTriggerPermission"] != null)
+        resultingSignConfig.passiveTriggerPermission = xmlData["PassiveTriggerPermission"].InnerText;
+      if (xmlData["TriggerSignCommandPermission"] != null)
+        resultingSignConfig.triggerSignCommandPermission = xmlData["TriggerSignCommandPermission"].InnerText;
 
       return resultingSignConfig;
     }

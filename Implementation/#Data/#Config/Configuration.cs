@@ -210,7 +210,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       resultingConfig.maxStatuesPerCircuit    = int.Parse(rootElement["MaxStatuesPerCircuit"].InnerText);
       resultingConfig.maxPumpsPerCircuit      = int.Parse(rootElement["MaxPumpsPerCircuit"].InnerText);
       resultingConfig.maxCircuitLength        = int.Parse(rootElement["MaxCircuitLength"].InnerText);
-      resultingConfig.boulderWirePermission   = rootElement["BoulderWirePermission"].InnerText;
+      if (rootElement["BoulderWirePermission"] != null)
+        resultingConfig.boulderWirePermission   = rootElement["BoulderWirePermission"].InnerText;
       resultingConfig.signConfig              = SignConfig.FromXmlElement(rootElement["SignConfig"]);
       resultingConfig.blockActivatorConfig    = BlockActivatorConfig.FromXmlElement(rootElement["BlockActivatorConfig"]);
 
