@@ -42,7 +42,7 @@ Commands
 
 Permissions
 ---------------------------------------------------------------------------------
-advancedcircuits_reloadcfg - to reload the configuration file.
+ac_reloadcfg - to reload the configuration file.
 self declared permissions in the configuration file.
 
 
