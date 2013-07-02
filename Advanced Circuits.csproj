@@ -196,10 +196,6 @@
       <HintPath>References\TerrariaServer.exe</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="TShockAPI">
-      <HintPath>References\TShockAPI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Implementation\#Data\#Config\BlockActivatorConfig.cs" />
@@ -273,6 +269,11 @@
     <ProjectReference Include="..\Protector\Protector.csproj">
       <Project>{2c69c30b-4fc7-4edf-b9e6-e3b6441f0e84}</Project>
       <Name>Protector</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\TShock\TShockAPI\TShockAPI.csproj">
+      <Project>{49606449-072b-4cf5-8088-aa49da586694}</Project>
+      <Name>TShockAPI</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
