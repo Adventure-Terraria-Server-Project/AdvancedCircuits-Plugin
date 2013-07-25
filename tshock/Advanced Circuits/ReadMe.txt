@@ -15,7 +15,7 @@ type of circuit is added called "Advanced Circuit" giving players the freedom of
 building complex systems using binary logic and new types of components.
 
 Several configuration settings give the server's owner control of wiring limits 
-and capabilities. This also includes a mighty configuration mechanism of Statues 
+and capabilities. This also includes a mighty configuration mechanism of statues 
 and their performed actions when powered.
 
 NOTE: Before installing and configuring the plugin, read the "Known Problems" 
@@ -75,8 +75,8 @@ Version 1.2 [29.05.2013]
    versions will be discarded.
   -Permission renamed: "advancedcircuits_reloadcfg" -> "ac_reloadcfg".
   -Added full intergration support. AC will fully integrate if you use the 
-   provided custom terraria server (optional).
-  -Added Wireless Transmitter Component (Adamantite Ore).
+   provided custom Terraria Server (optional).
+  -Added Wireless Transmitter Component (adamantite ore).
   -Pumps can now be configured using 5 different profiles (default + 4 Modifiers).
   -Added SignCommands cooperation. If a Sign Command is written on a sign 
    triggered by a "1" signal in an Advanced Circuit, then this Sign Command will 
@@ -134,7 +134,7 @@ Version 1.1 [19.11.2012]
    circuit execution.
   -Wires of circuits might now be processed multiple times during a single 
    circuit execution.
-  -Added the new Port Defining Component "Block Activator" (Active Stone).
+  -Added the new Port Defining Component "Block Activator" (active stone).
   -Beside acting as NOT-Gate, obsidian may now also be used as a NOT-Port to 
    invert the incoming or outgoing signal for / of a Port Defining Component.
   -Signs will now state their text to the circuit triggering player when 
@@ -147,23 +147,23 @@ Version 1.1 [19.11.2012]
   -Switches and Levers will now forward received signals if they got toggled by 
    them.
   -Added AC sub-command "toggle" / "switch", useful to easily toggle the state 
-   of a Torch or some other component.
+   of a torch or some other component.
   -Boulders will now start rolling if they receive a "1" signal in an Advanced 
    Circuit.
-  -Grandfather Clocks can now be used with one or two modifiers.
+  -Grandfather clocks can now be used with one or two modifiers.
   -Components will now be dropped if they were placed onto a wire by a player 
    who didn't have the permission to wire them up.
   -Huge performance improvements in matter of circuit processing.
-  -Fixed a bug allowing Statues to be placed on wires even if that player had 
+  -Fixed a bug allowing statues to be placed on wires even if that player had 
    not the permission to do so.
   -Improved configuration parsing, validation and error detection.
   -Some general stability improvements.
 
 Version 1.0.4 [23.10.2012]
-  -Fixed a bug causing Grandfather Clock to not work anymore.
-  -Fixed a bug causing World Metadata sometimes not be validated correctly for 
+  -Fixed a bug causing grandfather clock to not work anymore.
+  -Fixed a bug causing world metadata sometimes not be validated correctly for 
    Timers.
-  -Improved World Metadata validation.
+  -Improved world metadata validation.
 
 Version 1.0.3 [03.10.2012]
   -The version tree 1.0 is from now on considered stable.
@@ -176,14 +176,14 @@ Version 1.0.3 [03.10.2012]
    world is loaded again.
   -Fixed a bug causing Port Defining Components sometimes not to be signalized by 
    their Input Ports if their circuit met special conditions.
-  -Fixed a bug causing Pumps to malfunction or not work at all.
-  -Fixed a bug causing Doors not to always try to open to the opposite direction 
+  -Fixed a bug causing pumps to malfunction or not work at all.
+  -Fixed a bug causing doors not to always try to open to the opposite direction 
    if blocked.
-  -Fixed a bug causing Timers in an AC to be signalized when connected directly.
-  -Fixed the default ProjectileOffset value of DartTraps. It did not reflect the 
+  -Fixed a bug causing timers in an AC to be signalized when connected directly.
+  -Fixed the default ProjectileOffset value of dart traps. It did not reflect the 
    Terraria default value (2), causing objects right infront of them not to be hit.
   -Fixed a very rare occuring bug causing a NullReferenceException related to 
-   Timers.
+   timers.
   -Fixed a rare occuring bug causing "random exceptions" in circuits meeting 
    special conditions.
   -Updated for Plugins Common Lib 1.3.
@@ -192,11 +192,11 @@ Version 1.0.3 [03.10.2012]
 
 Version 1.0.2 Beta [12.09.2012]
   -Triggering players are now notified if a circuit exceeds the maximum amount of 
-   Pumps, Dart Traps or Statues.
+   pumps, dart traps or statues.
   -World Metadata are now written in JSON format.
-  -Grandfather Clock will no longer signalize a Vanilla Circuit and thus works only 
+  -Grandfather clock will no longer signalize a Vanilla Circuit and thus works only 
    in Advanced Circuits.
-  -Fixed a bug introduced with 1.0.1 where a Music Box could not be switched by 
+  -Fixed a bug introduced with 1.0.1 where a music box could not be switched by 
    signals.
   -Fixed a bug causing wrong NPCs to be moved by statues - this could also have 
    lead to exceptions.
@@ -211,11 +211,11 @@ Version 1.0.1 Beta [10.09.2012]
   -Players triggering a circuit which exceeds the maximum length are now notified 
    about that.
   -Timers which became invalid due to a server crash will no longer throw exceptions.
-  -Fixed Timers turning themselfes off in overridden vanilla circuits.
-  -Fixed Timers sometimes not updating their state for other players when being 
+  -Fixed timers turning themselfes off in overridden vanilla circuits.
+  -Fixed timers sometimes not updating their state for other players when being 
    directly switched.
-  -Fixed Dart Traps doing no damage when no configuration was present.
-  -Fixed Dart Traps not being read properly from the configuration.
+  -Fixed dart traps doing no damage when no configuration was present.
+  -Fixed dart traps not being read properly from the configuration.
   -Implemented a work-around of a Mono configuration issue causing configuration 
    files not to be reloaded successfully.
   -Updated for Plugins Common Lib 1.1
