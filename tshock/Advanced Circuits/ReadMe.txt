@@ -21,8 +21,7 @@ and their performed actions when powered.
 NOTE: Before installing and configuring the plugin, read the "Known Problems" 
 section first!
 
-Note: This plugin requires Terraria Server API 1.12 and TShock 4 in order to 
-work.
+Note: This plugin requires Terraria Server API 1.14 in order to work.
 
 To learn more about Advanced Circuits, have a look on the official wiki:
 https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
@@ -67,7 +66,11 @@ but AC will then not be able to handle circuits triggered by npcs or projectiles
 
 Changelog
 ---------------------------------------------------------------------------------
-Version 1.2 [29.05.2013]
+Version 1.3 Beta [12/28/2013]
+  -Please consider donating to support the developer.
+  -Updated to Terraria 1.2.2!
+
+Version 1.2 [05/29/2013]
   -Please consider donating to support the developer.
   -Configuration file structure has changed, your old configuration has to be 
    ported to the new version.
@@ -119,14 +122,14 @@ Version 1.2 [29.05.2013]
   -Some minor improvements, fixed some typos.
   -Updated for Plugin Common Lib 1.9.
 
-Version 1.1.1 [25.11.2012]
+Version 1.1.1 [11/25/2012]
   -Fixed a wire processing bug causing some wires, depending on their position 
    and alignment, not to be signaled in Advanced Circuits.
   -Fixed a bug causing Block Activators not to properly check whether the maximum 
    of changeable blocks is reached or not.
   -Improved metadata handling.
 
-Version 1.1 [19.11.2012]
+Version 1.1 [11/19/2012]
   -Updated for TShock 4.0.
   -Configuration file structure has changed, your old configuration will have to 
    be ported to the new version.
@@ -159,13 +162,13 @@ Version 1.1 [19.11.2012]
   -Improved configuration parsing, validation and error detection.
   -Some general stability improvements.
 
-Version 1.0.4 [23.10.2012]
+Version 1.0.4 [10/23/2012]
   -Fixed a bug causing grandfather clock to not work anymore.
   -Fixed a bug causing world metadata sometimes not be validated correctly for 
    Timers.
   -Improved world metadata validation.
 
-Version 1.0.3 [03.10.2012]
+Version 1.0.3 [10/03/2012]
   -The version tree 1.0 is from now on considered stable.
   -Added some unit tests to ensure that no further bugs are introduced with new 
    updates.
@@ -190,7 +193,7 @@ Version 1.0.3 [03.10.2012]
   -The Plugin Common Library will now carry its version number in its file name. 
    The old "CCPluginsCommon.dll" can be safely removed.
 
-Version 1.0.2 Beta [12.09.2012]
+Version 1.0.2 Beta [09/12/2012]
   -Triggering players are now notified if a circuit exceeds the maximum amount of 
    pumps, dart traps or statues.
   -World Metadata are now written in JSON format.
@@ -205,7 +208,7 @@ Version 1.0.2 Beta [12.09.2012]
   -Fixed a bug causing no entries being written into the TShock log file.
   -Updated for Plugins Common Lib 1.2.
 
-Version 1.0.1 Beta [10.09.2012]
+Version 1.0.1 Beta [09/10/2012]
   -Recommended maximum circuit length is now 400.
   -Overriding of Vanilla Circuits is now enabled by default.
   -Players triggering a circuit which exceeds the maximum length are now notified 
@@ -220,5 +223,5 @@ Version 1.0.1 Beta [10.09.2012]
    files not to be reloaded successfully.
   -Updated for Plugins Common Lib 1.1
 
-Version 1.0 Beta [07.09.2012]
+Version 1.0 Beta [09/07/2012]
   -Initial release by CoderCow.

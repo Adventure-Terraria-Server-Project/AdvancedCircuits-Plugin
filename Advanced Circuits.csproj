@@ -24,7 +24,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;Verbose</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\Advanced Circuits Plugin.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
@@ -191,49 +191,48 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
-    <Reference Include="TerrariaServer, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <ExecutableExtension>.exe</ExecutableExtension>
+    <Reference Include="TerrariaServer, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>References\TerrariaServer.exe</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Implementation\#Data\#Config\BlockActivatorConfig.cs" />
-    <Compile Include="Implementation\#Data\#Config\SignConfig.cs" />
-    <Compile Include="Implementation\#Data\#Config\_Statues\BuffPlayerStatueAction.cs" />
-    <Compile Include="Implementation\#Data\#Config\_Statues\NullStatueAction.cs" />
-    <Compile Include="Implementation\#Data\#Config\ExplosivesConfig.cs" />
-    <Compile Include="Implementation\#Data\#Config\_Statues\MoveNpcStatueAction.cs" />
-    <Compile Include="Implementation\#Data\#Config\PumpConfig.cs" />
-    <Compile Include="Implementation\#Data\#Config\_Statues\SpawnItemStatueAction.cs" />
-    <Compile Include="Implementation\#Data\#Config\_Statues\SpawnNpcStatueAction.cs" />
-    <Compile Include="Implementation\#Data\#Config\WirelessTransmitterConfig.cs" />
-    <Compile Include="Implementation\#Data\#World\BlockActivatorMetadata.cs" />
-    <Compile Include="Implementation\#Data\#World\GrandfatherClockMetadata.cs" />
-    <Compile Include="Implementation\#Data\BlockActivatorMode.cs" />
-    <Compile Include="Implementation\#Data\BlockDestroyMethod.cs" />
-    <Compile Include="Implementation\#Data\BranchProcessData.cs" />
-    <Compile Include="Implementation\#Data\CircuitCancellationReason.cs" />
-    <Compile Include="Implementation\#Data\#Config\Configuration.cs" />
-    <Compile Include="Implementation\#Data\CircuitWarnReason.cs" />
-    <Compile Include="Implementation\#Data\ExplosionAreaShape.cs" />
-    <Compile Include="Implementation\#Data\RootBranchProcessData.cs" />
-    <Compile Include="Implementation\#Data\SignalType.cs" />
+    <Compile Include="Implementation\_Data\_Config\BlockActivatorConfig.cs" />
+    <Compile Include="Implementation\_Data\_Config\SignConfig.cs" />
+    <Compile Include="Implementation\_Data\_Config\_Statues\BuffPlayerStatueAction.cs" />
+    <Compile Include="Implementation\_Data\_Config\_Statues\NullStatueAction.cs" />
+    <Compile Include="Implementation\_Data\_Config\ExplosivesConfig.cs" />
+    <Compile Include="Implementation\_Data\_Config\_Statues\MoveNpcStatueAction.cs" />
+    <Compile Include="Implementation\_Data\_Config\PumpConfig.cs" />
+    <Compile Include="Implementation\_Data\_Config\_Statues\SpawnItemStatueAction.cs" />
+    <Compile Include="Implementation\_Data\_Config\_Statues\SpawnNpcStatueAction.cs" />
+    <Compile Include="Implementation\_Data\_Config\WirelessTransmitterConfig.cs" />
+    <Compile Include="Implementation\_Data\_World\BlockActivatorMetadata.cs" />
+    <Compile Include="Implementation\_Data\_World\GrandfatherClockMetadata.cs" />
+    <Compile Include="Implementation\_Data\BlockActivatorMode.cs" />
+    <Compile Include="Implementation\_Data\BlockDestroyMethod.cs" />
+    <Compile Include="Implementation\_Data\BranchProcessData.cs" />
+    <Compile Include="Implementation\_Data\CircuitCancellationReason.cs" />
+    <Compile Include="Implementation\_Data\_Config\Configuration.cs" />
+    <Compile Include="Implementation\_Data\CircuitWarnReason.cs" />
+    <Compile Include="Implementation\_Data\ExplosionAreaShape.cs" />
+    <Compile Include="Implementation\_Data\RootBranchProcessData.cs" />
+    <Compile Include="Implementation\_Data\SignalType.cs" />
     <Compile Include="Implementation\AdvancedCircuits.cs" />
-    <Compile Include="Implementation\#Data\CircuitProcessingResult.cs" />
+    <Compile Include="Implementation\_Data\CircuitProcessingResult.cs" />
     <Compile Include="Implementation\CircuitProcessor.cs" />
     <Compile Include="Implementation\PluginCooperationHandler.cs" />
     <Compile Include="Implementation\Test\TestRunner.cs" />
     <Compile Include="Implementation\CircuitHandler.cs" />
-    <Compile Include="Implementation\#Data\#Config\DartTrapConfig.cs" />
-    <Compile Include="Implementation\#Data\ComponentConfigProfile.cs" />
-    <Compile Include="Implementation\#Data\#World\GateStateMetadata.cs" />
-    <Compile Include="Implementation\#Data\ActionListProcessingMethod.cs" />
-    <Compile Include="Implementation\#Data\#Config\_Statues\StatueConfig.cs" />
-    <Compile Include="Implementation\#Data\#World\ActiveTimerMetadata.cs" />
+    <Compile Include="Implementation\_Data\_Config\DartTrapConfig.cs" />
+    <Compile Include="Implementation\_Data\ComponentConfigProfile.cs" />
+    <Compile Include="Implementation\_Data\_World\GateStateMetadata.cs" />
+    <Compile Include="Implementation\_Data\ActionListProcessingMethod.cs" />
+    <Compile Include="Implementation\_Data\_Config\_Statues\StatueConfig.cs" />
+    <Compile Include="Implementation\_Data\_World\ActiveTimerMetadata.cs" />
     <Compile Include="Implementation\UserInteractionHandler.cs" />
     <Compile Include="Implementation\AdvancedCircuitsPlugin.cs" />
-    <Compile Include="Implementation\#Data\#World\WorldMetadata.cs" />
+    <Compile Include="Implementation\_Data\_World\WorldMetadata.cs" />
     <Compile Include="Implementation\WorldMetadataHandler.cs" />
     <Compile Include="Implementation\_Exception\CooperatingPluginException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -253,7 +252,6 @@
     <Folder Include="Implementation\Test\Test Data\World Data\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Guide.wld" />
     <None Include="README.md" />
     <None Include="tshock\Advanced Circuits\Config.xsd">
       <SubType>Designer</SubType>
