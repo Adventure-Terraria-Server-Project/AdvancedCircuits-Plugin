@@ -68,7 +68,9 @@ Changelog
 ---------------------------------------------------------------------------------
 Version 1.3 Beta [12/28/2013]
   -Please consider donating to support the developer.
-  -Updated to Terraria 1.2.2!
+  -Briefly updated to Terraria 1.2.2.
+  -Fixed a bug causing wireless transmitters to work even through not wired 
+   properly.
 
 Version 1.2 [05/29/2013]
   -Please consider donating to support the developer.

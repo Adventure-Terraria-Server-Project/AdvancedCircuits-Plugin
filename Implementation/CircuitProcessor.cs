@@ -1584,7 +1584,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 continue;
 
               Tile transmitterTile = TerrariaUtils.Tiles[receivingTransmitterLocation];
-              if (!transmitterTile.active() || transmitterTile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter)
+              if (!transmitterTile.active() || transmitterTile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter || transmitterTile.HasWire(this.wireColor))
                 continue;
 
               if (
