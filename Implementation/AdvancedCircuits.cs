@@ -8,7 +8,6 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public static class AdvancedCircuits {
-    #region [Constants]
     public const BlockType BlockType_ORGate              = BlockType.CopperOre;
     public const BlockType BlockType_ANDGate             = BlockType.SilverOre;
     public const BlockType BlockType_XORGate             = BlockType.GoldOre;
@@ -19,10 +18,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public const BlockType BlockType_Modifier            = BlockType.CobaltOre;
     public const BlockType BlockType_BlockActivator      = BlockType.ActiveStone;
     public const BlockType BlockType_WirelessTransmitter = BlockType.AdamantiteOre;
-    #endregion
 
 
-    #region [Methods: IsPortDefiningComponentBlock, IsModifierSupportingComponent, IsCustomActivatableBlock, IsLogicalGate, IsOriginSenderComponent]
     public static bool IsPortDefiningComponentBlock(BlockType blockType) {
       return (
         blockType == BlockType.Switch ||
@@ -109,9 +106,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == BlockType.DoorClosed
       );
     }
-    #endregion
 
-    #region [Method: GetComponentName]
     public static string GetComponentName(BlockType blockType) {
       switch (blockType) {
         case AdvancedCircuits.BlockType_ORGate:
@@ -132,9 +127,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return TerrariaUtils.Tiles.GetBlockTypeName(blockType);
       }
     }
-    #endregion
 
-    #region [Methods: EnumerateComponentPortLocations, GetPortAdjacentComponentTileLocation, IsComponentWiredByPort]
     public static IEnumerable<DPoint> EnumerateComponentPortLocations(DPoint componentOriginLocation, DPoint componentSize) {
       DPoint origin = componentOriginLocation;
       DPoint size = componentSize;
@@ -188,9 +181,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public static bool IsComponentWiredByPort(ObjectMeasureData measureData) {
       return AdvancedCircuits.IsComponentWiredByPort(measureData.OriginTileLocation, measureData.Size);
     }
-    #endregion
 
-    #region [Methods: CountComponentModifiers, EnumerateModifierAdjacentComponents]
     public static int CountComponentModifiers(ObjectMeasureData measureData) {
       return AdvancedCircuits.CountComponentModifiers(measureData.OriginTileLocation, measureData.Size);
     }
@@ -235,9 +226,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (possibleComponentTile.active() && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X - 1, modifierLocation.Y + 1);
     }
-    #endregion
 
-    #region [Methods: SignalToBool, BoolToSignal]
     public static bool? SignalToBool(SignalType signal) {
       if (signal == SignalType.Swap)
         return null;
@@ -258,9 +247,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       return SignalType.Off;
     }
-    #endregion
 
-    #region [Methods: DirectionFromTileLocations, InvertDirection]
     public static Direction DirectionFromTileLocations(DPoint startTile, DPoint endTile) {
       if (startTile.X < endTile.X)
         return Direction.Right;
@@ -286,15 +273,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       throw new ArgumentException("The given direction can not be inverted because it is invalid.", "direction");
     }
-    #endregion
 
-    #region [Method: ModifierCountToConfigProfile]
     public static ComponentConfigProfile ModifierCountToConfigProfile(int modifiers) {
       return (ComponentConfigProfile)modifiers;
     }
-    #endregion
 
-    #region [Method: MeasureTimerFrameTime]
     public static int MeasureTimerFrameTime(DPoint timerLocation) {
       if (!TerrariaUtils.Tiles[timerLocation].active() || TerrariaUtils.Tiles[timerLocation].type != (int)BlockType.XSecondTimer)
         throw new ArgumentException("The tile is not active or no timer.", "timerLocation");
@@ -329,6 +312,5 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       return frames;
     }
-    #endregion
   }
 }

@@ -20,8 +20,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public PluginCooperationHandler(PluginTrace pluginTrace) {
       Contract.Requires<ArgumentNullException>(pluginTrace != null);
 
-      const string ProtectorSomeTypeQualifiedName = 
-        "Terraria.Plugins.CoderCow.Protector.ProtectorPlugin, Protector";
+      const string ProtectorSomeTypeQualifiedName = "Terraria.Plugins.CoderCow.Protector.ProtectorPlugin, Protector";
       const string SignCommandsSomeTypeQualifiedName = "SignCommands.scSign, SignCommands";
 
       this.PluginTrace = pluginTrace;
