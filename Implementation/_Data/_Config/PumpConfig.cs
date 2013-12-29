@@ -5,83 +5,34 @@ using System.Xml;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class PumpConfig {
-    #region [Property: TransferableWater]
-    private int transferableWater;
-
-    public int TransferableWater {
-      get { return this.transferableWater; }
-      set { this.transferableWater = value; }
-    }
-    #endregion
-
-    #region [Property: TransferableLava]
-    private int transferableLava;
-
-    public int TransferableLava {
-      get { return this.transferableLava; }
-      set { this.transferableLava = value; }
-    }
-    #endregion
-
-    #region [Property: LossValue]
-    private int lossValue;
-
-    public int LossValue {
-      get { return this.lossValue; }
-      set { this.lossValue = value; }
-    }
-    #endregion
-
-    #region [Property: Cooldown]
-    private int cooldown;
-
-    public int Cooldown {
-      get { return this.cooldown; }
-      set { this.cooldown = value; }
-    }
-    #endregion
-
-    #region [Property: TriggerPermission]
-    private string triggerPermission;
-
-    public string TriggerPermission {
-      get { return this.triggerPermission; }
-      set { this.triggerPermission = value; }
-    }
-    #endregion
-
-    #region [Property: WirePermission]
-    private string wirePermission;
-
-    public string WirePermission {
-      get { return this.wirePermission; }
-      set { this.wirePermission = value; }
-    }
-    #endregion
+    public int TransferableWater { get; set; }
+    public int TransferableLava { get; set; }
+    public int LossValue { get; set; }
+    public int Cooldown { get; set; }
+    public string TriggerPermission { get; set; }
+    public string WirePermission { get; set; }
 
 
-    #region [Methods: Constructor, Static FromXmlElement]
     public PumpConfig() {
-      this.transferableWater = 1020;
-      this.transferableLava = 1020;
-      this.lossValue = 1;
-      this.cooldown = 10;
+      this.TransferableWater = 1020;
+      this.TransferableLava = 1020;
+      this.LossValue = 1;
+      this.Cooldown = 10;
     }
 
     public static PumpConfig FromXmlElement(XmlElement xmlData) {
       PumpConfig resultingPumpConfig = new PumpConfig();
-      resultingPumpConfig.transferableWater = int.Parse(xmlData["TransferableWater"].InnerText);
-      resultingPumpConfig.transferableLava = int.Parse(xmlData["TransferableLava"].InnerText);
-      resultingPumpConfig.lossValue = int.Parse(xmlData["LossValue"].InnerText);
-      resultingPumpConfig.cooldown = int.Parse(xmlData["Cooldown"].InnerText);
+      resultingPumpConfig.TransferableWater = int.Parse(xmlData["TransferableWater"].InnerText);
+      resultingPumpConfig.TransferableLava = int.Parse(xmlData["TransferableLava"].InnerText);
+      resultingPumpConfig.LossValue = int.Parse(xmlData["LossValue"].InnerText);
+      resultingPumpConfig.Cooldown = int.Parse(xmlData["Cooldown"].InnerText);
 
       if (xmlData["TriggerPermission"] != null)
-        resultingPumpConfig.triggerPermission = xmlData["TriggerPermission"].InnerText;
+        resultingPumpConfig.TriggerPermission = xmlData["TriggerPermission"].InnerText;
       if (xmlData["WirePermission"] != null)
-        resultingPumpConfig.wirePermission = xmlData["WirePermission"].InnerText;
+        resultingPumpConfig.WirePermission = xmlData["WirePermission"].InnerText;
 
       return resultingPumpConfig;
     }
-    #endregion
   }
 }

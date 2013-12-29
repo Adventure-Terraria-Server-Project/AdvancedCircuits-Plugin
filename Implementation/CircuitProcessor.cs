@@ -11,13 +11,24 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitProcessor {
-    #region [Constants]
     // The maximum amount of times a single component can be signaled in the same circuit execution until it "overheats".
     public const int PortDefiningComponentSignalMaximum = 5;
-    #endregion
 
-    #region [Property: Static Random]
+    [ThreadStatic]
+    private static List<RootBranchProcessData> queuedRootBranches;
+    [ThreadStatic]
+    private static Dictionary<DPoint,int> portDefiningComponentSignalCounter;
+    [ThreadStatic]
+    private static List<DPoint> signaledInletPumps;
+    [ThreadStatic]
+    private static List<DPoint> signaledOutletPumps;
+    [ThreadStatic]
+    private static List<DPoint> tilesToFrameOnPost;
+    [ThreadStatic]
+    private static Dictionary<DPoint,GateStateMetadata> temporaryGateStates;
     private static Random random;
+
+    private readonly CircuitProcessingResult result;
 
     protected static Random Random {
       get {
@@ -27,35 +38,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return CircuitProcessor.random;
       }
     }
-    #endregion
 
-    #region [Property: PluginTrace]
-    private readonly PluginTrace pluginTrace;
-
-    protected PluginTrace PluginTrace {
-      get { return this.pluginTrace; }
-    }
-    #endregion
-
-    #region [Property: CircuitHandler]
-    private readonly CircuitHandler circuitHandler;
-
-    public CircuitHandler CircuitHandler {
-      get { return this.circuitHandler; }
-    }
-    #endregion
-
-    #region [Property: SenderMeasureData]
-    private readonly ObjectMeasureData senderMeasureData;
-
-    protected ObjectMeasureData SenderMeasureData {
-      get { return this.senderMeasureData; }
-    }
-    #endregion
-
-    #region [Property: QueuedRootBranches]
-    [ThreadStatic]
-    private static List<RootBranchProcessData> queuedRootBranches;
+    protected PluginTrace PluginTrace { get; private set; }
+    public CircuitHandler CircuitHandler { get; private set; }
+    protected ObjectMeasureData SenderMeasureData { get; private set; }
 
     protected List<RootBranchProcessData> QueuedRootBranches {
       get {
@@ -65,11 +51,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return CircuitProcessor.queuedRootBranches;
       }
     }
-    #endregion
-
-    #region [Property: PortDefiningComponentSignalCounter]
-    [ThreadStatic]
-    private static Dictionary<DPoint,int> portDefiningComponentSignalCounter;
 
     // Stores the amount of times a single port defining component was signaled during the current circuit execution.
     protected Dictionary<DPoint,int> PortDefiningComponentSignalCounter {
@@ -80,14 +61,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return CircuitProcessor.portDefiningComponentSignalCounter;
       }
     }
-    #endregion
-
-    #region [Properties: SignaledInletPumps, SignaledOutletPumps]
-    [ThreadStatic]
-    private static List<DPoint> signaledInletPumps;
-
-    [ThreadStatic]
-    private static List<DPoint> signaledOutletPumps;
 
     protected List<DPoint> SignaledInletPumps {
       get {
@@ -106,11 +79,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return CircuitProcessor.signaledOutletPumps;
       }
     }
-    #endregion
-
-    #region [Property: TilesToFrameOnPost]
-    [ThreadStatic]
-    private static List<DPoint> tilesToFrameOnPost;
 
     public List<DPoint> TilesToFrameOnPost {
       get {
@@ -120,11 +88,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return CircuitProcessor.tilesToFrameOnPost;
       }
     }
-    #endregion
-
-    #region [Property: TemporaryGateStates]
-    [ThreadStatic]
-    private static Dictionary<DPoint,GateStateMetadata> temporaryGateStates;
 
     protected Dictionary<DPoint,GateStateMetadata> TemporaryGateStates {
       get {
@@ -134,10 +97,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return CircuitProcessor.temporaryGateStates;
       }
     }
-    #endregion
-
-    #region [Properties: Result, IsAdvancedCircuit, TriggeringPlayer, IsTriggeredPassively, CircuitLength, IsCancellationPending]
-    private readonly CircuitProcessingResult result;
 
     protected CircuitProcessingResult Result {
       get { return this.result; }
@@ -165,22 +124,20 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public bool IsCancellationPending {
       get { return (this.result.CancellationReason != CircuitCancellationReason.None); }
     }
-    #endregion
 
     private bool wasExecuted;
     private WireColor wireColor;
     
 
-    #region [Methods: Constructors]
     public CircuitProcessor(PluginTrace pluginTrace, CircuitHandler circuitHandler, ObjectMeasureData senderMeasureData, WireColor forWireColor) {
       Contract.Requires<ArgumentNullException>(pluginTrace != null);
       Contract.Requires<ArgumentNullException>(circuitHandler != null);
 
-      this.pluginTrace = pluginTrace;
-      this.circuitHandler = circuitHandler;
-      this.senderMeasureData = senderMeasureData;
+      this.PluginTrace = pluginTrace;
+      this.CircuitHandler = circuitHandler;
+      this.SenderMeasureData = senderMeasureData;
       this.wireColor = forWireColor;
-
+      
       // Is sender directly wired?
       bool isSenderWired;
       if (this.SenderMeasureData.BlockType == BlockType.DoorOpened) {
@@ -215,9 +172,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       return TerrariaUtils.Tiles.MeasureObject(senderLocation);
     }
-    #endregion
 
-    #region [Methods: ProcessCircuit, ProcessRootBranch, ProcessSubBranches, ProcessTile, PostProcessCircuit]
     public CircuitProcessingResult ProcessCircuit(TSPlayer player = null, SignalType? overrideSignal = null, bool switchSender = true, bool switchSenderLocalOnly = true) {
       if (this.wasExecuted)
         throw new InvalidOperationException("This Circuit Processor has already processed a circuit.");
@@ -842,9 +797,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
       }
     }
-    #endregion
 
-    #region [Methods: SignalComponent, SignalPortDefiningComponent]
     protected bool SignalComponent(ref ObjectMeasureData measureData, SignalType signal, bool localOnly = false) {
       int originX = measureData.OriginTileLocation.X;
       int originY = measureData.OriginTileLocation.Y;
@@ -1729,9 +1682,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       return true;
     }
-    #endregion
 
-    #region [Methods: RegisterUnregisterTimer, ResetTimer]
     private void RegisterUnregisterTimer(ObjectMeasureData measureData, bool register) {
       bool alreadyRegistered = this.CircuitHandler.WorldMetadata.ActiveTimers.ContainsKey(measureData.OriginTileLocation);
       if (register) {
@@ -1753,6 +1704,5 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.CircuitHandler.WorldMetadata.ActiveTimers.TryGetValue(measureData.OriginTileLocation, out activeTimer))
         activeTimer.FramesLeft = AdvancedCircuits.MeasureTimerFrameTime(measureData.OriginTileLocation);
     }
-    #endregion
   }
 }

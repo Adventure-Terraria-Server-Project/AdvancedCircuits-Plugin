@@ -13,7 +13,6 @@ using Terraria.Plugins.Common.Test;
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
   #if Testrun
   public class TestRunner: TestRunnerBase {
-    #region [Property: Static TestDataGlobalPath, Static TestDataGlobalConfigFilePath, Static TestDataGlobalMetadataPath]
     public static string TestDataGlobalPath {
       get {
         return Path.Combine(AdvancedCircuitsPlugin.AdvancedCircuitsDataDirectory, "Test Data");
@@ -31,50 +30,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
         return Path.Combine(TestRunner.TestDataGlobalPath, "World Data");
       }
     }
-    #endregion
 
-    #region [Property: PluginTrace]
-    private readonly PluginTrace pluginTrace;
-
-    protected PluginTrace PluginTrace {
-      get { return this.pluginTrace; }
-    }
-    #endregion
-
-    #region [Property: Config]
-    private Configuration config;
-
-    protected Configuration Config {
-      get { return this.config; }
-    }
-    #endregion
-
-    #region [Property: MetadataHandler]
-    private WorldMetadataHandler metadataHandler;
-
-    protected WorldMetadataHandler MetadataHandler {
-      get { return this.metadataHandler; }
-    }
-    #endregion
-
-    #region [Property: CooperationHandler]
-    private readonly PluginCooperationHandler cooperationHandler;
-
-    protected PluginCooperationHandler CooperationHandler {
-      get { return this.cooperationHandler; }
-    }
-    #endregion
-
-    #region [Property: CircuitHandler]
-    private CircuitHandler circuitHandler;
-
-    public CircuitHandler CircuitHandler {
-      get { return this.circuitHandler; }
-    }
-    #endregion
+    protected PluginTrace PluginTrace { get; private set; }
+    protected Configuration Config { get; private set; }
+    protected WorldMetadataHandler MetadataHandler { get; private set; }
+    protected PluginCooperationHandler CooperationHandler { get; private set; }
+    public CircuitHandler CircuitHandler { get; private set; }
 
 
-    #region [Method: Constructor]
     public TestRunner(
       PluginTrace pluginTrace, WorldMetadataHandler metadataHandler, PluginCooperationHandler cooperationHandler
     ): base(pluginTrace) {
@@ -82,10 +45,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       Contract.Requires<ArgumentNullException>(metadataHandler != null);
       Contract.Requires<ArgumentNullException>(cooperationHandler != null);
 
-      this.pluginTrace = pluginTrace;
-      this.metadataHandler = metadataHandler;
-      this.cooperationHandler = cooperationHandler;
-      return;
+      this.PluginTrace = pluginTrace;
+      this.MetadataHandler = metadataHandler;
+      this.CooperationHandler = cooperationHandler;
+      
       this.RegisterTest(@"BP\Multi Branches", this.BP_MultiBranches);
       this.RegisterTest(@"BP\Snake Branches", this.BP_SnakeBranches);
       this.RegisterTest(@"BP\Wire Bunch", this.BP_WireBunch);
@@ -147,12 +110,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.RegisterTest(@"AC\Wireless Transmitter", this.AC_WirelessTransmitter);
       this.RegisterTest(@"AC\Wireless Transmitter 2", this.AC_WirelessTransmitter2);
     }
-    #endregion
 
-    #region [Methods: TestInit, TestCleanup]
     protected override void TestInit() {
-      this.config = new Configuration();
-      this.config.OverrideVanillaCircuits = true;
+      this.Config = new Configuration();
+      this.Config.OverrideVanillaCircuits = true;
 
       this.MetadataHandler.Metadata.Swappers.Clear();
       this.MetadataHandler.Metadata.ActiveTimers.Clear();
@@ -160,14 +121,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
       this.MetadataHandler.Metadata.GateStates.Clear();
       this.MetadataHandler.Metadata.WirelessTransmitters.Clear();
 
-      this.config.StatueConfigs.Add(StatueStyle.Star, new StatueConfig {
+      this.Config.StatueConfigs.Add(StatueStyle.Star, new StatueConfig {
         Actions = new Collection<NullStatueAction> {
           new MoveNpcStatueAction {
             NpcType = 22
           }
         }
       });
-      this.config.StatueConfigs.Add(StatueStyle.Bat, new StatueConfig {
+      this.Config.StatueConfigs.Add(StatueStyle.Bat, new StatueConfig {
         Actions = new Collection<NullStatueAction> {
           new SpawnItemStatueAction {
             ItemType = ItemType.IronPickaxe,
@@ -175,7 +136,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
           }
         }
       });
-      this.config.StatueConfigs.Add(StatueStyle.Slime, new StatueConfig {
+      this.Config.StatueConfigs.Add(StatueStyle.Slime, new StatueConfig {
         Actions = new Collection<NullStatueAction> {
           new SpawnNpcStatueAction {
             NpcType = 1,
@@ -184,7 +145,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
         }
       });
 
-      this.circuitHandler = new CircuitHandler(
+      this.CircuitHandler = new CircuitHandler(
         this.PluginTrace, this.Config, this.MetadataHandler.Metadata, this.CooperationHandler
       );
     }
@@ -195,7 +156,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
 
       this.MetadataHandler.Metadata.ActiveTimers.Clear();
     }
-    #endregion
 
     #region [Branched Processing Tests]
     private void BP_MultiBranches(TestContext context) {
@@ -247,7 +207,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
     private void BP_WireBunch(TestContext context) {
       DPoint testOffset = new DPoint(71, 225);
       CircuitProcessingResult result;
-      this.config.MaxCircuitLength = 5000;
+      this.Config.MaxCircuitLength = 5000;
 
       context.Phase = "1";
       result = this.QuickProcessCircuit(testOffset.X + 5, testOffset.Y + 7);
@@ -2916,8 +2876,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
     }
 
     public override void HandleGameUpdate() {
-      if (this.circuitHandler != null)
-        this.circuitHandler.HandleGameUpdate();
+      if (this.CircuitHandler != null)
+        this.CircuitHandler.HandleGameUpdate();
 
       base.HandleGameUpdate();
     }
@@ -2931,7 +2891,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
     }
 
     private CircuitProcessor GetProcessor(int senderX, int senderY) {
-      return new CircuitProcessor(this.PluginTrace, this.CircuitHandler, new DPoint(senderX, senderY));
+      return new CircuitProcessor(this.PluginTrace, this.CircuitHandler, new DPoint(senderX, senderY), WireColor.Red);
     }
 
     private void Assert_SignaledComponents(CircuitProcessingResult result, int expectedComponentCount) {

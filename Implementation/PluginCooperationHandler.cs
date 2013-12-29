@@ -12,29 +12,9 @@ using Terraria.Plugins.CoderCow.Protector;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class PluginCooperationHandler {
-    #region [Property: PluginTrace]
-    private readonly PluginTrace pluginTrace;
-
-    protected PluginTrace PluginTrace {
-      get { return this.pluginTrace; }
-    }
-    #endregion
-
-    #region [Property: IsProtectorAvailable]
-    private readonly bool isProtectorAvailable;
-
-    public bool IsProtectorAvailable {
-      get { return this.isProtectorAvailable; }
-    }
-    #endregion
-
-    #region [Property: IsSignCommandsAvailable]
-    private readonly bool isSignCommandsAvailable;
-
-    public bool IsSignCommandsAvailable {
-      get { return this.isSignCommandsAvailable; }
-    }
-    #endregion
+    protected PluginTrace PluginTrace { get; private set; }
+    public bool IsProtectorAvailable { get; private set; }
+    public bool IsSignCommandsAvailable { get; private set; }
 
 
     #region [Method: Constructor]
@@ -45,14 +25,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         "Terraria.Plugins.CoderCow.Protector.ProtectorPlugin, Protector";
       const string SignCommandsSomeTypeQualifiedName = "SignCommands.scSign, SignCommands";
 
-      this.pluginTrace = pluginTrace;
+      this.PluginTrace = pluginTrace;
       
-      this.isProtectorAvailable = (Type.GetType(ProtectorSomeTypeQualifiedName, false) != null);
-      this.isSignCommandsAvailable = (Type.GetType(SignCommandsSomeTypeQualifiedName, false) != null);
+      this.IsProtectorAvailable = (Type.GetType(ProtectorSomeTypeQualifiedName, false) != null);
+      this.IsSignCommandsAvailable = (Type.GetType(SignCommandsSomeTypeQualifiedName, false) != null);
     }
-    #endregion
 
-    #region [Protector]
     public bool Protector__CheckProtected(TSPlayer player, DPoint tileLocation, bool fullAccessRequired) {
       try {
         return !ProtectorPlugin.LatestInstance.ProtectionManager.CheckBlockAccess(player, tileLocation, fullAccessRequired);
@@ -60,9 +38,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         throw new CooperatingPluginException(null, ex);
       }
     }
-    #endregion
 
-    #region [SignCommands]
     public bool SignCommands_CheckIsSignCommand(string text) {
       try {
         return text.StartsWith(SignCommands.SignCommands.Config.DefineSignCommands, StringComparison.CurrentCultureIgnoreCase);
@@ -83,6 +59,5 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         throw new CooperatingPluginException(null, ex);
       }
     }
-    #endregion
   }
 }

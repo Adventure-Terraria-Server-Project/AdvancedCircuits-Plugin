@@ -6,54 +6,31 @@ using TShockAPI;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class BuffPlayerStatueAction: NullStatueAction {
-    #region [Property: BuffId]
-    private int buffId;
-
-    public int BuffId {
-      get { return this.buffId; }
-      set { this.buffId = value; }
-    }
-    #endregion
-
-    #region [Property: BuffTime]
-    private int buffTime;
-
-    public int BuffTime {
-      get { return this.buffTime; }
-      set { this.buffTime = value; }
-    }
-    #endregion
-
-    #region [Property: Radius]
-    private int radius;
-
-    public int Radius {
-      get { return this.radius; }
-      set { this.radius = value; }
-    }
-    #endregion
+    public int BuffId { get; set; }
+    public int BuffTime { get; set; }
+    public int Radius { get; set; }
 
 
-    #region [Method: Static FromXmlElement]
     public static new BuffPlayerStatueAction FromXmlElement(XmlElement xmlData) {
       BuffPlayerStatueAction resultingAction = new BuffPlayerStatueAction();
 
       string buffName = xmlData["BuffId"].InnerText;
-      if (!int.TryParse(buffName, out resultingAction.buffId)) {
+      int buffId;
+      if (!int.TryParse(buffName, out buffId)) {
         List<int> buffs = TShock.Utils.GetBuffByName(buffName);
         if (buffs.Count == 0)
           throw new ArgumentException(string.Format("\"{0}\" is not a valid buff name.", buffName));
-        else if (buffs.Count > 1)
+        if (buffs.Count > 1)
           throw new ArgumentException(string.Format("\"{0}\" matches more than one buff.", buffName));
-        else
-          resultingAction.buffId = buffs[0];
+        
+        resultingAction.BuffId = buffs[0];
       }
 
-      resultingAction.buffTime = int.Parse(xmlData["BuffTime"].InnerText);
-      resultingAction.radius = int.Parse(xmlData["Radius"].InnerText);
+      resultingAction.BuffId = buffId;
+      resultingAction.BuffTime = int.Parse(xmlData["BuffTime"].InnerText);
+      resultingAction.Radius = int.Parse(xmlData["Radius"].InnerText);
 
       return resultingAction;
     }
-    #endregion
   }
 }

@@ -10,14 +10,11 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class WorldMetadataHandler: WorldMetadataHandlerBase {
-    #region [Property: Metadata]
     public new WorldMetadata Metadata {
       get { return (WorldMetadata)base.Metadata; }
     }
-    #endregion
 
 
-    #region [Methods: Constructor, InitMetadata, ReadMetadataFromFile]
     public WorldMetadataHandler(PluginTrace pluginTrace, string metadataDirectoryPath): base(pluginTrace, metadataDirectoryPath) {}
 
     protected override IMetadataFile InitMetadata() {
@@ -113,9 +110,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       return metadata;
     }
-    #endregion
 
-    #region [Method: HandleTileEdit]
+    #region [Hook Handlers]
     public bool HandleTileEdit(TSPlayer player, TileEditType editType, BlockType blockType, DPoint location, int objectStyle) {
       switch (editType) {
         case TileEditType.PlaceTile: {

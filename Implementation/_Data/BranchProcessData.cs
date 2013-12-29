@@ -7,55 +7,20 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public struct BranchProcessData {
-    #region [Property: BranchingTileLocation]
-    private readonly DPoint branchingTileLocation;
-
-    public DPoint BranchingTileLocation {
-      get { return this.branchingTileLocation; }
-    }
-    #endregion
-
-    #region [Property: FirstWireLocation]
-    private readonly DPoint firstWireLocation;
-
-    public DPoint FirstWireLocation {
-      get { return this.firstWireLocation; }
-    }
-    #endregion
-
-    #region [Property: LastWireLocation]
-    private DPoint lastWireLocation;
-
-    public DPoint LastWireLocation {
-      get { return this.lastWireLocation; }
-      set { this.lastWireLocation = value; }
-    }
-    #endregion
-
-    #region [Property: Direction]
-    private readonly Direction direction;
-
-    public Direction Direction {
-      get { return this.direction; }
-    }
-    #endregion
-
-    #region [Property: Signal]
-    private readonly SignalType signal;
-
-    public SignalType Signal {
-      get { return this.signal; }
-    }
-    #endregion
+    public DPoint BranchingTileLocation { get; private set; }
+    public DPoint FirstWireLocation { get; private set; }
+    public DPoint LastWireLocation { get; set; }
+    public Direction Direction { get; private set; }
+    public SignalType Signal { get; private set; }
 
 
     #region [Method: Constructor]
-    public BranchProcessData(DPoint branchingTileLocation, DPoint firstWireLocation, SignalType signal) {
-      this.branchingTileLocation = branchingTileLocation;
-      this.firstWireLocation = firstWireLocation;
-      this.lastWireLocation = DPoint.Empty;
-      this.signal = signal;
-      this.direction = AdvancedCircuits.DirectionFromTileLocations(branchingTileLocation, firstWireLocation);
+    public BranchProcessData(DPoint branchingTileLocation, DPoint firstWireLocation, SignalType signal): this() {
+      this.BranchingTileLocation = branchingTileLocation;
+      this.FirstWireLocation = firstWireLocation;
+      this.LastWireLocation = DPoint.Empty;
+      this.Signal = signal;
+      this.Direction = AdvancedCircuits.DirectionFromTileLocations(branchingTileLocation, firstWireLocation);
     }
     #endregion
 

@@ -10,168 +10,54 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class Configuration {
-    #region [Constants]
     public const string CurrentVersion = "1.2";
-    #endregion
 
-    #region [Property: OverrideVanillaCircuits]
-    private bool overrideVanillaCircuits;
-
-    public bool OverrideVanillaCircuits {
-      get { return this.overrideVanillaCircuits; }
-      set { this.overrideVanillaCircuits = value; }
-    }
-    #endregion
-
-    #region [Property: AdvancedCircuitsEnabled]
-    private bool advancedCircuitsEnabled;
-
-    public bool AdvancedCircuitsEnabled {
-      get { return this.advancedCircuitsEnabled; }
-      set { this.advancedCircuitsEnabled = value; }
-    }
-    #endregion
-
-    #region [Property: MaxDartTrapsPerCircuit]
-    private int maxDartTrapsPerCircuit;
-
-    public int MaxDartTrapsPerCircuit {
-      get { return this.maxDartTrapsPerCircuit; }
-      set { this.maxDartTrapsPerCircuit = value; }
-    }
-    #endregion
-
-    #region [Property: MaxStatuesPerCircuit]
-    private int maxStatuesPerCircuit;
-
-    public int MaxStatuesPerCircuit {
-      get { return this.maxStatuesPerCircuit; }
-      set { this.maxStatuesPerCircuit = value; }
-    }
-    #endregion
-
-    #region [Property: MaxPumpsPerCircuit]
-    private int maxPumpsPerCircuit;
-
-    public int MaxPumpsPerCircuit {
-      get { return this.maxPumpsPerCircuit; }
-      set { this.maxPumpsPerCircuit = value; }
-    }
-    #endregion
-
-    #region [Property: MaxCircuitLength]
-    private int maxCircuitLength;
-
-    public int MaxCircuitLength {
-      get { return this.maxCircuitLength; }
-      set { this.maxCircuitLength = value; }
-    }
-    #endregion
-
-    #region [Property: BoulderWirePermission]
-    private string boulderWirePermission;
-
-    public string BoulderWirePermission {
-      get { return this.boulderWirePermission; }
-      set { this.boulderWirePermission = value; }
-    }
-    #endregion
-
-    #region [Property: SignConfig]
-    private SignConfig signConfig;
-
-    public SignConfig SignConfig {
-      get { return this.signConfig; }
-      set { this.signConfig = value; }
-    }
-    #endregion
-
-    #region [Property: BlockActivatorConfig]
-    private BlockActivatorConfig blockActivatorConfig;
-
-    public BlockActivatorConfig BlockActivatorConfig {
-      get { return this.blockActivatorConfig; }
-      set { this.blockActivatorConfig = value; }
-    }
-    #endregion
-
-    #region [Property: PumpConfigs]
-    private Dictionary<ComponentConfigProfile,PumpConfig> pumpConfigs;
-
-    public Dictionary<ComponentConfigProfile,PumpConfig> PumpConfigs {
-      get { return this.pumpConfigs; }
-      set { this.pumpConfigs = value; }
-    }
-    #endregion
-
-    #region [Property: DartTrapConfigs]
-    private Dictionary<ComponentConfigProfile,DartTrapConfig> dartTrapConfigs;
-
-    public Dictionary<ComponentConfigProfile,DartTrapConfig> DartTrapConfigs {
-      get { return this.dartTrapConfigs; }
-      set { this.dartTrapConfigs = value; }
-    }
-    #endregion
-
-    #region [Property: ExplosivesConfigs]
-    private Dictionary<ComponentConfigProfile,ExplosivesConfig> explosivesConfigs;
-
-    public Dictionary<ComponentConfigProfile,ExplosivesConfig> ExplosivesConfigs {
-      get { return this.explosivesConfigs; }
-      set { this.explosivesConfigs = value; }
-    }
-    #endregion
-
-    #region [Property: WirelessTransmitterConfigs]
-    private Dictionary<ComponentConfigProfile, WirelessTransmitterConfig> wirelessTransmitterConfigs;
-
-    public Dictionary<ComponentConfigProfile,WirelessTransmitterConfig> WirelessTransmitterConfigs {
-      get { return this.wirelessTransmitterConfigs; }
-      set { this.wirelessTransmitterConfigs = value; }
-    }
-    #endregion
-
-    #region [Property: StatueConfigs]
-    private Dictionary<StatueStyle,StatueConfig> statueConfigs;
-
-    public Dictionary<StatueStyle,StatueConfig> StatueConfigs {
-      get { return this.statueConfigs; }
-      set { this.statueConfigs = value; }
-    }
-    #endregion
+    public bool OverrideVanillaCircuits { get; set; }
+    public bool AdvancedCircuitsEnabled { get; set; }
+    public int MaxDartTrapsPerCircuit { get; set; }
+    public int MaxStatuesPerCircuit { get; set; }
+    public int MaxPumpsPerCircuit { get; set; }
+    public int MaxCircuitLength { get; set; }
+    public string BoulderWirePermission { get; set; }
+    public SignConfig SignConfig { get; set; }
+    public BlockActivatorConfig BlockActivatorConfig { get; set; }
+    public Dictionary<ComponentConfigProfile,PumpConfig> PumpConfigs { get; set; }
+    public Dictionary<ComponentConfigProfile,DartTrapConfig> DartTrapConfigs { get; set; }
+    public Dictionary<ComponentConfigProfile,ExplosivesConfig> ExplosivesConfigs { get; set; }
+    public Dictionary<ComponentConfigProfile,WirelessTransmitterConfig> WirelessTransmitterConfigs { get; set; }
+    public Dictionary<StatueStyle,StatueConfig> StatueConfigs { get; set; }
 
 
-    #region [Methods: Constructor, Static Read]
     public Configuration(): this(true) {}
 
     protected Configuration(bool fillDictionaries) {
-      this.overrideVanillaCircuits = false;
-      this.advancedCircuitsEnabled = true;
-      this.maxDartTrapsPerCircuit = 10;
-      this.maxStatuesPerCircuit = 10;
-      this.maxPumpsPerCircuit = 4;
-      this.maxCircuitLength = 400;
+      this.OverrideVanillaCircuits = false;
+      this.AdvancedCircuitsEnabled = true;
+      this.MaxDartTrapsPerCircuit = 10;
+      this.MaxStatuesPerCircuit = 10;
+      this.MaxPumpsPerCircuit = 4;
+      this.MaxCircuitLength = 400;
 
-      this.signConfig = new SignConfig();
-      this.blockActivatorConfig = new BlockActivatorConfig();
+      this.SignConfig = new SignConfig();
+      this.BlockActivatorConfig = new BlockActivatorConfig();
 
-      this.pumpConfigs = new Dictionary<ComponentConfigProfile,PumpConfig>();
+      this.PumpConfigs = new Dictionary<ComponentConfigProfile,PumpConfig>();
       if (fillDictionaries)
-        this.pumpConfigs.Add(ComponentConfigProfile.Default, new PumpConfig());
+        this.PumpConfigs.Add(ComponentConfigProfile.Default, new PumpConfig());
 
-      this.dartTrapConfigs = new Dictionary<ComponentConfigProfile,DartTrapConfig>();
+      this.DartTrapConfigs = new Dictionary<ComponentConfigProfile,DartTrapConfig>();
       if (fillDictionaries)
-        this.dartTrapConfigs.Add(ComponentConfigProfile.Default, new DartTrapConfig());
+        this.DartTrapConfigs.Add(ComponentConfigProfile.Default, new DartTrapConfig());
 
-      this.wirelessTransmitterConfigs = new Dictionary<ComponentConfigProfile,WirelessTransmitterConfig>();
+      this.WirelessTransmitterConfigs = new Dictionary<ComponentConfigProfile,WirelessTransmitterConfig>();
       if (fillDictionaries)
-        this.wirelessTransmitterConfigs.Add(ComponentConfigProfile.Default, new WirelessTransmitterConfig());
+        this.WirelessTransmitterConfigs.Add(ComponentConfigProfile.Default, new WirelessTransmitterConfig());
 
-      this.explosivesConfigs = new Dictionary<ComponentConfigProfile,ExplosivesConfig>();
+      this.ExplosivesConfigs = new Dictionary<ComponentConfigProfile,ExplosivesConfig>();
       if (fillDictionaries)
-        this.explosivesConfigs.Add(ComponentConfigProfile.Default, new ExplosivesConfig());
+        this.ExplosivesConfigs.Add(ComponentConfigProfile.Default, new ExplosivesConfig());
 
-      this.statueConfigs = new Dictionary<StatueStyle,StatueConfig>();
+      this.StatueConfigs = new Dictionary<StatueStyle,StatueConfig>();
     }
 
     public static Configuration Read(string filePath) {
@@ -204,16 +90,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
 
       Configuration resultingConfig = new Configuration(false);
-      resultingConfig.overrideVanillaCircuits = BoolEx.ParseEx(rootElement["OverrideVanillaCircuits"].InnerXml);
-      resultingConfig.advancedCircuitsEnabled = BoolEx.ParseEx(rootElement["AdvancedCircuitsEnabled"].InnerText);
-      resultingConfig.maxDartTrapsPerCircuit  = int.Parse(rootElement["MaxDartTrapsPerCircuit"].InnerText);
-      resultingConfig.maxStatuesPerCircuit    = int.Parse(rootElement["MaxStatuesPerCircuit"].InnerText);
-      resultingConfig.maxPumpsPerCircuit      = int.Parse(rootElement["MaxPumpsPerCircuit"].InnerText);
-      resultingConfig.maxCircuitLength        = int.Parse(rootElement["MaxCircuitLength"].InnerText);
+      resultingConfig.OverrideVanillaCircuits = BoolEx.ParseEx(rootElement["OverrideVanillaCircuits"].InnerXml);
+      resultingConfig.AdvancedCircuitsEnabled = BoolEx.ParseEx(rootElement["AdvancedCircuitsEnabled"].InnerText);
+      resultingConfig.MaxDartTrapsPerCircuit  = int.Parse(rootElement["MaxDartTrapsPerCircuit"].InnerText);
+      resultingConfig.MaxStatuesPerCircuit    = int.Parse(rootElement["MaxStatuesPerCircuit"].InnerText);
+      resultingConfig.MaxPumpsPerCircuit      = int.Parse(rootElement["MaxPumpsPerCircuit"].InnerText);
+      resultingConfig.MaxCircuitLength        = int.Parse(rootElement["MaxCircuitLength"].InnerText);
       if (rootElement["BoulderWirePermission"] != null)
-        resultingConfig.boulderWirePermission   = rootElement["BoulderWirePermission"].InnerText;
-      resultingConfig.signConfig              = SignConfig.FromXmlElement(rootElement["SignConfig"]);
-      resultingConfig.blockActivatorConfig    = BlockActivatorConfig.FromXmlElement(rootElement["BlockActivatorConfig"]);
+        resultingConfig.BoulderWirePermission = rootElement["BoulderWirePermission"].InnerText;
+      resultingConfig.SignConfig              = SignConfig.FromXmlElement(rootElement["SignConfig"]);
+      resultingConfig.BlockActivatorConfig    = BlockActivatorConfig.FromXmlElement(rootElement["BlockActivatorConfig"]);
 
       XmlElement pumpConfigsNode = rootElement["PumpConfigs"];
       foreach (XmlNode pumpConfigNode in pumpConfigsNode.ChildNodes) {
@@ -222,7 +108,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           continue;
 
         ComponentConfigProfile componentConfigProfile = (ComponentConfigProfile)Enum.Parse(typeof(ComponentConfigProfile), pumpConfigElement.Attributes["Profile"].Value);
-        resultingConfig.pumpConfigs.Add(componentConfigProfile, PumpConfig.FromXmlElement(pumpConfigElement));
+        resultingConfig.PumpConfigs.Add(componentConfigProfile, PumpConfig.FromXmlElement(pumpConfigElement));
       }
 
       XmlElement dartTrapConfigsNode = rootElement["DartTrapConfigs"];
@@ -232,7 +118,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           continue;
 
         ComponentConfigProfile componentConfigProfile = (ComponentConfigProfile)Enum.Parse(typeof(ComponentConfigProfile), dartTrapConfigElement.Attributes["Profile"].Value);
-        resultingConfig.dartTrapConfigs.Add(componentConfigProfile, DartTrapConfig.FromXmlElement(dartTrapConfigElement));
+        resultingConfig.DartTrapConfigs.Add(componentConfigProfile, DartTrapConfig.FromXmlElement(dartTrapConfigElement));
       }
 
       /*XmlElement explosivesConfigsNode = rootElement["ExplosivesConfigs"];
@@ -252,7 +138,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           continue;
 
         ComponentConfigProfile componentConfigProfile = (ComponentConfigProfile)Enum.Parse(typeof(ComponentConfigProfile), wirelessTransmitterConfigElement.Attributes["Profile"].Value);
-        resultingConfig.wirelessTransmitterConfigs.Add(componentConfigProfile, WirelessTransmitterConfig.FromXmlElement(wirelessTransmitterConfigElement));
+        resultingConfig.WirelessTransmitterConfigs.Add(componentConfigProfile, WirelessTransmitterConfig.FromXmlElement(wirelessTransmitterConfigElement));
       }
 
       XmlElement statueConfigsNode = rootElement["StatueConfigs"];
@@ -262,11 +148,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           continue;
 
         StatueStyle statueStyle = (StatueStyle)Enum.Parse(typeof(StatueStyle), statueConfigElement.Attributes["StatueType"].Value);
-        resultingConfig.statueConfigs.Add(statueStyle, StatueConfig.FromXmlElement(statueConfigElement));
+        resultingConfig.StatueConfigs.Add(statueStyle, StatueConfig.FromXmlElement(statueConfigElement));
       }
 
       return resultingConfig;
     }
-    #endregion
   }
 }

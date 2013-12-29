@@ -10,48 +10,13 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class UserInteractionHandler: UserInteractionHandlerBase, IDisposable {
-    #region [Property: PluginInfo]
-    private readonly PluginInfo pluginInfo;
-
-    protected PluginInfo PluginInfo {
-      get { return this.pluginInfo; }
-    }
-    #endregion
-
-    #region [Property: Config]
-    private readonly Configuration config;
-
-    protected Configuration Config {
-      get { return this.config; }
-    }
-    #endregion
-
-    #region [Property: WorldMetadata]
-    private readonly WorldMetadata worldMetadata;
-
-    public WorldMetadata WorldMetadata {
-      get { return this.worldMetadata; }
-    }
-    #endregion
-
-    #region [Property: PluginCooperationHandler]
-    private PluginCooperationHandler pluginCooperationHandler;
-
-    public PluginCooperationHandler PluginCooperationHandler {
-      get { return this.pluginCooperationHandler; }
-    }
-    #endregion
-
-    #region [Property: ReloadConfigurationCallback]
-    private Action reloadConfigurationCallback;
-
-    protected Action ReloadConfigurationCallback {
-      get { return this.reloadConfigurationCallback; }
-    }
-    #endregion
+    protected PluginInfo PluginInfo { get; private set; }
+    protected Configuration Config { get; private set; }
+    public WorldMetadata WorldMetadata { get; private set; }
+    public PluginCooperationHandler PluginCooperationHandler { get; private set; }
+    protected Action ReloadConfigurationCallback { get; private set; }
 
 
-    #region [Method: Constructor]
     public UserInteractionHandler(
       PluginTrace pluginTrace, PluginInfo pluginInfo, Configuration config, 
       WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler, Action reloadConfigurationCallback
@@ -62,15 +27,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       Contract.Requires<ArgumentNullException>(pluginCooperationHandler != null);
       Contract.Requires<ArgumentNullException>(reloadConfigurationCallback != null);
 
-      this.pluginInfo = pluginInfo;
-      this.config = config;
-      this.worldMetadata = worldMetadata;
-      this.pluginCooperationHandler = pluginCooperationHandler;
-      this.reloadConfigurationCallback = reloadConfigurationCallback;
+      this.PluginInfo = pluginInfo;
+      this.Config = config;
+      this.WorldMetadata = worldMetadata;
+      this.PluginCooperationHandler = pluginCooperationHandler;
+      this.ReloadConfigurationCallback = reloadConfigurationCallback;
 
       this.RegisterCommand(new[] { "advancedcircuits", "ac" }, this.RootCommand_Exec);
     }
-    #endregion
 
     #region [Command Handling /advancedcircuits]
     private void RootCommand_Exec(CommandArgs args) {
@@ -350,7 +314,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Methods: HandleTileEdit, HandleTilePlacing, HandleTileDestruction, HandleWirePlacing]
+    #region [Hook Handling]
     public override bool HandleTileEdit(TSPlayer player, TileEditType editType, BlockType blockType, DPoint location, int objectStyle) {
       if (this.IsDisposed)
         return false;
@@ -783,7 +747,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
-    #region [Method: SendGatePortStatesInfo, GatePortStateToString]
     private void SendGatePortStatesInfo(TSPlayer player, GateStateMetadata gateState) {
       player.SendMessage("Top Port: " + this.GatePortStateToString(gateState.PortStates[0]), Color.LightGray);
       player.SendMessage("Left Port: " + this.GatePortStateToString(gateState.PortStates[2]), Color.LightGray);
@@ -799,16 +762,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       else
         return "0";
     }
-    #endregion
 
     #region [IDisposable Implementation]
     protected override void Dispose(bool isDisposing) {
       if (this.IsDisposed)
         return;
     
-      if (isDisposing) {
-        this.reloadConfigurationCallback = null;
-      }
+      if (isDisposing)
+        this.ReloadConfigurationCallback = null;
     
       base.Dispose(isDisposing);
     }

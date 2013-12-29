@@ -10,45 +10,19 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitHandler {
-    #region [Constants]
     private const int TimerUpdateFrameRate = 10;
     private const int ClockUpdateFrameRate = 60;
-    #endregion
 
-    #region [Property: PluginTrace]
-    private readonly PluginTrace pluginTrace;
+    private int frameCounter;
+    private bool isDayTime;
+    private bool isDaylight = true;
 
-    protected PluginTrace PluginTrace {
-      get { return this.pluginTrace; }
-    }
-    #endregion
-
-    #region [Property: Config]
-    private readonly Configuration config;
-
-    public Configuration Config {
-      get { return this.config; }
-    }
-    #endregion
-
-    #region [Property: WorldMetadata]
-    private readonly WorldMetadata worldMetadata;
-
-    public WorldMetadata WorldMetadata {
-      get { return this.worldMetadata; }
-    }
-    #endregion
-
-    #region [Property: PluginCooperationHandler]
-    private readonly PluginCooperationHandler pluginCooperationHandler;
-
-    public PluginCooperationHandler PluginCooperationHandler {
-      get { return this.pluginCooperationHandler; }
-    }
-    #endregion
+    protected PluginTrace PluginTrace { get; private set; }
+    public Configuration Config { get; private set; }
+    public WorldMetadata WorldMetadata { get; private set; }
+    public PluginCooperationHandler PluginCooperationHandler { get; private set; }
 
 
-    #region [Method: Constructor]
     public CircuitHandler(
       PluginTrace pluginTrace,
       Configuration config, WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler
@@ -58,10 +32,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       Contract.Requires<ArgumentNullException>(worldMetadata != null);
       Contract.Requires<ArgumentNullException>(pluginCooperationHandler != null);
 
-      this.pluginTrace = pluginTrace;
-      this.config = config;
-      this.worldMetadata = worldMetadata;
-      this.pluginCooperationHandler = pluginCooperationHandler;
+      this.PluginTrace = pluginTrace;
+      this.Config = config;
+      this.WorldMetadata = worldMetadata;
+      this.PluginCooperationHandler = pluginCooperationHandler;
       this.isDayTime = Main.dayTime;
       this.isDaylight = (Main.dayTime && Main.time >= 7200 && Main.time <= 46800);
 
@@ -73,7 +47,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           TerrariaUtils.Tiles.SetObjectState(timerMeasureData, true);
       }
     }
-    #endregion
 
     private void ProcessCircuit(TSPlayer triggerer, DPoint tileLocation, SignalType? overrideSignal = null, bool switchSender = true) {
       CircuitProcessor redProcessor = new CircuitProcessor(this.PluginTrace, this, tileLocation, WireColor.Red);
@@ -84,11 +57,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.NotifyPlayer(blueProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender));
       this.NotifyPlayer(greenProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender));
     }
-
-    #region [Methods: HandleGameUpdate, HandleHitSwitch, HandleDoorUse, HandleSendTileSquare, HandleTriggerPressurePlate]
-    private int frameCounter;
-    private bool isDayTime;
-    private bool isDaylight = true;
 
     public void HandleGameUpdate() {
       this.frameCounter++;
@@ -310,9 +278,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       return true;
     }
-    #endregion
 
-    #region [Method: NotifyPlayer]
     protected void NotifyPlayer(CircuitProcessingResult result) {
       TSPlayer player = result.TriggeringPlayer;
       if (player == TSPlayer.Server)
@@ -369,6 +335,5 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           break;
       }
     }
-    #endregion
   }
 }

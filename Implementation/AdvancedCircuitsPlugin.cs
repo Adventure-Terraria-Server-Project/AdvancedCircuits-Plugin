@@ -17,12 +17,16 @@ using TShockAPI;
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   [ApiVersion(1, 14)]
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
-    #region [Constants]
     public const string TracePrefix = @"[Advanced Circuits] ";
     public const string ReloadCfg_Permission = "ac_reloadcfg";
-    #endregion
 
-    #region [Properties: Static AdvancedCircuitsDataDirectory, Static ConfigFilePath, Static WorldMetadataDirectory]
+    private bool hooksEnabled;
+    #if Testrun
+    private TestRunner testRunner;
+    #endif
+
+    public static AdvancedCircuitsPlugin LatestInstance { get; private set; }
+
     public static string AdvancedCircuitsDataDirectory {
       get {
         return Path.Combine(TShock.SavePath, "Advanced Circuits");
@@ -40,90 +44,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return Path.Combine(AdvancedCircuitsPlugin.AdvancedCircuitsDataDirectory, "World Data");
       }
     }
-    #endregion
 
-    #region [Property: Static LatestInstance]
-    private static AdvancedCircuitsPlugin latestInstance;
-
-    public static AdvancedCircuitsPlugin LatestInstance {
-      get { return AdvancedCircuitsPlugin.latestInstance; }
-    }
-    #endregion
-
-    #region [Property: Trace]
-    private readonly PluginTrace trace;
-
-    public PluginTrace Trace {
-      get { return this.trace; }
-    }
-    #endregion
-
-    #region [Property: PluginInfo]
-    private readonly PluginInfo pluginInfo;
-
-    protected PluginInfo PluginInfo {
-      get { return this.pluginInfo; }
-    }
-    #endregion
-
-    #region [Property: Config]
-    private Configuration config;
-
-    protected Configuration Config {
-      get { return this.config; }
-    }
-    #endregion
-
-    #region [Property: GetDataHookHandler]
-    private GetDataHookHandler getDataHookHandler;
-
-    protected GetDataHookHandler GetDataHookHandler {
-      get { return this.getDataHookHandler; }
-    }
-    #endregion
-
-    #region [Property: CircuitHandler]
-    private CircuitHandler circuitHandler;
-
-    protected CircuitHandler CircuitHandler {
-      get { return this.circuitHandler; }
-    }
-    #endregion
-
-    #region [Property: UserInteractionHandler]
-    private UserInteractionHandler userInteractionHandler;
-
-    protected UserInteractionHandler UserInteractionHandler {
-      get { return this.userInteractionHandler; }
-    }
-    #endregion
-
-    #region [Property: WorldMetadataHandler]
-    private WorldMetadataHandler worldMetadataHandler;
-
-    protected WorldMetadataHandler WorldMetadataHandler {
-      get { return this.worldMetadataHandler; }
-    }
-    #endregion
-
-    #region [Property: PluginCooperationHandler]
-    private PluginCooperationHandler pluginCooperationHandler;
-
-    public PluginCooperationHandler PluginCooperationHandler {
-      get { return this.pluginCooperationHandler; }
-    }
-    #endregion
-
-    private bool hooksEnabled;
-
-    #if Testrun
-    private TestRunner testRunner;
-    #endif
+    public PluginTrace Trace { get; private set; }
+    protected PluginInfo PluginInfo { get; private set; }
+    protected Configuration Config { get; private set; }
+    protected GetDataHookHandler GetDataHookHandler { get; private set; }
+    protected CircuitHandler CircuitHandler { get; private set; }
+    protected UserInteractionHandler UserInteractionHandler { get; private set; }
+    protected WorldMetadataHandler WorldMetadataHandler { get; private set; }
+    public PluginCooperationHandler PluginCooperationHandler { get; private set; }
 
 
-    #region [Method: Constructor]
     public AdvancedCircuitsPlugin(Main game): base(game) {
-      this.pluginInfo = new PluginInfo(
+      this.PluginInfo = new PluginInfo(
         "Advanced Circuits",
         Assembly.GetAssembly(typeof(AdvancedCircuitsPlugin)).GetName().Version,
         "",
@@ -137,14 +70,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         Debug.Listeners.Add(new ConsoleTraceListener());
       #endif
 
-      this.trace = new PluginTrace(AdvancedCircuitsPlugin.TracePrefix);
+      this.Trace = new PluginTrace(AdvancedCircuitsPlugin.TracePrefix);
       this.hooksEnabled = false;
 
-      AdvancedCircuitsPlugin.latestInstance = this;
+      AdvancedCircuitsPlugin.LatestInstance = this;
     }
-    #endregion
 
-    #region [Methods: Initialize, Game_PostInitialize]
     public override void Initialize() {
       ServerApi.Hooks.GamePostInitialize.Register(this, this.Game_PostInitialize);
 
@@ -162,9 +93,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (!this.InitWorldMetdataHandler())
         return;
 
-      this.pluginCooperationHandler = new PluginCooperationHandler(this.Trace);
+      this.PluginCooperationHandler = new PluginCooperationHandler(this.Trace);
       #if !Testrun
-      this.circuitHandler = new CircuitHandler(
+      this.CircuitHandler = new CircuitHandler(
         this.Trace, this.Config, this.WorldMetadataHandler.Metadata, this.PluginCooperationHandler
       );
       #endif
@@ -188,7 +119,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     private bool InitConfig() {
       if (File.Exists(AdvancedCircuitsPlugin.ConfigFilePath)) {
         try {
-          this.config = Configuration.Read(AdvancedCircuitsPlugin.ConfigFilePath);
+          this.Config = Configuration.Read(AdvancedCircuitsPlugin.ConfigFilePath);
         } catch (Exception ex) {
           string exceptionDetailsText;
           if (ex is XmlSchemaException)
@@ -203,7 +134,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return false;
         }
       } else {
-        this.config = new Configuration();
+        this.Config = new Configuration();
         this.Trace.WriteLineWarning(string.Format(
           "Configuration file was not found at \"{0}\". Default settings will be used.", AdvancedCircuitsPlugin.ConfigFilePath
         ));
@@ -213,7 +144,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     private bool InitWorldMetdataHandler() {
-      this.worldMetadataHandler = new WorldMetadataHandler(this.Trace, AdvancedCircuitsPlugin.WorldMetadataDirectory);
+      this.WorldMetadataHandler = new WorldMetadataHandler(this.Trace, AdvancedCircuitsPlugin.WorldMetadataDirectory);
 
       try {
         this.WorldMetadataHandler.InitOrReadMetdata();
@@ -231,26 +162,25 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         if (this.isDisposed)
           return;
 
-        this.config = Configuration.Read(AdvancedCircuitsPlugin.ConfigFilePath);
-        if (this.circuitHandler != null) {
-          this.circuitHandler = new CircuitHandler(
+        this.Config = Configuration.Read(AdvancedCircuitsPlugin.ConfigFilePath);
+        if (this.CircuitHandler != null) {
+          this.CircuitHandler = new CircuitHandler(
             this.Trace, this.Config, this.WorldMetadataHandler.Metadata, this.PluginCooperationHandler
           );
         }
       };
-      this.userInteractionHandler = new UserInteractionHandler(
+      this.UserInteractionHandler = new UserInteractionHandler(
         this.Trace, this.PluginInfo, this.Config, this.WorldMetadataHandler.Metadata, this.PluginCooperationHandler, 
         reloadConfiguration
       );
     }
-    #endregion
 
     #region [Methods: Server Hook Handling]
     private void AddHooks() {
-      if (this.getDataHookHandler != null)
+      if (this.GetDataHookHandler != null)
         throw new InvalidOperationException("Hooks already registered.");
       
-      this.getDataHookHandler = new GetDataHookHandler(this, true);
+      this.GetDataHookHandler = new GetDataHookHandler(this, true);
       this.GetDataHookHandler.HitSwitch += this.Net_HitSwitch;
       this.GetDataHookHandler.TileEdit += this.Net_TileEdit;
       this.GetDataHookHandler.DoorUse += this.Net_DoorUse;
@@ -271,8 +201,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     private void RemoveHooks() {
-      if (this.getDataHookHandler != null) 
-        this.getDataHookHandler.Dispose();
+      if (this.GetDataHookHandler != null) 
+        this.GetDataHookHandler.Dispose();
 
       ServerApi.Hooks.GameUpdate.Register(this, this.Game_Update);
       ServerApi.Hooks.WorldSave.Register(this, this.World_SaveWorld);
@@ -409,8 +339,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         this.hooksEnabled = false;
         this.RemoveHooks();
         
-        if (this.userInteractionHandler != null)
-          this.userInteractionHandler.Dispose();
+        if (this.UserInteractionHandler != null)
+          this.UserInteractionHandler.Dispose();
       }
 
       base.Dispose(isDisposing);

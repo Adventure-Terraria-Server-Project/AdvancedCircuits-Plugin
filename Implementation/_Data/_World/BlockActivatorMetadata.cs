@@ -8,28 +8,12 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class BlockActivatorMetadata {
-    #region [Property: IsActivated]
-    private bool isActivated;
-
-    public bool IsActivated {
-      get { return this.isActivated; }
-      set { this.isActivated = value; }
-    }
-    #endregion
-
-    #region [Property: RegisteredInactiveBlocks]
-    private readonly Dictionary<DPoint,BlockType> registeredInactiveBlocks;
-
-    public Dictionary<DPoint,BlockType> RegisteredInactiveBlocks {
-      get { return this.registeredInactiveBlocks; }
-    }
-    #endregion
+    public bool IsActivated { get; set; }
+    public Dictionary<DPoint,BlockType> RegisteredInactiveBlocks { get; private set; }
 
 
-    #region [Method: Constructor]
     public BlockActivatorMetadata() {
-      this.registeredInactiveBlocks = new Dictionary<DPoint,BlockType>();
+      this.RegisteredInactiveBlocks = new Dictionary<DPoint,BlockType>();
     }
-    #endregion
   }
 }
