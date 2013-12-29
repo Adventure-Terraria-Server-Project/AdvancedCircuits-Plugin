@@ -17,7 +17,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public bool IsSignCommandsAvailable { get; private set; }
 
 
-    #region [Method: Constructor]
     public PluginCooperationHandler(PluginTrace pluginTrace) {
       Contract.Requires<ArgumentNullException>(pluginTrace != null);
 
