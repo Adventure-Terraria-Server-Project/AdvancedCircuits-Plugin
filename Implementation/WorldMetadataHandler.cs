@@ -26,7 +26,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.PluginTrace.WriteLineInfo("Starting one time metadata initialization...");
       for (int x = 0; x < Main.maxTilesX - 1; x++) {
         for (int y = 0; y < Main.maxTilesY - 1; y++) {
-          if (!TerrariaUtils.Tiles[x, y].active)
+          if (!TerrariaUtils.Tiles[x, y].active())
             continue;
 
           DPoint tileLocation = new DPoint(x, y);
@@ -49,7 +49,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             }
             case AdvancedCircuits.BlockType_WirelessTransmitter: {
               foreach (DPoint portLocation in AdvancedCircuits.EnumerateComponentPortLocations(tileLocation, new DPoint(1, 1)))
-                if (TerrariaUtils.Tiles[portLocation].wire && !metadata.WirelessTransmitters.ContainsKey(tileLocation))
+                if (TerrariaUtils.Tiles[portLocation].HasWire() && !metadata.WirelessTransmitters.ContainsKey(tileLocation))
                   metadata.WirelessTransmitters.Add(tileLocation, "{Server}");
 
               break;
@@ -70,7 +70,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       foreach (DPoint gateLocation in gateLocations) {
         Tile tile = TerrariaUtils.Tiles[gateLocation];
         if (
-          !tile.active || (
+          !tile.active() || (
             tile.type != (int)AdvancedCircuits.BlockType_ANDGate && 
             tile.type != (int)AdvancedCircuits.BlockType_ORGate && 
             tile.type != (int)AdvancedCircuits.BlockType_XORGate)
@@ -83,7 +83,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       List<DPoint> activeTimerLocations = new List<DPoint>(metadata.ActiveTimers.Keys);
       foreach (DPoint activeTimerLocation in activeTimerLocations) {
         Tile tile = TerrariaUtils.Tiles[activeTimerLocation];
-        if (!tile.active || tile.type != (int)BlockType.XSecondTimer)
+        if (!tile.active() || tile.type != (int)BlockType.XSecondTimer)
           metadata.ActiveTimers.Remove(activeTimerLocation);
       }
 
@@ -91,7 +91,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       List<DPoint> clockLocations = new List<DPoint>(metadata.Clocks.Keys);
       for (int i = 0; i < clockLocations.Count; i++) {
         Tile tile = TerrariaUtils.Tiles[clockLocations[i]];
-        if (!tile.active || tile.type != (int)BlockType.GrandfatherClock)
+        if (!tile.active() || tile.type != (int)BlockType.GrandfatherClock)
           clockLocations.RemoveAt(i--);
       }
 
@@ -99,7 +99,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       List<DPoint> swapperLocations = new List<DPoint>(metadata.Swappers.Keys);
       foreach (DPoint swapperLocation in swapperLocations) {
         Tile tile = TerrariaUtils.Tiles[swapperLocation];
-        if (!tile.active || tile.type != (int)AdvancedCircuits.BlockType_Swapper)
+        if (!tile.active() || tile.type != (int)AdvancedCircuits.BlockType_Swapper)
           metadata.Swappers.Remove(swapperLocation);
       }
 
@@ -107,7 +107,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       List<DPoint> wirelessTransmitterLocations = new List<DPoint>(metadata.WirelessTransmitters.Keys);
       foreach (DPoint transmitterLocation in wirelessTransmitterLocations) {
         Tile tile = TerrariaUtils.Tiles[transmitterLocation];
-        if (!tile.active || tile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter)
+        if (!tile.active() || tile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter)
           metadata.WirelessTransmitters.Remove(transmitterLocation);
       }
 
@@ -139,7 +139,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           // Check if we just wired an unregistered component's port.
           foreach (DPoint adjacentTileLocation in AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1))) {
             Tile tile = TerrariaUtils.Tiles[adjacentTileLocation];
-            if (tile.active && tile.type == (int)AdvancedCircuits.BlockType_WirelessTransmitter) {
+            if (tile.active() && tile.type == (int)AdvancedCircuits.BlockType_WirelessTransmitter) {
               if (!this.Metadata.WirelessTransmitters.ContainsKey(adjacentTileLocation))
                 this.Metadata.WirelessTransmitters.Add(adjacentTileLocation, player.Name);
             }
@@ -149,7 +149,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
         case TileEditType.TileKill:
         case TileEditType.TileKillNoItem: {
-          if (!TerrariaUtils.Tiles[location].active)
+          if (!TerrariaUtils.Tiles[location].active())
             break;
 
           switch ((BlockType)TerrariaUtils.Tiles[location].type) {

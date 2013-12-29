@@ -75,6 +75,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
     #endregion
 
+    private void ProcessCircuit(TSPlayer triggerer, DPoint tileLocation, SignalType? overrideSignal = null, bool switchSender = true) {
+      CircuitProcessor redProcessor = new CircuitProcessor(this.PluginTrace, this, tileLocation, WireColor.Red);
+      CircuitProcessor blueProcessor = new CircuitProcessor(this.PluginTrace, this, tileLocation, WireColor.Blue);
+      CircuitProcessor greenProcessor = new CircuitProcessor(this.PluginTrace, this, tileLocation, WireColor.Green);
+
+      this.NotifyPlayer(redProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender));
+      this.NotifyPlayer(blueProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender));
+      this.NotifyPlayer(greenProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender));
+    }
+
     #region [Methods: HandleGameUpdate, HandleHitSwitch, HandleDoorUse, HandleSendTileSquare, HandleTriggerPressurePlate]
     private int frameCounter;
     private bool isDayTime;
@@ -86,12 +96,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.frameCounter % CircuitHandler.TimerUpdateFrameRate == 0) {
         List<DPoint> timersToDelete = null;
         List<KeyValuePair<DPoint,ActiveTimerMetadata>> timersToProcess = null;
+
         foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in this.WorldMetadata.ActiveTimers) {
           DPoint timerLocation = activeTimer.Key;
           ActiveTimerMetadata timerMetadata = activeTimer.Value;
 
           Tile timerTile = TerrariaUtils.Tiles[timerLocation];
-          if (timerMetadata == null || !timerTile.active || timerTile.type != (int)BlockType.XSecondTimer) {
+          if (timerMetadata == null || !timerTile.active() || timerTile.type != (int)BlockType.XSecondTimer) {
             if (timersToDelete == null)
               timersToDelete = new List<DPoint>();
 
@@ -116,7 +127,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in timersToProcess) {
             SignalType signalType;
             // Is Advanced Circuit?
-            if (!TerrariaUtils.Tiles[activeTimer.Key].wire)
+            if (!TerrariaUtils.Tiles[activeTimer.Key].HasWire())
               signalType = SignalType.On;
             else 
               signalType = SignalType.Swap;
@@ -128,8 +139,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               if (triggeringPlayer == null)
                 triggeringPlayer = TSPlayer.Server;
 
-              CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, activeTimer.Key);
-              processor.ProcessCircuit(triggeringPlayer, signalType, false);
+              this.ProcessCircuit(triggeringPlayer, activeTimer.Key, signalType, false);
             } catch (Exception ex) {
               this.PluginTrace.WriteLineError(
                 "Circuit processing for a Timer at {0} failed. See inner exception for details.\n{1}", 
@@ -157,7 +167,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             DPoint clockLocation = clock.Key;
             Tile clockTile = TerrariaUtils.Tiles[clockLocation];
 
-            if (!clockTile.active || clockTile.type != (int)BlockType.GrandfatherClock) {
+            if (!clockTile.active() || clockTile.type != (int)BlockType.GrandfatherClock) {
               if (clocksToRemove == null)
                 clocksToRemove = new List<DPoint>();
 
@@ -194,8 +204,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               if (triggeringPlayer == null)
                 triggeringPlayer = TSPlayer.Server;
 
-              CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, clockLocation);
-              processor.ProcessCircuit(triggeringPlayer, AdvancedCircuits.BoolToSignal(signal), false);
+              this.ProcessCircuit(triggeringPlayer, clockLocation, AdvancedCircuits.BoolToSignal(signal), false);
             } catch (Exception ex) {
               this.PluginTrace.WriteLineError(
                 "Circuit processing for a Grandfather Clock at {0} failed. See inner exception for details.\n{1}", 
@@ -228,8 +237,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return true;
 
       try {
-        CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
-        this.NotifyPlayer(processor.ProcessCircuit(player));
+        this.ProcessCircuit(player, tileLocation);
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
           "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
@@ -253,8 +261,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return false;
 
       try {
-        CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
-        this.NotifyPlayer(processor.ProcessCircuit(player, AdvancedCircuits.BoolToSignal(isOpening), false));
+        this.ProcessCircuit(player, tileLocation, AdvancedCircuits.BoolToSignal(isOpening), false);
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
           "DoorUse for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
@@ -275,7 +282,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         int y = tileLocation.Y + 2;
         for (int x = tileLocation.X + 1; x < tileLocation.X + 4; x++) {
           if (
-            TerrariaUtils.Tiles[x, y].active && (
+            TerrariaUtils.Tiles[x, y].active() && (
               TerrariaUtils.Tiles[x, y].type == (int)BlockType.DoorOpened ||
               TerrariaUtils.Tiles[x, y].type == (int)BlockType.DoorClosed
             )
@@ -293,8 +300,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return true;
 
       try {
-        CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
-        this.NotifyPlayer(processor.ProcessCircuit(player));
+        this.ProcessCircuit(player, tileLocation);
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
           "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 

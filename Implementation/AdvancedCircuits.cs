@@ -179,7 +179,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     public static bool IsComponentWiredByPort(DPoint componentOriginLocation, DPoint componentSize) {
       foreach (DPoint portLocation in AdvancedCircuits.EnumerateComponentPortLocations(componentOriginLocation, componentSize))
-        if (TerrariaUtils.Tiles[portLocation].wire)
+        if (TerrariaUtils.Tiles[portLocation].HasWire())
           return true;
 
       return false;
@@ -200,19 +200,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       int modifierCount = 0;
 
       Tile possibleModifierTile = TerrariaUtils.Tiles[origin.X - 1, origin.Y - 1];
-      if (possibleModifierTile.active && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
+      if (possibleModifierTile.active() && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
         modifierCount++;
 
       possibleModifierTile = TerrariaUtils.Tiles[origin.X + componentSize.X, origin.Y - 1];
-      if (possibleModifierTile.active && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
+      if (possibleModifierTile.active() && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
         modifierCount++;
 
       possibleModifierTile = TerrariaUtils.Tiles[origin.X + componentSize.X, origin.Y + componentSize.Y];
-      if (possibleModifierTile.active && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
+      if (possibleModifierTile.active() && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
         modifierCount++;
 
       possibleModifierTile = TerrariaUtils.Tiles[origin.X - 1, origin.Y + componentSize.Y];
-      if (possibleModifierTile.active && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
+      if (possibleModifierTile.active() && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
         modifierCount++;
 
       return modifierCount;
@@ -220,19 +220,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     public static IEnumerable<DPoint> EnumerateModifierAdjacentComponents(DPoint modifierLocation) {
       Tile possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X - 1, modifierLocation.Y - 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
+      if (possibleComponentTile.active() && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X - 1, modifierLocation.Y - 1);
 
       possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X + 1, modifierLocation.Y - 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
+      if (possibleComponentTile.active() && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X + 1, modifierLocation.Y - 1);
 
       possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X + 1, modifierLocation.Y + 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
+      if (possibleComponentTile.active() && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X + 1, modifierLocation.Y + 1);
 
       possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X - 1, modifierLocation.Y + 1];
-      if (possibleComponentTile.active && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
+      if (possibleComponentTile.active() && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
         yield return new DPoint(modifierLocation.X - 1, modifierLocation.Y + 1);
     }
     #endregion
@@ -296,7 +296,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     #region [Method: MeasureTimerFrameTime]
     public static int MeasureTimerFrameTime(DPoint timerLocation) {
-      if (!TerrariaUtils.Tiles[timerLocation].active || TerrariaUtils.Tiles[timerLocation].type != (int)BlockType.XSecondTimer)
+      if (!TerrariaUtils.Tiles[timerLocation].active() || TerrariaUtils.Tiles[timerLocation].type != (int)BlockType.XSecondTimer)
         throw new ArgumentException("The tile is not active or no timer.", "timerLocation");
 
       int frames = -1;

@@ -11,11 +11,11 @@ using Terraria.Plugins.Common;
 using Terraria.Plugins.Common.Hooks;
 using Terraria.Plugins.CoderCow.AdvancedCircuits.Test;
 
-using Hooks;
+using TerrariaApi.Server;
 using TShockAPI;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  [APIVersion(1, 12)]
+  [ApiVersion(1, 14)]
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
     #region [Constants]
     public const string TracePrefix = @"[Advanced Circuits] ";
@@ -146,13 +146,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     #region [Methods: Initialize, Game_PostInitialize]
     public override void Initialize() {
-      GameHooks.PostInitialize += this.Game_PostInitialize;
+      ServerApi.Hooks.GamePostInitialize.Register(this, this.Game_PostInitialize);
 
       this.AddHooks();
     }
 
-    private void Game_PostInitialize() {
-      GameHooks.PostInitialize -= this.Game_PostInitialize;
+    private void Game_PostInitialize(EventArgs e) {
+      ServerApi.Hooks.GamePostInitialize.Deregister(this, this.Game_PostInitialize);
 
       if (!Directory.Exists(AdvancedCircuitsPlugin.AdvancedCircuitsDataDirectory))
         Directory.CreateDirectory(AdvancedCircuitsPlugin.AdvancedCircuitsDataDirectory);
@@ -250,14 +250,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.getDataHookHandler != null)
         throw new InvalidOperationException("Hooks already registered.");
       
-      this.getDataHookHandler = new GetDataHookHandler(this.Trace, true);
+      this.getDataHookHandler = new GetDataHookHandler(this, true);
       this.GetDataHookHandler.HitSwitch += this.Net_HitSwitch;
       this.GetDataHookHandler.TileEdit += this.Net_TileEdit;
       this.GetDataHookHandler.DoorUse += this.Net_DoorUse;
       this.GetDataHookHandler.SendTileSquare += this.Net_SendTileSquare;
 
-      GameHooks.Update += this.Game_Update;
-      WorldHooks.SaveWorld += this.World_SaveWorld;
+      ServerApi.Hooks.GameUpdate.Register(this, this.Game_Update);
+      ServerApi.Hooks.WorldSave.Register(this, this.World_SaveWorld);
 
       try {
         this.AddExperimentalHooks();
@@ -266,18 +266,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void AddExperimentalHooks() {
-      NpcHooks.UseDoor += this.Npc_UseDoor;
-      NpcHooks.TriggerPressurePlate += this.Npc_TriggerPressurePlate;
-      ProjectileHooks.TriggerPressurePlate += this.Projectile_TriggerPressurePlate;
+      ServerApi.Hooks.NpcTriggerPressurePlate.Register(this, this.Npc_TriggerPressurePlate);
+      ServerApi.Hooks.ProjectileTriggerPressurePlate.Register(this, this.Projectile_TriggerPressurePlate);
     }
 
     private void RemoveHooks() {
       if (this.getDataHookHandler != null) 
         this.getDataHookHandler.Dispose();
 
-      GameHooks.Update -= this.Game_Update;
-      WorldHooks.SaveWorld -= this.World_SaveWorld;
-      GameHooks.PostInitialize -= this.Game_PostInitialize;
+      ServerApi.Hooks.GameUpdate.Register(this, this.Game_Update);
+      ServerApi.Hooks.WorldSave.Register(this, this.World_SaveWorld);
 
       try {
         this.RemoveExperimentalHooks();
@@ -286,9 +284,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private void RemoveExperimentalHooks() {
-      NpcHooks.UseDoor -= this.Npc_UseDoor;
-      NpcHooks.TriggerPressurePlate -= this.Npc_TriggerPressurePlate;
-      ProjectileHooks.TriggerPressurePlate -= this.Projectile_TriggerPressurePlate;
+      ServerApi.Hooks.NpcTriggerPressurePlate.Deregister(this, this.Npc_TriggerPressurePlate);
+      ServerApi.Hooks.ProjectileTriggerPressurePlate.Deregister(this, this.Projectile_TriggerPressurePlate);
     }
 
     private void Net_HitSwitch(object sender, TileLocationEventArgs e) {
@@ -326,31 +323,31 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       e.Handled = this.CircuitHandler.HandleSendTileSquare(e.Player, e.Location, e.Size);
     }
 
-    private void Npc_TriggerPressurePlate(NpcTriggerPressurePlateEventArgs e) {
+    private void Npc_TriggerPressurePlate(TriggerPressurePlateEventArgs<NPC> e) {
       if (this.isDisposed || !this.hooksEnabled || e.Handled)
         return;
 
       if (this.CircuitHandler != null)
-        e.Handled = this.CircuitHandler.HandleTriggerPressurePlate(TSPlayer.Server, new DPoint(e.X, e.Y));
+        e.Handled = this.CircuitHandler.HandleTriggerPressurePlate(TSPlayer.Server, new DPoint(e.TileX, e.TileY));
     }
 
-    private void Npc_UseDoor(NpcUseDoorEventArgs e) {
+    /*private void Npc_UseDoor(NpcUseDoorEventArgs e) {
       if (this.isDisposed || !this.hooksEnabled || e.Handled)
         return;
 
       if (this.CircuitHandler != null)
         e.Handled = this.CircuitHandler.HandleDoorUse(TSPlayer.Server, new DPoint(e.X, e.Y), e.IsOpening, e.Npc);
-    }
+    }*/
 
-    private void Projectile_TriggerPressurePlate(ProjectileTriggerPressurePlateEventArgs e) {
+    private void Projectile_TriggerPressurePlate(TriggerPressurePlateEventArgs<Projectile> e) {
       if (this.isDisposed || !this.hooksEnabled || e.Handled)
         return;
 
       if (this.CircuitHandler != null)
-        e.Handled = this.CircuitHandler.HandleTriggerPressurePlate(TSPlayer.Server, new DPoint(e.X, e.Y), true);
+        e.Handled = this.CircuitHandler.HandleTriggerPressurePlate(TSPlayer.Server, new DPoint(e.TileX, e.TileY), true);
     }
 
-    private void World_SaveWorld(bool resettime, HandledEventArgs e) {
+    private void World_SaveWorld(WorldSaveEventArgs e) {
       if (this.isDisposed || !this.hooksEnabled || e.Handled)
         return;
 
@@ -361,7 +358,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
     }
 
-    private void Game_Update() {
+    private void Game_Update(EventArgs e) {
       if (this.isDisposed || !this.hooksEnabled)
         return;
 

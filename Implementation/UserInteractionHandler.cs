@@ -172,7 +172,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             persistentMode = args.ContainsParameter("+p", StringComparison.InvariantCultureIgnoreCase);
           }
 
-          PlayerCommandInteraction interaction = this.StartOrResetCommandInteraction(args.Player);
+          CommandInteraction interaction = this.StartOrResetCommandInteraction(args.Player);
           interaction.DoesNeverComplete = persistentMode;
           interaction.TileEditCallback = (player, editType, blockType, location, blockStyle) => {
             if (
@@ -196,17 +196,17 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               }
 
               BlockType hitBlockType = (BlockType)tile.type;
-              if (tile.active && hitBlockType == BlockType.ActiveStone) {
+              if (tile.active() && hitBlockType == BlockType.ActiveStone) {
                 if (newState == null || newState == false)
                   TerrariaUtils.Tiles.SetBlock(location, BlockType.InactiveStone);
                 else
                   args.Player.SendTileSquare(location);
               } else if (hitBlockType == BlockType.InactiveStone) {
-                if (tile.active &&  newState == null || newState == true)
+                if (tile.active() &&  newState == null || newState == true)
                   TerrariaUtils.Tiles.SetBlock(location, BlockType.ActiveStone);
                 else
                   args.Player.SendTileSquare(location);
-              } else if (tile.active && TerrariaUtils.Tiles.IsMultistateObject(hitBlockType)) {
+              } else if (tile.active() && TerrariaUtils.Tiles.IsMultistateObject(hitBlockType)) {
                 ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(location);
                 bool currentState = TerrariaUtils.Tiles.ObjectHasActiveState(measureData);
                 if (newState == null)
@@ -223,10 +223,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               ) {
                 if (
                   TShock.CheckTilePermission(args.Player, location.X, location.Y) || (
-                    this.PluginCooperationHandler.IsProtectorAvailable &&
-                    this.PluginCooperationHandler.Protector__CheckProtected(args.Player, location, false)
-                  )
-                ) {
+                  this.PluginCooperationHandler.IsProtectorAvailable &&
+                  this.PluginCooperationHandler.Protector__CheckProtected(args.Player, location, false)
+                )) {
                   player.SendErrorMessage("This gate is protected.");
                   player.SendTileSquare(location);
                   return result;
@@ -248,7 +247,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 List<DPoint> gatePortLocations = new List<DPoint>(AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1)));
                 for (int i = 0; i < 4; i++) {
                   Tile gatePort = TerrariaUtils.Tiles[gatePortLocations[i]];
-                  if (!gatePort.active || gatePort.type != (int)AdvancedCircuits.BlockType_InputPort)
+                  if (!gatePort.active() || gatePort.type != (int)AdvancedCircuits.BlockType_InputPort)
                     continue;
 
                   if (newState == null) {
@@ -264,10 +263,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 player.SendSuccessMessage("The states of this gate's ports are now:");
                 this.SendGatePortStatesInfo(args.Player, gateState);
                 args.Player.SendTileSquare(location);
-              } else if (tile.active && tile.type == (int)AdvancedCircuits.BlockType_InputPort) {
+              } else if (tile.active() && tile.type == (int)AdvancedCircuits.BlockType_InputPort) {
                 foreach (DPoint adjacentTileLocation in AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1))) {
                   Tile adjacentTile = TerrariaUtils.Tiles[adjacentTileLocation];
-                  if (!adjacentTile.active || !AdvancedCircuits.IsLogicalGate((BlockType)adjacentTile.type))
+                  if (!adjacentTile.active() || !AdvancedCircuits.IsLogicalGate((BlockType)adjacentTile.type))
                     continue;
 
                   if (
@@ -360,16 +359,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       if (editType == TileEditType.PlaceTile)
         return this.HandleTilePlacing(player, blockType, location, objectStyle);
-      else if (editType == TileEditType.TileKill || editType == TileEditType.TileKillNoItem)
+      if (editType == TileEditType.TileKill || editType == TileEditType.TileKillNoItem)
         return this.HandleTileDestruction(player, location);
-      else if (editType == TileEditType.PlaceWire)
+      if (editType == TileEditType.PlaceWire)
         return this.HandleWirePlacing(player, location);
 
       #if DEBUG || Testrun
       if (editType == TileEditType.DestroyWire) {
         player.SendMessage(location.ToString(), Color.Aqua);
 
-        if (!TerrariaUtils.Tiles[location].active)
+        if (!TerrariaUtils.Tiles[location].active())
           return false;
 
         ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(location);
@@ -467,7 +466,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             break;
           }
           case BlockType.DartTrap: {
-            if (!TerrariaUtils.Tiles[componentLocation].wire)
+            if (!TerrariaUtils.Tiles[componentLocation].HasWire())
               break;
             DartTrapConfig dartTrapConfig;
             if (!this.Config.DartTrapConfigs.TryGetValue(configProfile, out dartTrapConfig))
@@ -611,11 +610,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return false;
 
       Tile tile = TerrariaUtils.Tiles[location];
-      if (!tile.active || tile.type != (int)AdvancedCircuits.BlockType_Modifier)
+      if (!tile.active() || tile.type != (int)AdvancedCircuits.BlockType_Modifier)
         return false;
 
       foreach (DPoint anyComponentLocation in AdvancedCircuits.EnumerateModifierAdjacentComponents(location)) {
-        if (!TerrariaUtils.Tiles[anyComponentLocation].active)
+        if (!TerrariaUtils.Tiles[anyComponentLocation].active())
           continue;
 
         BlockType blockType = (BlockType)TerrariaUtils.Tiles[anyComponentLocation].type;
@@ -631,7 +630,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         if (blockType == AdvancedCircuits.BlockType_WirelessTransmitter) {
           bool isWired = false;
           foreach (DPoint pdcPortLocation in AdvancedCircuits.EnumerateComponentPortLocations(anyComponentLocation, new DPoint(1, 1))) {
-            if (TerrariaUtils.Tiles[pdcPortLocation].wire) {
+            if (TerrariaUtils.Tiles[pdcPortLocation].HasWire()) {
               isWired = true;
               break;
             }
@@ -666,7 +665,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       foreach (DPoint tileToCheck in tilesToCheck) {
         Tile tile = TerrariaUtils.Tiles[tileToCheck];
-        if (!tile.active)
+        if (!tile.active())
           continue;
         if (tileToCheck != location && tile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter)
           continue;

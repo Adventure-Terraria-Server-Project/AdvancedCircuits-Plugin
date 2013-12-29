@@ -65,7 +65,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #region [SignCommands]
     public bool SignCommands_CheckIsSignCommand(string text) {
       try {
-        return text.StartsWith(SignCommands.SignCommands.getConfig.DefineSignCommands, StringComparison.CurrentCultureIgnoreCase);
+        return text.StartsWith(SignCommands.SignCommands.Config.DefineSignCommands, StringComparison.CurrentCultureIgnoreCase);
       } catch (Exception ex) {
         throw new CooperatingPluginException(ex);
       }
