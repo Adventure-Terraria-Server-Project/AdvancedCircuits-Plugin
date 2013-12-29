@@ -140,10 +140,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           interaction.DoesNeverComplete = persistentMode;
           interaction.TileEditCallback = (player, editType, blockType, location, blockStyle) => {
             if (
-              editType == TileEditType.TileKill || 
-              editType == TileEditType.TileKillNoItem || 
-              editType == TileEditType.PlaceWire || 
-              editType == TileEditType.DestroyWire
+              editType != TileEditType.PlaceTile || 
+              editType != TileEditType.PlaceWall || 
+              editType != TileEditType.DestroyWall || 
+              editType != TileEditType.PlaceActuator
             ) {
               CommandInteractionResult result = new CommandInteractionResult { IsHandled = true, IsInteractionCompleted = true };
               Tile tile = TerrariaUtils.Tiles[location];
@@ -325,7 +325,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return this.HandleTilePlacing(player, blockType, location, objectStyle);
       if (editType == TileEditType.TileKill || editType == TileEditType.TileKillNoItem)
         return this.HandleTileDestruction(player, location);
-      if (editType == TileEditType.PlaceWire)
+      if (editType == TileEditType.PlaceWire || editType == TileEditType.PlaceWireBlue || editType == TileEditType.PlaceWireGreen)
         return this.HandleWirePlacing(player, location);
 
       #if DEBUG || Testrun

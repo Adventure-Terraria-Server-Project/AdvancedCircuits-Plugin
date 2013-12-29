@@ -78,7 +78,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == BlockType.EbonsandBlock ||
         blockType == BlockType.HallowedVine ||
         (blockType >= BlockType.PearlsandBlock && blockType <= BlockType.WoodenBeam) ||
-        blockType == BlockType.IceBlock ||
+        blockType == BlockType.IceRodBlock ||
         blockType == BlockType.ActiveStone ||
         blockType == BlockType.InactiveStone ||
         blockType == BlockType.DemoniteBrick ||
@@ -251,14 +251,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public static Direction DirectionFromTileLocations(DPoint startTile, DPoint endTile) {
       if (startTile.X < endTile.X)
         return Direction.Right;
-      else if (startTile.X > endTile.X)
+      if (startTile.X > endTile.X)
         return Direction.Left;
-      else if (startTile.Y < endTile.Y)
+      if (startTile.Y < endTile.Y)
         return Direction.Down;
-      else if (startTile.Y > endTile.Y)
+      if (startTile.Y > endTile.Y)
         return Direction.Up;
-      else
-        return Direction.Unknown;
+      
+      return Direction.Unknown;
     }
 
     public static Direction InvertDirection(Direction direction) {

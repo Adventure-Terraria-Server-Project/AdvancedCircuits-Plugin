@@ -131,7 +131,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           break;
         }
-        case TileEditType.PlaceWire: {
+        case TileEditType.PlaceWire:
+        case TileEditType.PlaceWireBlue:
+        case TileEditType.PlaceWireGreen: {
           // Check if we just wired an unregistered component's port.
           foreach (DPoint adjacentTileLocation in AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1))) {
             Tile tile = TerrariaUtils.Tiles[adjacentTileLocation];
