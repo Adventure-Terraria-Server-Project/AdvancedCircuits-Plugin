@@ -29,7 +29,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.IsSignCommandsAvailable = (Type.GetType(SignCommandsSomeTypeQualifiedName, false) != null);
     }
 
-    public bool Protector__CheckProtected(TSPlayer player, DPoint tileLocation, bool fullAccessRequired) {
+    public bool Protector_CheckProtected(TSPlayer player, DPoint tileLocation, bool fullAccessRequired) {
       try {
         return !ProtectorPlugin.LatestInstance.ProtectionManager.CheckBlockAccess(player, tileLocation, fullAccessRequired);
       } catch (Exception ex) {

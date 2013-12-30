@@ -10,6 +10,7 @@ using TShockAPI;
 using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
+  // TODO: Code needs way more abstraction
   public class CircuitProcessor {
     // The maximum amount of times a single component can be signaled in the same circuit execution until it "overheats".
     public const int PortDefiningComponentSignalMaximum = 5;
@@ -693,11 +694,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         for (int i = 0; i < this.SignaledInletPumps.Count; i++) {
           DPoint inletPumpLocation = this.SignaledInletPumps[i];
           ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(inletPumpLocation);
-          int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
-          ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigProfile(modifiers);
+          PaintColor componentPaint = (PaintColor)TerrariaUtils.Tiles[measureData.OriginTileLocation].color();
           PumpConfig pumpConfig;
-          if (!this.CircuitHandler.Config.PumpConfigs.TryGetValue(configProfile, out pumpConfig))
-            pumpConfig = this.CircuitHandler.Config.PumpConfigs[ComponentConfigProfile.Default];
+          if (!this.CircuitHandler.Config.PumpConfigs.TryGetValue(componentPaint, out pumpConfig))
+            pumpConfig = this.CircuitHandler.Config.PumpConfigs[PaintColor.None];
 
           bool hasLiquid = false;
           foreach (Tile pumpTile in TerrariaUtils.Tiles.EnumerateObjectTiles(measureData)) {
@@ -891,13 +891,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return false;
 
           PumpConfig pumpConfig;
-          ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigProfile(
-            AdvancedCircuits.CountComponentModifiers(measureData)
-          );
+          PaintColor componentPaint = (PaintColor)TerrariaUtils.Tiles[measureData.OriginTileLocation].color();
           if (
             (
-              this.CircuitHandler.Config.PumpConfigs.TryGetValue(configProfile, out pumpConfig) ||
-              this.CircuitHandler.Config.PumpConfigs.TryGetValue(ComponentConfigProfile.Default, out pumpConfig)
+              this.CircuitHandler.Config.PumpConfigs.TryGetValue(componentPaint, out pumpConfig) ||
+              this.CircuitHandler.Config.PumpConfigs.TryGetValue(PaintColor.None, out pumpConfig)
             ) &&
               pumpConfig.Cooldown == 0 ||
               WorldGen.checkMech(originX, originY, pumpConfig.Cooldown
@@ -931,20 +929,22 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (signal == SignalType.Off)
             return false;
 
-          DartTrapConfig trapConfig;
-          ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigProfile(
-            AdvancedCircuits.CountComponentModifiers(measureData)
-          );
+          TrapConfig trapConfig;
+          Tile componentTile = TerrariaUtils.Tiles[measureData.OriginTileLocation];
+          PaintColor componentPaint = (PaintColor)componentTile.color();
+          TrapStyle trapStyle = TerrariaUtils.Tiles.GetTrapStyle(componentTile.frameY / 18);
+          TrapConfigKey configKey = new TrapConfigKey(trapStyle, componentPaint);
+          TrapConfigKey defaultKey = new TrapConfigKey(trapStyle, PaintColor.None);
           if (
             (
-              this.CircuitHandler.Config.DartTrapConfigs.TryGetValue(configProfile, out trapConfig) ||
-              this.CircuitHandler.Config.DartTrapConfigs.TryGetValue(ComponentConfigProfile.Default, out trapConfig)
+              this.CircuitHandler.Config.TrapConfigs.TryGetValue(configKey, out trapConfig) ||
+              this.CircuitHandler.Config.TrapConfigs.TryGetValue(defaultKey, out trapConfig)
             ) &&
               trapConfig.Cooldown == 0 ||
               WorldGen.checkMech(originX, originY, trapConfig.Cooldown
             )
           ) {
-            if (this.Result.SignaledDartTraps > this.CircuitHandler.Config.MaxDartTrapsPerCircuit) {
+            if (this.Result.SignaledTraps > this.CircuitHandler.Config.MaxTrapsPerCircuit) {
               this.Result.WarnReason = CircuitWarnReason.SignalesTooManyDartTraps;
               return true;
             }
@@ -973,6 +973,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             if (isFacingLeft)
               projectileAngle += 180f;
 
+            projectileAngle += CircuitProcessor.Random.Next(-(int)trapConfig.ProjectileAngleVariance, (int)trapConfig.ProjectileAngleVariance + 1);
+
             Vector2 normalizedPolarOffset = new Vector2(
               (float)Math.Cos(Math.PI * projectileAngle / 180f),
               (float)Math.Sin(Math.PI * projectileAngle / 180f)
@@ -999,7 +1001,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             projectile.wet = Collision.WetCollision(projectile.position, projectile.width, projectile.height);
             TSPlayer.All.SendData(PacketTypes.ProjectileNew, string.Empty, projectileIndex);
             
-            this.Result.SignaledDartTraps++;
+            this.Result.SignaledTraps++;
           }
           
           return true;
@@ -1069,15 +1071,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return true;
         }
         case BlockType.Sign: {
-          if (
-            !this.IsAdvancedCircuit || signal == SignalType.Off || this.TriggeringPlayer == TSPlayer.Server
-          )
+          if (!this.IsAdvancedCircuit || signal == SignalType.Off || this.TriggeringPlayer == TSPlayer.Server)
             return false;
 
-          if (
-            this.IsTriggeredPassively && !string.IsNullOrEmpty(this.CircuitHandler.Config.SignConfig.PassiveTriggerPermission) &&
-            !this.TriggeringPlayer.Group.HasPermission(this.CircuitHandler.Config.SignConfig.PassiveTriggerPermission)
-          ) {
+          if (this.IsTriggeredPassively && !this.TriggeringPlayer.Group.HasPermission(AdvancedCircuitsPlugin.PassiveTriggerSign_Permission)) {
             this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
             this.Result.WarnRelatedComponentType = BlockType.Sign;
             return false;
@@ -1091,10 +1088,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             this.CircuitHandler.PluginCooperationHandler.IsSignCommandsAvailable &&
             this.CircuitHandler.PluginCooperationHandler.SignCommands_CheckIsSignCommand(signText)
           ) {
-            if (
-              !string.IsNullOrEmpty(this.CircuitHandler.Config.SignConfig.TriggerSignCommandPermission) &&
-              !this.TriggeringPlayer.Group.HasPermission(this.CircuitHandler.Config.SignConfig.TriggerSignCommandPermission)
-            ) {
+            if (!this.TriggeringPlayer.Group.HasPermission(AdvancedCircuitsPlugin.TriggerSignCommand_Permission)) {
               this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
               this.Result.WarnRelatedComponentType = BlockType.Sign;
               return false;
@@ -1165,6 +1159,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return false;
           if (TerrariaUtils.Tiles[measureData.OriginTileLocation].wall == (int)WallType.LihzahrdBrickWall && !(originY <= Main.worldSurface || NPC.downedPlantBoss))
             return true;
+          if (this.TriggeringPlayer != TSPlayer.Server && !this.TriggeringPlayer.Group.HasPermission(AdvancedCircuitsPlugin.TriggerTeleporter_Permission)) {
+            this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
+            this.Result.WarnRelatedComponentType = BlockType.Teleporter;
+            return false;
+          }
 
           if (rootBranch.TeleporterLocation == DPoint.Empty) {
             rootBranch.TeleporterLocation = measureData.OriginTileLocation;
@@ -1307,6 +1306,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       List<DPoint> componentPorts = null;
       bool outputSignal = signal;
       DPoint componentLocation = measureData.OriginTileLocation;
+      PaintColor componentPaint = (PaintColor)TerrariaUtils.Tiles[measureData.OriginTileLocation].color();
       
       BlockActivatorMetadata blockActivatorToRegister = null;
       DPoint blockActivatorLocationToRegister = DPoint.Empty;
@@ -1358,25 +1358,24 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
             return true;
           } else {
-            int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
-            switch (modifiers) {
-              case 0:
+            switch (componentPaint) {
+              default:
                 if (currentState == signal)
                   return true;
 
                 TerrariaUtils.Tiles.SetObjectState(measureData, signal);
                 break;
-              case 1:
+              case AdvancedCircuits.Paint_Switch_ToggleAndForward:
                 if (currentState != signal)
                   TerrariaUtils.Tiles.SetObjectState(measureData, signal);
 
                 break;
-              case 2:
+              case AdvancedCircuits.Paint_Switch_ForwardIfEqual:
                 if (currentState != signal)
                   return true;
 
                 break;
-              case 3:
+              case AdvancedCircuits.Paint_Switch_ForwardIfEqualByChance:
                 if (currentState != signal)
                   return true;
 
@@ -1384,9 +1383,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                   outputSignal = !signal;
 
                 break;
+              case AdvancedCircuits.Paint_Switch_ForwardByChance:
+                if (CircuitProcessor.Random.Next(0, 2) == 0)
+                  return true;
+
+                break;
             }
 
-            if (modifiers != 1) {
+            if (componentPaint != AdvancedCircuits.Paint_Switch_ToggleAndForward) {
               blockActivatorToRegister = rootBranch.BlockActivator;
               blockActivatorLocationToRegister = rootBranch.BlockActivatorLocation;
               blockActivatorModeToRegister = rootBranch.BlockActivatorMode;
@@ -1413,16 +1417,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!portTile.active() || portTile.type != (int)AdvancedCircuits.BlockType_InputPort)
             return false;
 
-          int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
           GateStateMetadata metadata;
-          switch (modifiers) {
+          switch (componentPaint) {
             default:
               if (!this.CircuitHandler.WorldMetadata.GateStates.TryGetValue(componentLocation, out metadata)) {
                 metadata = new GateStateMetadata();
                 this.CircuitHandler.WorldMetadata.GateStates.Add(componentLocation, metadata);
               }
               break;
-            case 1:
+            case AdvancedCircuits.Paint_Gate_TemporaryState:
               if (!temporaryGateStates.TryGetValue(componentLocation, out metadata)) {
                 metadata = new GateStateMetadata();
                 temporaryGateStates.Add(componentLocation, metadata);
@@ -1477,12 +1480,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!signal)
             return false;
 
-          int modifiers = AdvancedCircuits.CountComponentModifiers(measureData);
           int swapperCounterValue;
           if (!this.CircuitHandler.WorldMetadata.Swappers.TryGetValue(componentLocation, out swapperCounterValue)) {
             this.CircuitHandler.WorldMetadata.Swappers.Add(componentLocation, 1);
 
-            if (modifiers == 0)
+            if (componentPaint == PaintColor.None)
               outputSignal = false;
             else
               return true;
@@ -1490,7 +1492,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             swapperCounterValue++;
 
             bool sendSignal = true;
-            int swapperCounterMax = modifiers + 1;
+            int swapperCounterMax = AdvancedCircuits.SwapperPaintToCount(componentPaint);
             if (swapperCounterValue == swapperCounterMax) {
               outputSignal = false;
             } else if (swapperCounterValue >= swapperCounterMax * 2) {
@@ -1545,9 +1547,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return false;
 
           if (
-            this.CircuitHandler.Config.BlockActivatorConfig.TriggerPermission != null && 
             this.TriggeringPlayer != TSPlayer.Server &&
-            !this.TriggeringPlayer.Group.HasPermission(this.CircuitHandler.Config.BlockActivatorConfig.TriggerPermission)
+            !this.TriggeringPlayer.Group.HasPermission(AdvancedCircuitsPlugin.TriggerBlockActivator_Permission)
           ) {
             this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
             this.Result.WarnRelatedComponentType = AdvancedCircuits.BlockType_BlockActivator;
@@ -1579,7 +1580,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           blockActivatorToRegister = blockActivator;
           blockActivatorLocationToRegister = componentLocation;
-          if (AdvancedCircuits.CountComponentModifiers(measureData) == 1)
+          if (componentPaint == AdvancedCircuits.Paint_BlockActivator_Replace)
             blockActivatorModeToRegister = BlockActivatorMode.ReplaceBlocks;
 
           break;
@@ -1589,13 +1590,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return false;
 
           WirelessTransmitterConfig transmitterConfig;
-          ComponentConfigProfile configProfile = AdvancedCircuits.ModifierCountToConfigProfile(
-            AdvancedCircuits.CountComponentModifiers(measureData)
-          );
           if (
             (
-              this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(configProfile, out transmitterConfig) ||
-              this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(ComponentConfigProfile.Default, out transmitterConfig)
+              this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(componentPaint, out transmitterConfig) ||
+              this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(PaintColor.None, out transmitterConfig)
             ) && (
               transmitterConfig.Cooldown == 0 ||
               WorldGen.checkMech(componentLocation.X, componentLocation.Y, transmitterConfig.Cooldown)
@@ -1649,12 +1647,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 continue;
 
               if (!isBroadcasting) {
-                ComponentConfigProfile receiverConfigProfile = AdvancedCircuits.ModifierCountToConfigProfile(
-                  AdvancedCircuits.CountComponentModifiers(receivingTransmitterLocation, new DPoint(1, 1))
-                );
+                PaintColor receiverPaint = (PaintColor)TerrariaUtils.Tiles[receivingTransmitterLocation].color();
                 WirelessTransmitterConfig receiverConfig;
-                if (!this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(receiverConfigProfile, out receiverConfig))
-                  receiverConfig = this.CircuitHandler.Config.WirelessTransmitterConfigs[ComponentConfigProfile.Default];
+                if (!this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(receiverPaint, out receiverConfig))
+                  receiverConfig = this.CircuitHandler.Config.WirelessTransmitterConfigs[PaintColor.None];
 
                 if (receiverConfig.Network != 0 && receiverConfig.Network != transmitterConfig.Network)
                   continue;

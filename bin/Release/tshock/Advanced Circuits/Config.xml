@@ -9,7 +9,7 @@
 <AdvancedCircuitsConfiguration
   xmlns="http://github.com/CoderCow/AdvancedCircuits-Plugin"
   
-  Version="1.2"
+  Version="1.3"
 >
   <!-- 
     Sets whether usual Terraria circuits are overriden by this plugin to extend / limit their functionalities as configured
@@ -29,40 +29,29 @@
   <MaxDartTrapsPerCircuit>10</MaxDartTrapsPerCircuit>
   <MaxStatuesPerCircuit>10</MaxStatuesPerCircuit>
   <MaxPumpsPerCircuit>4</MaxPumpsPerCircuit>
-  <BoulderWirePermission></BoulderWirePermission>
   
   <SignConfig>
     <!--
       The prefix to display in front of the text stated by signaled signs.
     -->
     <ReadPrefix>Sign: </ReadPrefix>
-    <WirePermission></WirePermission>
-    <!--
-      If a sign is signaled passively (without direct interaction of a player, like by a Timer for example), then that
-      player has to have this permission to have the text shown to them or a sign command executed for them.
-    -->
-    <PassiveTriggerPermission></PassiveTriggerPermission>
-
-    <!--
-      The permissions required to trigger a sign having sign commands on it.
-    -->
-    <TriggerSignCommandPermission></TriggerSignCommandPermission>
   </SignConfig>
   
   <!--
     The maximum amount of wires a circuit can be made of. Terrarias default is 1000. Recommended is 600.
   -->
-  <MaxCircuitLength>600</MaxCircuitLength>
+  <MaxCircuitLength>1200</MaxCircuitLength>
 
   <BlockActivatorConfig>
     <MaxChangeableBlocks>100</MaxChangeableBlocks>
     <Cooldown>0</Cooldown>
-    <TriggerPermission></TriggerPermission>
   </BlockActivatorConfig>
 
   <!-- 
-    The default setting of the Pump is mostly equal to Terraria's default Pump.
-    It can be configured by 5 different profiles: Default, OneModifier, TwoModifiers, ThreeModifiers, FourModifiers.
+    The default setting of the Pump is almost equal to Terraria's default Pump.
+    Different profiles can be configured for it, one for each paint brush color. If you define a profile for the 
+    Paint "Red", the settings of this particular configuration profile are applied when the pump is painted red.
+    There must always be a Paint="None" profile present, otherwise the config is invalid.
     
     1020 means four Tiles completely filled with liquid (255 per tile), higher transfer values are not possible.
     
@@ -72,7 +61,7 @@
     Loss Value is positive, an Outlet Pump still needs an Inlet Pump and a bit of liquid in order to work.
   -->
   <PumpConfigs>
-    <PumpConfig Profile="Default">
+    <PumpConfig Paint="None">
       <TransferableWater>1020</TransferableWater>
       <TransferableLava>1020</TransferableLava>
       <LossValue>0</LossValue>
@@ -84,39 +73,91 @@
   
   <!-- 
     The default setting of the Dart Trap equals to Terraria's default Dart Trap.
-    It can be configured by 5 different profiles: Default, OneModifier, TwoModifiers, ThreeModifiers, FourModifiers.
+    Different profiles can be configured for it, one for each paint brush color. If you define a profile for the 
+    Paint "Red", the settings of this particular configuration profile are applied when the trap is painted red.
+    There should always be a Paint="None" profile for each TrapType present.
     
     ProjectileAngle defines the angle in which the projectile is shot from the trap in degrees. If the trap faces 
     left, 180 is added to this value.
+    ProjectileAngleVariance defines the maximum varying angle which is additive to ProjectileAngle.
+    For example, if Angle is 90 and AngleVariance is 10, then the actual of projectile's angle shot by that trap 
+    would be:
+    Angel = 90 +/- Random(0, 10)
   -->
-  <DartTrapConfigs>
-    <DartTrapConfig Profile="Default">
+  <TrapConfigs>
+    <TrapConfig TrapType="DartTrap" Paint="None">
       <ProjectileType>98</ProjectileType>
       <ProjectileDamage>20</ProjectileDamage>
       <ProjectileSpeed>12</ProjectileSpeed>
       <ProjectileAngle>0</ProjectileAngle>
+      <ProjectileAngleVariance>0</ProjectileAngleVariance>
       <ProjectileOffset>32</ProjectileOffset>
-      <ProjectileLifeTime>150</ProjectileLifeTime>
+      <ProjectileLifeTime>3600</ProjectileLifeTime>
       <ProjectileKnockback>2</ProjectileKnockback>
       <Cooldown>180</Cooldown>
-      <WirePermission>Test</WirePermission>
-    </DartTrapConfig>
-    <DartTrapConfig Profile="OneModifier">
-      <ProjectileType>75</ProjectileType>
+    </TrapConfig>
+    <TrapConfig TrapType="SuperDartTrap" Paint="None">
+      <ProjectileType>184</ProjectileType>
       <ProjectileDamage>40</ProjectileDamage>
-      <ProjectileSpeed>4</ProjectileSpeed>
+      <ProjectileSpeed>12</ProjectileSpeed>
       <ProjectileAngle>0</ProjectileAngle>
-      <ProjectileOffset>2</ProjectileOffset>
-      <ProjectileLifeTime>350</ProjectileLifeTime>
-      <ProjectileKnockback>0</ProjectileKnockback>
-      <Cooldown>420</Cooldown>
-      <WirePermission>ac_PlaceSuperDartTrap</WirePermission>
-      <TriggerPermission>ac_TriggerSuperDartTrap</TriggerPermission>
-    </DartTrapConfig>
-  </DartTrapConfigs>
+      <ProjectileAngleVariance>0</ProjectileAngleVariance>
+      <ProjectileOffset>32</ProjectileOffset>
+      <ProjectileLifeTime>3600</ProjectileLifeTime>
+      <ProjectileKnockback>2</ProjectileKnockback>
+      <Cooldown>180</Cooldown>
+    </TrapConfig>
+    <TrapConfig TrapType="FlameTrap" Paint="None">
+      <ProjectileType>187</ProjectileType>
+      <ProjectileDamage>40</ProjectileDamage>
+      <ProjectileSpeed>5</ProjectileSpeed>
+      <ProjectileAngle>0</ProjectileAngle>
+      <ProjectileAngleVariance>0</ProjectileAngleVariance>
+      <ProjectileOffset>32</ProjectileOffset>
+      <ProjectileLifeTime>60</ProjectileLifeTime>
+      <ProjectileKnockback>2</ProjectileKnockback>
+      <Cooldown>180</Cooldown>
+    </TrapConfig>
+    <TrapConfig TrapType="SpikyBallTrap" Paint="None">
+      <ProjectileType>185</ProjectileType>
+      <ProjectileDamage>40</ProjectileDamage>
+      <ProjectileSpeed>0</ProjectileSpeed>
+      <ProjectileAngle>90</ProjectileAngle>
+      <ProjectileAngleVariance>5</ProjectileAngleVariance>
+      <ProjectileOffset>32</ProjectileOffset>
+      <ProjectileLifeTime>900</ProjectileLifeTime>
+      <ProjectileKnockback>2</ProjectileKnockback>
+      <Cooldown>240</Cooldown>
+    </TrapConfig>
+    <TrapConfig TrapType="SpearTrap" Paint="None">
+      <ProjectileType>186</ProjectileType>
+      <ProjectileDamage>60</ProjectileDamage>
+      <ProjectileSpeed>8</ProjectileSpeed>
+      <ProjectileAngle>90</ProjectileAngle>
+      <ProjectileAngleVariance>0</ProjectileAngleVariance>
+      <ProjectileOffset>20</ProjectileOffset>
+      <ProjectileLifeTime>300</ProjectileLifeTime>
+      <ProjectileKnockback>2</ProjectileKnockback>
+      <Cooldown>90</Cooldown>
+    </TrapConfig>
+    <TrapConfig TrapType="SpearTrap" Paint="None">
+      <ProjectileType>186</ProjectileType>
+      <ProjectileDamage>60</ProjectileDamage>
+      <ProjectileSpeed>8</ProjectileSpeed>
+      <ProjectileAngle>90</ProjectileAngle>
+      <ProjectileAngleVariance>0</ProjectileAngleVariance>
+      <ProjectileOffset>20</ProjectileOffset>
+      <ProjectileLifeTime>300</ProjectileLifeTime>
+      <ProjectileKnockback>2</ProjectileKnockback>
+      <Cooldown>90</Cooldown>
+    </TrapConfig>
+  </TrapConfigs>
 
   <!-- 
-    Can be configured by 5 different profiles: Default, OneModifier, TwoModifiers, ThreeModifiers, FourModifiers.
+    Wireless transmitters can also be configured with different profiles, one for each paint brush color. If you 
+    define a profile for the Paint "Red", the settings of this particular configuration profile are applied when 
+    the transmitter is painted red. There must always be a Paint="None" profile for each TrapType present, 
+    otherwise the config is invalid.
     
     Transmitters distinguish signals by three things, the network the Transmitters are clients of, the channel which
     maps to the port of the Transmitter and the player who placed it.
@@ -128,14 +169,14 @@
     Note: The TriggerPermission is only checked for sending transmitters, not for receiving transmitters.
   -->
   <WirelessTransmitterConfigs>
-    <WirelessTransmitterConfig Profile="Default">
+    <WirelessTransmitterConfig Paint="None">
       <Network>1</Network>
       <Range>140</Range>
       <Cooldown>0</Cooldown>
       <WirePermission></WirePermission>
       <TriggerPermission></TriggerPermission>
     </WirelessTransmitterConfig>
-    <WirelessTransmitterConfig Profile="OneModifier">
+    <WirelessTransmitterConfig Paint="Red">
       <Network>2</Network>
       <Range>0</Range>
       <Cooldown>0</Cooldown>

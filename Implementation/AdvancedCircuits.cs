@@ -15,9 +15,35 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public const BlockType BlockType_Swapper             = BlockType.IronOre;
     public const BlockType BlockType_CrossoverBridge     = BlockType.Spike;
     public const BlockType BlockType_InputPort           = BlockType.Glass;
-    public const BlockType BlockType_Modifier            = BlockType.CobaltOre;
     public const BlockType BlockType_BlockActivator      = BlockType.ActiveStone;
     public const BlockType BlockType_WirelessTransmitter = BlockType.AdamantiteOre;
+
+    public const PaintColor Paint_Timer_Mul2 = PaintColor.Red;
+    public const PaintColor Paint_Timer_Mul4 = PaintColor.Green;
+    public const PaintColor Paint_Timer_Mul8 = PaintColor.Blue;
+    public const PaintColor Paint_Timer_Div2 = PaintColor.White;
+    public const PaintColor Paint_Timer_Div3 = PaintColor.Grey;
+    public const PaintColor Paint_Timer_Div4 = PaintColor.Black;
+
+    public const PaintColor Paint_Switch_ToggleAndForward       = PaintColor.Red;
+    public const PaintColor Paint_Switch_ForwardIfEqual         = PaintColor.Green;
+    public const PaintColor Paint_Switch_ForwardIfEqualByChance = PaintColor.Blue;
+    public const PaintColor Paint_Switch_ForwardByChance        = PaintColor.White;
+
+    public const PaintColor Paint_Gate_TemporaryState = PaintColor.Red;
+
+    public const PaintColor Paint_Swapper_2 = PaintColor.Red;
+    public const PaintColor Paint_Swapper_3 = PaintColor.Green;
+    public const PaintColor Paint_Swapper_4 = PaintColor.Blue;
+    public const PaintColor Paint_Swapper_5 = PaintColor.White;
+    public const PaintColor Paint_Swapper_6 = PaintColor.Grey;
+    public const PaintColor Paint_Swapper_7 = PaintColor.Black;
+
+    public const PaintColor Paint_Clock_ByDaylight = PaintColor.Blue;
+    public const PaintColor Paint_Clock_ByNighttimeAndBloodmoon = PaintColor.Red;
+    public const PaintColor Paint_Clock_ByNighttimeAndFullmoon = PaintColor.White;
+
+    public const PaintColor Paint_BlockActivator_Replace = PaintColor.Red;
 
 
     public static bool IsPortDefiningComponentBlock(BlockType blockType) {
@@ -39,14 +65,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       );
     }
 
-    public static bool IsModifierSupportingComponent(BlockType blockType) {
+    public static bool IsPaintSupportingComponent(BlockType blockType) {
       return (
         blockType == BlockType.XSecondTimer ||
         blockType == BlockType.Switch ||
         blockType == BlockType.Lever ||
         blockType == BlockType.GrandfatherClock ||
-        blockType == BlockType.DoorOpened ||
-        blockType == BlockType.DoorClosed ||
         blockType == AdvancedCircuits.BlockType_ANDGate ||
         blockType == AdvancedCircuits.BlockType_XORGate ||
         blockType == AdvancedCircuits.BlockType_ORGate ||
@@ -182,51 +206,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return AdvancedCircuits.IsComponentWiredByPort(measureData.OriginTileLocation, measureData.Size);
     }
 
-    public static int CountComponentModifiers(ObjectMeasureData measureData) {
-      return AdvancedCircuits.CountComponentModifiers(measureData.OriginTileLocation, measureData.Size);
-    }
-
-    public static int CountComponentModifiers(DPoint componentOriginLocation, DPoint componentSize) {
-      DPoint origin = componentOriginLocation;
-      int modifierCount = 0;
-
-      Tile possibleModifierTile = TerrariaUtils.Tiles[origin.X - 1, origin.Y - 1];
-      if (possibleModifierTile.active() && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
-        modifierCount++;
-
-      possibleModifierTile = TerrariaUtils.Tiles[origin.X + componentSize.X, origin.Y - 1];
-      if (possibleModifierTile.active() && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
-        modifierCount++;
-
-      possibleModifierTile = TerrariaUtils.Tiles[origin.X + componentSize.X, origin.Y + componentSize.Y];
-      if (possibleModifierTile.active() && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
-        modifierCount++;
-
-      possibleModifierTile = TerrariaUtils.Tiles[origin.X - 1, origin.Y + componentSize.Y];
-      if (possibleModifierTile.active() && possibleModifierTile.type == (int)AdvancedCircuits.BlockType_Modifier)
-        modifierCount++;
-
-      return modifierCount;
-    }
-
-    public static IEnumerable<DPoint> EnumerateModifierAdjacentComponents(DPoint modifierLocation) {
-      Tile possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X - 1, modifierLocation.Y - 1];
-      if (possibleComponentTile.active() && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
-        yield return new DPoint(modifierLocation.X - 1, modifierLocation.Y - 1);
-
-      possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X + 1, modifierLocation.Y - 1];
-      if (possibleComponentTile.active() && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
-        yield return new DPoint(modifierLocation.X + 1, modifierLocation.Y - 1);
-
-      possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X + 1, modifierLocation.Y + 1];
-      if (possibleComponentTile.active() && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
-        yield return new DPoint(modifierLocation.X + 1, modifierLocation.Y + 1);
-
-      possibleComponentTile = TerrariaUtils.Tiles[modifierLocation.X - 1, modifierLocation.Y + 1];
-      if (possibleComponentTile.active() && AdvancedCircuits.IsModifierSupportingComponent((BlockType)possibleComponentTile.type))
-        yield return new DPoint(modifierLocation.X - 1, modifierLocation.Y + 1);
-    }
-
     public static bool? SignalToBool(SignalType signal) {
       if (signal == SignalType.Swap)
         return null;
@@ -274,12 +253,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       throw new ArgumentException("The given direction can not be inverted because it is invalid.", "direction");
     }
 
-    public static ComponentConfigProfile ModifierCountToConfigProfile(int modifiers) {
-      return (ComponentConfigProfile)modifiers;
-    }
-
     public static int MeasureTimerFrameTime(DPoint timerLocation) {
-      if (!TerrariaUtils.Tiles[timerLocation].active() || TerrariaUtils.Tiles[timerLocation].type != (int)BlockType.XSecondTimer)
+      Tile timerTile = TerrariaUtils.Tiles[timerLocation];
+      if (!timerTile.active() || timerTile.type != (int)BlockType.XSecondTimer)
         throw new ArgumentException("The tile is not active or no timer.", "timerLocation");
 
       int frames = -1;
@@ -295,22 +271,41 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           break;
       }
 
-      switch (AdvancedCircuits.CountComponentModifiers(TerrariaUtils.Tiles.MeasureObject(timerLocation))) {
-        case 1:
-          frames *= 2;
-          break;
-        case 2:
-          frames *= 4;
-          break;
-        case 3:
-          frames /= 2;
-          break;
-        case 4:
-          frames /= 4;
-          break;
+      switch ((PaintColor)timerTile.color()) {
+        case AdvancedCircuits.Paint_Timer_Mul2:
+          return frames * 2;
+        case AdvancedCircuits.Paint_Timer_Mul4:
+          return frames * 4;
+        case AdvancedCircuits.Paint_Timer_Mul8:
+          return frames * 8;
+        case AdvancedCircuits.Paint_Timer_Div2:
+          return frames / 2;
+        case AdvancedCircuits.Paint_Timer_Div3:
+          return frames / 3;
+        case AdvancedCircuits.Paint_Timer_Div4:
+          return frames / 4;
+        default:
+          return frames;
       }
+    }
 
-      return frames;
+    public static int SwapperPaintToCount(PaintColor componentPaint) {
+      switch (componentPaint) {
+        default:
+          return 1;
+        case AdvancedCircuits.Paint_Swapper_2:
+          return 2;
+        case AdvancedCircuits.Paint_Swapper_3:
+          return 3;
+        case AdvancedCircuits.Paint_Swapper_4:
+          return 4;
+        case AdvancedCircuits.Paint_Swapper_5:
+          return 5;
+        case AdvancedCircuits.Paint_Swapper_6:
+          return 6;
+        case AdvancedCircuits.Paint_Swapper_7:
+          return 7;
+      }
     }
   }
 }

@@ -15,14 +15,13 @@ type of circuit is added called "Advanced Circuit" giving players the freedom of
 building complex systems using binary logic and new types of components.
 
 Several configuration settings give the server's owner control of wiring limits 
-and capabilities. This also includes a mighty configuration mechanism of Statues 
+and capabilities. This also includes a mighty configuration mechanism of statues 
 and their performed actions when powered.
 
 NOTE: Before installing and configuring the plugin, read the "Known Problems" 
 section first!
 
-Note: This plugin requires Terraria Server API 1.12 and TShock 4 in order to 
-work.
+Note: This plugin requires Terraria Server API 1.14 in order to work.
 
 To learn more about Advanced Circuits, have a look on the official wiki:
 https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
@@ -42,8 +41,17 @@ Commands
 
 Permissions
 ---------------------------------------------------------------------------------
-advancedcircuits_reloadcfg - to reload the configuration file.
-self declared permissions in the configuration file.
+ac.reloadcfg - to reload the configuration file.
+ac.trigger.teleporter - to trigger teleporters. Note that this is a trigger 
+  permission, not a usage permission. Players without this permission can still 
+  use a teleporter when another player who has this permission triggers it.
+ac.wire.teleporter - to wire teleporters.
+ac.wire.boulder - to wire boulders.
+ac.trigger.blockactivator - to trigger block activators.
+ac.wire.sign - to wire signs.
+ac.trigger.signcommand - to trigger sign commands.
+ac.passivetrigger.sign - to passively trigger signs.
+Self defined permissions in the configuration file.
 
 
 Plugin Cooperation
@@ -67,7 +75,23 @@ but AC will then not be able to handle circuits triggered by npcs or projectiles
 
 Changelog
 ---------------------------------------------------------------------------------
-Version 1.2 [29.05.2013]
+Version 1.3 Beta [12/28/2013]
+  -Please consider donating to support the developer and for faster updates and
+   feature implementation.
+  -Added teleporter wire / trigger permissions.
+  -Briefly updated to Terraria 1.2.2.
+  -Permission changed: ac_reloadcfg -> ac.reloadcfg
+  -Removed the modifiers feature. From now on, components behaviour can be 
+   changed by painting them in different colors where no color yields the
+   default behaviour.
+  -Removed some config permission settings and added hardcoded permissions 
+   instead.
+  -Fixed a bug causing wireless transmitters to work even through not wired 
+   properly.
+  -Fixed a bug causting meteorite to be dropped when a player placed a 
+   wireless transmitter on a wire without having permission to wire it.
+
+Version 1.2 [05/29/2013]
   -Please consider donating to support the developer.
   -Configuration file structure has changed, your old configuration has to be 
    ported to the new version.
@@ -75,8 +99,8 @@ Version 1.2 [29.05.2013]
    versions will be discarded.
   -Permission renamed: "advancedcircuits_reloadcfg" -> "ac_reloadcfg".
   -Added full intergration support. AC will fully integrate if you use the 
-   provided custom terraria server (optional).
-  -Added Wireless Transmitter Component (Adamantite Ore).
+   provided custom Terraria Server (optional).
+  -Added Wireless Transmitter Component (adamantite ore).
   -Pumps can now be configured using 5 different profiles (default + 4 Modifiers).
   -Added SignCommands cooperation. If a Sign Command is written on a sign 
    triggered by a "1" signal in an Advanced Circuit, then this Sign Command will 
@@ -119,14 +143,14 @@ Version 1.2 [29.05.2013]
   -Some minor improvements, fixed some typos.
   -Updated for Plugin Common Lib 1.9.
 
-Version 1.1.1 [25.11.2012]
+Version 1.1.1 [11/25/2012]
   -Fixed a wire processing bug causing some wires, depending on their position 
    and alignment, not to be signaled in Advanced Circuits.
   -Fixed a bug causing Block Activators not to properly check whether the maximum 
    of changeable blocks is reached or not.
   -Improved metadata handling.
 
-Version 1.1 [19.11.2012]
+Version 1.1 [11/19/2012]
   -Updated for TShock 4.0.
   -Configuration file structure has changed, your old configuration will have to 
    be ported to the new version.
@@ -134,7 +158,7 @@ Version 1.1 [19.11.2012]
    circuit execution.
   -Wires of circuits might now be processed multiple times during a single 
    circuit execution.
-  -Added the new Port Defining Component "Block Activator" (Active Stone).
+  -Added the new Port Defining Component "Block Activator" (active stone).
   -Beside acting as NOT-Gate, obsidian may now also be used as a NOT-Port to 
    invert the incoming or outgoing signal for / of a Port Defining Component.
   -Signs will now state their text to the circuit triggering player when 
@@ -147,25 +171,25 @@ Version 1.1 [19.11.2012]
   -Switches and Levers will now forward received signals if they got toggled by 
    them.
   -Added AC sub-command "toggle" / "switch", useful to easily toggle the state 
-   of a Torch or some other component.
+   of a torch or some other component.
   -Boulders will now start rolling if they receive a "1" signal in an Advanced 
    Circuit.
-  -Grandfather Clocks can now be used with one or two modifiers.
+  -Grandfather clocks can now be used with one or two modifiers.
   -Components will now be dropped if they were placed onto a wire by a player 
    who didn't have the permission to wire them up.
   -Huge performance improvements in matter of circuit processing.
-  -Fixed a bug allowing Statues to be placed on wires even if that player had 
+  -Fixed a bug allowing statues to be placed on wires even if that player had 
    not the permission to do so.
   -Improved configuration parsing, validation and error detection.
   -Some general stability improvements.
 
-Version 1.0.4 [23.10.2012]
-  -Fixed a bug causing Grandfather Clock to not work anymore.
-  -Fixed a bug causing World Metadata sometimes not be validated correctly for 
+Version 1.0.4 [10/23/2012]
+  -Fixed a bug causing grandfather clock to not work anymore.
+  -Fixed a bug causing world metadata sometimes not be validated correctly for 
    Timers.
-  -Improved World Metadata validation.
+  -Improved world metadata validation.
 
-Version 1.0.3 [03.10.2012]
+Version 1.0.3 [10/03/2012]
   -The version tree 1.0 is from now on considered stable.
   -Added some unit tests to ensure that no further bugs are introduced with new 
    updates.
@@ -176,27 +200,27 @@ Version 1.0.3 [03.10.2012]
    world is loaded again.
   -Fixed a bug causing Port Defining Components sometimes not to be signalized by 
    their Input Ports if their circuit met special conditions.
-  -Fixed a bug causing Pumps to malfunction or not work at all.
-  -Fixed a bug causing Doors not to always try to open to the opposite direction 
+  -Fixed a bug causing pumps to malfunction or not work at all.
+  -Fixed a bug causing doors not to always try to open to the opposite direction 
    if blocked.
-  -Fixed a bug causing Timers in an AC to be signalized when connected directly.
-  -Fixed the default ProjectileOffset value of DartTraps. It did not reflect the 
+  -Fixed a bug causing timers in an AC to be signalized when connected directly.
+  -Fixed the default ProjectileOffset value of dart traps. It did not reflect the 
    Terraria default value (2), causing objects right infront of them not to be hit.
   -Fixed a very rare occuring bug causing a NullReferenceException related to 
-   Timers.
+   timers.
   -Fixed a rare occuring bug causing "random exceptions" in circuits meeting 
    special conditions.
   -Updated for Plugins Common Lib 1.3.
   -The Plugin Common Library will now carry its version number in its file name. 
    The old "CCPluginsCommon.dll" can be safely removed.
 
-Version 1.0.2 Beta [12.09.2012]
+Version 1.0.2 Beta [09/12/2012]
   -Triggering players are now notified if a circuit exceeds the maximum amount of 
-   Pumps, Dart Traps or Statues.
+   pumps, dart traps or statues.
   -World Metadata are now written in JSON format.
-  -Grandfather Clock will no longer signalize a Vanilla Circuit and thus works only 
+  -Grandfather clock will no longer signalize a Vanilla Circuit and thus works only 
    in Advanced Circuits.
-  -Fixed a bug introduced with 1.0.1 where a Music Box could not be switched by 
+  -Fixed a bug introduced with 1.0.1 where a music box could not be switched by 
    signals.
   -Fixed a bug causing wrong NPCs to be moved by statues - this could also have 
    lead to exceptions.
@@ -205,20 +229,20 @@ Version 1.0.2 Beta [12.09.2012]
   -Fixed a bug causing no entries being written into the TShock log file.
   -Updated for Plugins Common Lib 1.2.
 
-Version 1.0.1 Beta [10.09.2012]
+Version 1.0.1 Beta [09/10/2012]
   -Recommended maximum circuit length is now 400.
   -Overriding of Vanilla Circuits is now enabled by default.
   -Players triggering a circuit which exceeds the maximum length are now notified 
    about that.
   -Timers which became invalid due to a server crash will no longer throw exceptions.
-  -Fixed Timers turning themselfes off in overridden vanilla circuits.
-  -Fixed Timers sometimes not updating their state for other players when being 
+  -Fixed timers turning themselfes off in overridden vanilla circuits.
+  -Fixed timers sometimes not updating their state for other players when being 
    directly switched.
-  -Fixed Dart Traps doing no damage when no configuration was present.
-  -Fixed Dart Traps not being read properly from the configuration.
+  -Fixed dart traps doing no damage when no configuration was present.
+  -Fixed dart traps not being read properly from the configuration.
   -Implemented a work-around of a Mono configuration issue causing configuration 
    files not to be reloaded successfully.
   -Updated for Plugins Common Lib 1.1
 
-Version 1.0 Beta [07.09.2012]
+Version 1.0 Beta [09/07/2012]
   -Initial release by CoderCow.

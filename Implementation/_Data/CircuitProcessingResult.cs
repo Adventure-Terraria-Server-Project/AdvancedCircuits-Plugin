@@ -20,7 +20,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public int ProcessedBranchCount { get; set; }
     public int SignaledComponentsCounter { get; set; }
     public int SignaledPortDefiningComponentsCounter { get; set; }
-    public int SignaledDartTraps { get; set; }
+    public int SignaledTraps { get; set; }
     public int SignaledStatues { get; set; }
     public int SignaledPumps { get; set; }
     public int TransferedWater { get; set; }

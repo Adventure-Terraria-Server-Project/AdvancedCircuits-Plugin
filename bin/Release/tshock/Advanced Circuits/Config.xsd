@@ -23,13 +23,36 @@
       <xs:enumeration value="1" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="ModifierConfigProfile">
+  <xs:simpleType name="PaintColor">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="Default" />
-      <xs:enumeration value="OneModifier" />
-      <xs:enumeration value="TwoModifiers" />
-      <xs:enumeration value="ThreeModifiers" />
-      <xs:enumeration value="FourModifiers" />
+      <xs:enumeration value="None" />
+      <xs:enumeration value="Red" />
+      <xs:enumeration value="Orange" />
+      <xs:enumeration value="Yellow" />
+      <xs:enumeration value="Lime" />
+      <xs:enumeration value="Green" />
+      <xs:enumeration value="Teal" />
+      <xs:enumeration value="Cyan" />
+      <xs:enumeration value="SkyBlue" />
+      <xs:enumeration value="Blue" />
+      <xs:enumeration value="Purple" />
+      <xs:enumeration value="Violet" />
+      <xs:enumeration value="Pink" />
+      <xs:enumeration value="DeepRed" />
+      <xs:enumeration value="DeepOrange" />
+      <xs:enumeration value="DeepYellow" />
+      <xs:enumeration value="DeepLime" />
+      <xs:enumeration value="DeepGreen" />
+      <xs:enumeration value="DeepTeal" />
+      <xs:enumeration value="DeepCyan" />
+      <xs:enumeration value="DeepSkyBlue" />
+      <xs:enumeration value="DeepBlue" />
+      <xs:enumeration value="DeepPurple" />
+      <xs:enumeration value="DeepViolet" />
+      <xs:enumeration value="DeepPink" />
+      <xs:enumeration value="Black" />
+      <xs:enumeration value="White" />
+      <xs:enumeration value="Grey" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="Cooldown">
@@ -71,13 +94,13 @@
   <xs:simpleType name="Terraria.BlockId">
     <xs:restriction base="xs:integer">
       <xs:minInclusive value="0" />
-      <xs:maxInclusive value="149" />
+      <xs:maxInclusive value="1000" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="Terraria.ProjectileId">
     <xs:restriction base="xs:integer">
       <xs:minInclusive value="1" />
-      <xs:maxInclusive value="111" />
+      <xs:maxInclusive value="1000" />
     </xs:restriction>
   </xs:simpleType>
   
@@ -91,6 +114,9 @@
         <xs:element name="MaxPumpsPerCircuit" type="xs:int" />
         <xs:element name="MaxCircuitLength" type="xs:int" />
         <xs:element name="BoulderWirePermission" type="xs:string" minOccurs="0" />
+        <xs:element name="TeleporterWirePermission" type="xs:string" minOccurs="0" />
+        <!-- Note that this permission might not be as restrictive as you think  -->
+        <xs:element name="TeleporterTriggerPermission" type="xs:string" minOccurs="0" />
 
         <xs:element name="SignConfig">
           <xs:complexType>
@@ -127,7 +153,7 @@
                     <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
                   </xs:all>
 
-                  <xs:attribute name="Profile" type="ModifierConfigProfile" use="required" />
+                  <xs:attribute name="Paint" type="PaintColor" use="required" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
@@ -152,7 +178,7 @@
                     <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
                   </xs:all>
 
-                  <xs:attribute name="Profile" type="ModifierConfigProfile" use="required" />
+                  <xs:attribute name="Paint" type="PaintColor" use="required" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
@@ -164,16 +190,17 @@
           </xs:unique>
         </xs:element>
 
-        <xs:element name="DartTrapConfigs">
+        <xs:element name="TrapConfigs">
           <xs:complexType>
             <xs:sequence>
-              <xs:element name="DartTrapConfig" minOccurs="1" maxOccurs="unbounded">                
+              <xs:element name="TrapConfig" minOccurs="1" maxOccurs="unbounded">                
                 <xs:complexType>
                   <xs:all>
                     <xs:element name="ProjectileType" type="Terraria.ProjectileId" />
                     <xs:element name="ProjectileDamage" type="xs:int" />
                     <xs:element name="ProjectileSpeed" type="xs:float" />
                     <xs:element name="ProjectileAngle" type="Degree" />
+                    <xs:element name="ProjectileAngleVariance" type="Degree" />
                     <xs:element name="ProjectileOffset" type="xs:float" />
                     <xs:element name="ProjectileLifeTime" type="xs:int" />
                     <xs:element name="ProjectileKnockback" type="xs:float" />
@@ -182,15 +209,27 @@
                     <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
                   </xs:all>
 
-                  <xs:attribute name="Profile" type="ModifierConfigProfile" use="required" />
+                  <xs:attribute name="TrapType" use="required">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:enumeration value="DartTrap" />
+                        <xs:enumeration value="SuperDartTrap" />
+                        <xs:enumeration value="FlameTrap" />
+                        <xs:enumeration value="SpikyBallTrap" />
+                        <xs:enumeration value="SpearTrap" />
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:attribute>
+                  <xs:attribute name="Paint" type="PaintColor" use="required" />
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
           </xs:complexType>
 
-          <xs:unique name="DartTrapConfigProfileUnique">
-            <xs:selector xpath="DartTrapConfig" />
-            <xs:field xpath="@Profile" />
+          <xs:unique name="TrapConfigProfileUnique">
+            <xs:selector xpath="TrapConfig" />
+            <xs:field xpath="@TrapType" />
+            <xs:field xpath="@PaintColor" />
           </xs:unique>
         </xs:element>
 

@@ -18,7 +18,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   [ApiVersion(1, 14)]
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
     public const string TracePrefix = @"[Advanced Circuits] ";
-    public const string ReloadCfg_Permission = "ac_reloadcfg";
+    public const string ReloadCfg_Permission = "ac.reloadcfg";
+    public const string TriggerTeleporter_Permission = "ac.trigger.teleporter";
+    public const string WireTeleporter_Permission = "ac.wire.teleporter";
+    public const string WireBoulder_Permission = "ac.wire.boulder";
+    public const string TriggerBlockActivator_Permission = "ac.trigger.blockactivator";
+    public const string WireSign_Permission = "ac.wire.sign";
+    public const string TriggerSignCommand_Permission = "ac.trigger.signcommand";
+    public const string PassiveTriggerSign_Permission = "ac.passivetrigger.sign";
 
     private bool hooksEnabled;
     #if Testrun
@@ -183,6 +190,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.GetDataHookHandler = new GetDataHookHandler(this, true);
       this.GetDataHookHandler.HitSwitch += this.Net_HitSwitch;
       this.GetDataHookHandler.TileEdit += this.Net_TileEdit;
+      this.GetDataHookHandler.TilePaint += this.Net_TilePaint;
       this.GetDataHookHandler.DoorUse += this.Net_DoorUse;
       this.GetDataHookHandler.SendTileSquare += this.Net_SendTileSquare;
 
@@ -244,6 +252,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
       
       e.Handled = this.WorldMetadataHandler.HandleTileEdit(e.Player, e.EditType, e.BlockType, e.Location, e.ObjectStyle);
+    }
+
+    private void Net_TilePaint(object sender, TilePaintEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+        return;
+      
+      e.Handled = this.UserInteractionHandler.HandleTilePaint(e.Player, e.Location, e.Color);
     }
 
     private void Net_SendTileSquare(object sender, SendTileSquareEventArgs e) {

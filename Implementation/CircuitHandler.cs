@@ -49,6 +49,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     private void ProcessCircuit(TSPlayer triggerer, DPoint tileLocation, SignalType? overrideSignal = null, bool switchSender = true) {
+      // TODO: Crappy code
       CircuitProcessor redProcessor = new CircuitProcessor(this.PluginTrace, this, tileLocation, WireColor.Red);
       CircuitProcessor blueProcessor = new CircuitProcessor(this.PluginTrace, this, tileLocation, WireColor.Blue);
       CircuitProcessor greenProcessor = new CircuitProcessor(this.PluginTrace, this, tileLocation, WireColor.Green);
@@ -156,18 +157,24 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             }
 
             bool signal;
-            switch (AdvancedCircuits.CountComponentModifiers(TerrariaUtils.Tiles.MeasureObject(clockLocation))) {
-              case 1:
+            switch ((PaintColor)TerrariaUtils.Tiles[clockLocation].color()) {
+              case AdvancedCircuits.Paint_Clock_ByDaylight:
                 if (!daylightChanged)
                   continue;
 
                 signal = !isDaylight;
                 break;
-              case 2:
+              case AdvancedCircuits.Paint_Clock_ByNighttimeAndBloodmoon:
                 if (!dayTimeChanged)
                   continue;
 
                 signal = !Main.dayTime && Main.bloodMoon;
+                break;
+              case AdvancedCircuits.Paint_Clock_ByNighttimeAndFullmoon:
+                if (!dayTimeChanged)
+                  continue;
+                
+                signal = !Main.dayTime && Main.moonPhase == 0;
                 break;
               default:
                 if (!dayTimeChanged)
@@ -212,7 +219,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public bool HandleHitSwitch(TSPlayer player, DPoint tileLocation) {
       if (
         TerrariaUtils.Tiles[tileLocation].type == (int)BlockType.PressurePlate &&
-        AdvancedCircuits.CountComponentModifiers(tileLocation, new DPoint(1, 1)) == 2
+        TerrariaUtils.Tiles.GetPressurePlateKind(TerrariaUtils.Tiles[tileLocation].frameY / 18) == PressurePlateKind.TriggeredByNpcsEnemies
       )
         return true;
 
@@ -232,14 +239,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public bool HandleDoorUse(
       TSPlayer player, DPoint tileLocation, bool isOpening, NPC npc = null, Direction direction = Direction.Unknown
     ) {
-      int modifiers = AdvancedCircuits.CountComponentModifiers(tileLocation, new DPoint(1, 1));
-      if (modifiers == 1 && npc != null)
-        return false;
-      if (modifiers == 2 && npc == null)
-        return false;
-      if (modifiers == 3 && (npc == null || npc.friendly))
-        return false;
-
       try {
         this.ProcessCircuit(player, tileLocation, AdvancedCircuits.BoolToSignal(isOpening), false);
       } catch (Exception ex) {
@@ -252,12 +251,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return false;
     }
 
+    // TODO: Needs validation under the new Terraria releases
     // This is a work around a lame bug. Each time a door is used, a send tile square packet is sent after the door use packet, 
     // for whatever reason, and thus this tile square contains "older" data than the server might have at this time because 
     // the server might have processed a circuit already before this tile square packet arrives. So we try to check for this 
     // specific packet and ignore it, so that it will not overwrite our and the clients tiles with old data.
     // This might also fix the bug where doors randomly disappear when used.
     public bool HandleSendTileSquare(TSPlayer player, DPoint tileLocation, short size) {
+      return false;
       if (size == 5) {
         int y = tileLocation.Y + 2;
         for (int x = tileLocation.X + 1; x < tileLocation.X + 4; x++) {
@@ -275,8 +276,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public bool HandleTriggerPressurePlate(TSPlayer player, DPoint tileLocation, bool byProjectile = false) {
-      int modifiers = AdvancedCircuits.CountComponentModifiers(tileLocation, new DPoint(1, 1));
-      if (modifiers == 1 || (modifiers == 2 && byProjectile))
+      PressurePlateKind plateKind = TerrariaUtils.Tiles.GetPressurePlateKind(TerrariaUtils.Tiles[tileLocation].frameY / 18);
+      if (plateKind == PressurePlateKind.TriggeredByPlayers)
         return true;
 
       try {
@@ -306,7 +307,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case CircuitWarnReason.SignalesTooManyDartTraps:
           player.SendWarningMessage(string.Format(
             "Warning: This circuit tried to signal {0} Dart Traps, though the allowed maximum is {1}.",
-            result.SignaledDartTraps, this.Config.MaxDartTrapsPerCircuit
+            result.SignaledTraps, this.Config.MaxTrapsPerCircuit
           ));
           break;
         case CircuitWarnReason.SignalesTooManyStatues:

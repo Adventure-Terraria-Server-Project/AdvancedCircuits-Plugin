@@ -196,6 +196,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Implementation\_Data\_Config\TrapConfigKey.cs" />
     <Compile Include="Implementation\_Data\_Config\BlockActivatorConfig.cs" />
     <Compile Include="Implementation\_Data\_Config\SignConfig.cs" />
     <Compile Include="Implementation\_Data\_Config\_Statues\BuffPlayerStatueAction.cs" />
@@ -223,8 +224,7 @@
     <Compile Include="Implementation\PluginCooperationHandler.cs" />
     <Compile Include="Implementation\Test\TestRunner.cs" />
     <Compile Include="Implementation\CircuitHandler.cs" />
-    <Compile Include="Implementation\_Data\_Config\DartTrapConfig.cs" />
-    <Compile Include="Implementation\_Data\ComponentConfigProfile.cs" />
+    <Compile Include="Implementation\_Data\_Config\TrapConfig.cs" />
     <Compile Include="Implementation\_Data\_World\GateStateMetadata.cs" />
     <Compile Include="Implementation\_Data\ActionListProcessingMethod.cs" />
     <Compile Include="Implementation\_Data\_Config\_Statues\StatueConfig.cs" />
