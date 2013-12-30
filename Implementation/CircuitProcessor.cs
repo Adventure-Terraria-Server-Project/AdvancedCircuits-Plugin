@@ -57,7 +57,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       get {
         if (CircuitProcessor.portDefiningComponentSignalCounter == null)
           CircuitProcessor.portDefiningComponentSignalCounter = new Dictionary<DPoint,int>();
-
+        
         return CircuitProcessor.portDefiningComponentSignalCounter;
       }
     }
@@ -251,8 +251,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           else 
             newSenderState = AdvancedCircuits.SignalToBool(signal).Value;
 
-          if (TerrariaUtils.Tiles.ObjectHasActiveState(this.SenderMeasureData) != newSenderState)
+          if (TerrariaUtils.Tiles.ObjectHasActiveState(this.SenderMeasureData) != newSenderState) { 
             TerrariaUtils.Tiles.SetObjectState(this.SenderMeasureData, newSenderState, !switchSenderLocalOnly);
+            this.Result.SenderWasSwitched = true;
+          }
 
           if (senderBlockType == BlockType.XSecondTimer) {
             this.RegisterUnregisterTimer(this.SenderMeasureData, newSenderState);
@@ -592,6 +594,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
 
       try {
+        // Actuator Handling
+        if (tile.actuator() && (tile.type != (int)BlockType.LihzahrdBrick || tileLocation.Y <= Main.worldSurface || NPC.downedPlantBoss)) {
+          if (tile.inActive())
+            WorldGen.ReActive(tileLocation.X, tileLocation.Y);
+          else
+            WorldGen.DeActive(tileLocation.X, tileLocation.Y);
+        }
+
+        // Block Activator tile activation / deactivation.
         if (rootBranch.BlockActivator != null) {
           Tile blockActivatorTile = TerrariaUtils.Tiles[rootBranch.BlockActivatorLocation];
           if (tile.wall == blockActivatorTile.wall) {
@@ -647,8 +658,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         // Switches and Levers can not be signaled if they are wired directly.
         if (tile.type == (int)BlockType.Switch || tile.type == (int)BlockType.Lever)
           return;
-
-        if (this.SignalComponent(ref componentMeasureData, signal)) {
+        
+        if (this.SignalComponent(ref componentMeasureData, rootBranch, signal)) {
           rootBranch.SignaledComponentLocations.Add(componentMeasureData.OriginTileLocation);
           this.Result.SignaledComponentsCounter++;
         }
@@ -798,7 +809,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
     }
 
-    protected bool SignalComponent(ref ObjectMeasureData measureData, SignalType signal, bool localOnly = false) {
+    protected bool SignalComponent(ref ObjectMeasureData measureData, RootBranchProcessData rootBranch, SignalType signal, bool localOnly = false) {
       int originX = measureData.OriginTileLocation.X;
       int originY = measureData.OriginTileLocation.Y;
 
@@ -806,17 +817,22 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case BlockType.Torch:
         case BlockType.XMasLight:
         case BlockType.Candle:
+        case BlockType.PlatinumCandle:
         case BlockType.ChainLantern:
         case BlockType.ChineseLantern:
         case BlockType.Candelabra:
+        case BlockType.PlatinumCandelabra:
         case BlockType.DiscoBall:
         case BlockType.TikiTorch:
         case BlockType.CopperChandelier:
         case BlockType.SilverChandelier:
         case BlockType.GoldChandelier:
+        case BlockType.PlatinumChandelier:
         case BlockType.LampPost:
         case BlockType.MusicBox:
-        case BlockType.XSecondTimer: {
+        case BlockType.XSecondTimer:
+        case BlockType.WaterFountain:
+        case BlockType.BubbleMachine: {
           bool currentState = TerrariaUtils.Tiles.ObjectHasActiveState(measureData);
           bool newState;
           if (signal == SignalType.Swap)
@@ -1128,7 +1144,38 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           WorldGen.KillTile(originX, originY, false, false, true);
           TSPlayer.All.SendTileSquareEx(originX, originY, 2);
+          return true;
+        }
+        case BlockType.LandMine: {
+          if (signal == SignalType.Off)
+            return false;
 
+          WorldGen.ExplodeMine(originX, originY);
+          return true;
+        }
+        case BlockType.Rocket: {
+          if (signal == SignalType.Off)
+            return false;
+
+          WorldGen.LaunchRocket(originX, originY);
+          return true;
+        }
+        case BlockType.Teleporter: {
+          if (signal == SignalType.Off)
+            return false;
+          if (TerrariaUtils.Tiles[measureData.OriginTileLocation].wall == (int)WallType.LihzahrdBrickWall && !(originY <= Main.worldSurface || NPC.downedPlantBoss))
+            return true;
+
+          if (rootBranch.TeleporterLocation == DPoint.Empty) {
+            rootBranch.TeleporterLocation = measureData.OriginTileLocation;
+          } else {
+            WorldGen.teleport[0] = rootBranch.TeleporterLocation.ToXnaVector2();
+            WorldGen.teleport[1] = measureData.OriginTileLocation.ToXnaVector2();
+            WorldGen.Teleport();
+            WorldGen.teleport[0] = WorldGen.teleport[1] = new Vector2(-1f, -1f);
+
+            rootBranch.TeleporterLocation = DPoint.Empty;
+          }
           return true;
         }
       }

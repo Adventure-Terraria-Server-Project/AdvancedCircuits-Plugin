@@ -53,9 +53,21 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       CircuitProcessor blueProcessor = new CircuitProcessor(this.PluginTrace, this, tileLocation, WireColor.Blue);
       CircuitProcessor greenProcessor = new CircuitProcessor(this.PluginTrace, this, tileLocation, WireColor.Green);
 
-      this.NotifyPlayer(redProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender));
-      this.NotifyPlayer(blueProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender));
-      this.NotifyPlayer(greenProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender));
+      CircuitProcessingResult result;
+      result = redProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender);
+      if (overrideSignal == null && result.SenderWasSwitched)
+        overrideSignal = result.OriginSignal;
+      this.NotifyPlayer(result);
+
+      if (this.Config.OverrideVanillaCircuits) {
+        result = blueProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender && !result.SenderWasSwitched);
+        if (overrideSignal == null && result.SenderWasSwitched)
+          overrideSignal = result.OriginSignal;
+        this.NotifyPlayer(result);
+
+        result = greenProcessor.ProcessCircuit(triggerer, overrideSignal, switchSender && !result.SenderWasSwitched);
+        this.NotifyPlayer(result);
+      }
     }
 
     public void HandleGameUpdate() {

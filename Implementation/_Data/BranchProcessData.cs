@@ -14,7 +14,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public SignalType Signal { get; private set; }
 
 
-    #region [Method: Constructor]
     public BranchProcessData(DPoint branchingTileLocation, DPoint firstWireLocation, SignalType signal): this() {
       this.BranchingTileLocation = branchingTileLocation;
       this.FirstWireLocation = firstWireLocation;
@@ -22,9 +21,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.Signal = signal;
       this.Direction = AdvancedCircuits.DirectionFromTileLocations(branchingTileLocation, firstWireLocation);
     }
-    #endregion
 
-    #region [Method: IsTileInBetween]
     public bool IsTileInBetween(DPoint tileLocation) {
       switch (this.Direction) {
         case Direction.Left:
@@ -53,12 +50,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           throw new InvalidOperationException();
       }
     }
-    #endregion
 
-    #region [Method: ToString]
     public override string ToString() {
       return string.Format("First Wire: {0}, Direction: {1}", this.FirstWireLocation, this.Direction);
     }
-    #endregion
   }
 }

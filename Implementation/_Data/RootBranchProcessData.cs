@@ -7,116 +7,38 @@ using DPoint = System.Drawing.Point;
 using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  public struct RootBranchProcessData {
-    #region [Property: SenderLocation]
-    private DPoint senderLocation;
-
-    public DPoint SenderLocation {
-      get { return this.senderLocation; }
-      set { this.senderLocation = value; }
-    }
-    #endregion
-
-    #region [Property: FirstWireLocation]
-    private readonly DPoint firstWireLocation;
-
-    public DPoint FirstWireLocation {
-      get { return this.firstWireLocation; }
-    }
-    #endregion
-
-    #region [Property: LastWireLocation]
-    private DPoint lastWireLocation;
-
-    public DPoint LastWireLocation {
-      get { return this.lastWireLocation; }
-      set { this.lastWireLocation = value; }
-    }
-    #endregion
-
-    #region [Property: Direction]
-    private readonly Direction direction;
-
-    public Direction Direction {
-      get { return this.direction; }
-    }
-    #endregion
-
-    #region [Property: Signal]
-    private readonly SignalType signal;
-
-    public SignalType Signal {
-      get { return this.signal; }
-    }
-    #endregion
-
-    #region [Property: SignaledComponentLocations]
-    private readonly List<DPoint> signaledComponentLocations;
-
-    public List<DPoint> SignaledComponentLocations {
-      get { return this.signaledComponentLocations; }
-    }
-    #endregion
-
-    #region [Property: BlockActivatorLocation]
-    private DPoint blockActivatorLocation;
-
-    public DPoint BlockActivatorLocation {
-      get { return this.blockActivatorLocation; }
-      set { this.blockActivatorLocation = value; }
-    }
-    #endregion
-
-    #region [Property: BlockActivator]
-    private BlockActivatorMetadata blockActivator;
-
-    public BlockActivatorMetadata BlockActivator {
-      get { return this.blockActivator; }
-      set { this.blockActivator = value; }
-    }
-    #endregion
-
-    #region [Property: BlockActivatorDeactivatedBlockCounter]
-    private int blockActivatorDeactivatedBlockCounter;
-
-    public int BlockActivatorDeactivatedBlockCounter {
-      get { return this.blockActivatorDeactivatedBlockCounter; }
-      set { this.blockActivatorDeactivatedBlockCounter = value; }
-    }
-    #endregion
-
-    #region [Property: BlockActivatorMode]
-    private BlockActivatorMode blockActivatorMode;
-
-    public BlockActivatorMode BlockActivatorMode {
-      get { return this.blockActivatorMode; }
-      set { this.blockActivatorMode = value; }
-    }
-    #endregion
+  public class RootBranchProcessData {
+    public DPoint SenderLocation { get; set; }
+    public DPoint FirstWireLocation { get; set; }
+    public DPoint LastWireLocation { get; set; }
+    public Direction Direction { get; private set; }
+    public SignalType Signal { get; private set; }
+    public List<DPoint> SignaledComponentLocations { get; private set; }
+    public DPoint BlockActivatorLocation { get; set; }
+    public BlockActivatorMetadata BlockActivator { get; set; }
+    public int BlockActivatorDeactivatedBlockCounter { get; set; }
+    public BlockActivatorMode BlockActivatorMode { get; set; }
+    public DPoint TeleporterLocation { get; set; }
 
 
-    #region [Method: Constructor]
     public RootBranchProcessData(DPoint senderLocation, DPoint firstWireLocation, SignalType signal) {
-      this.senderLocation = senderLocation;
-      this.firstWireLocation = firstWireLocation;
-      this.lastWireLocation = firstWireLocation;
-      this.direction = AdvancedCircuits.DirectionFromTileLocations(senderLocation, firstWireLocation);
-      this.signal = signal;
-      this.signaledComponentLocations = new List<DPoint>();
-      this.blockActivator = null;
-      this.blockActivatorLocation = DPoint.Empty;
-      this.blockActivatorDeactivatedBlockCounter = 0;
-      this.blockActivatorMode = BlockActivatorMode.Default;
+      this.SenderLocation = senderLocation;
+      this.FirstWireLocation = firstWireLocation;
+      this.LastWireLocation = firstWireLocation;
+      this.Direction = AdvancedCircuits.DirectionFromTileLocations(senderLocation, firstWireLocation);
+      this.Signal = signal;
+      this.SignaledComponentLocations = new List<DPoint>();
+      this.BlockActivator = null;
+      this.BlockActivatorLocation = DPoint.Empty;
+      this.BlockActivatorDeactivatedBlockCounter = 0;
+      this.BlockActivatorMode = BlockActivatorMode.Default;
     }
-    #endregion
 
-    #region [Method: ToBranchProcessData]
     public BranchProcessData ToBranchProcessData() {
       BranchProcessData branch = new BranchProcessData(this.SenderLocation, this.FirstWireLocation, this.Signal);
       branch.LastWireLocation = this.LastWireLocation;
 
       return branch;
     }
-    #endregion
   }
 }
