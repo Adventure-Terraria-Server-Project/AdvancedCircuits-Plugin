@@ -90,6 +90,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
 
         if (timersToProcess != null) {
+          DateTime now = DateTime.UtcNow;
+
           foreach (KeyValuePair<DPoint,ActiveTimerMetadata> activeTimer in timersToProcess) {
             SignalType signalType;
             // Is Advanced Circuit?
@@ -100,8 +102,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
             try {
               CircuitProcessingResult result = this.ProcessCircuit(null, activeTimer.Key, signalType, false);
-              // If the circuit had errors, deactivate the timer.
-              if (result.CancellationReason != CircuitCancellationReason.None) {
+              // If the circuit had errors or if it reached its max activity time, deactivate the timer.
+              if (
+                result.CancellationReason != CircuitCancellationReason.None || (
+                  this.Config.MaxTimerActivityTime != TimeSpan.Zero &&
+                  (now - activeTimer.Value.TimeOfRegistration) >= this.Config.MaxTimerActivityTime
+                )
+              ) {
                 ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(activeTimer.Key);
                 this.RegisterUnregisterTimer(result.TriggeringPlayer, measureData, false);
                 TerrariaUtils.Tiles.SetObjectState(measureData, false);

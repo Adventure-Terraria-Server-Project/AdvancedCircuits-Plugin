@@ -29,6 +29,11 @@
   <MaxTrapsPerCircuit>10</MaxTrapsPerCircuit>
   <MaxStatuesPerCircuit>10</MaxStatuesPerCircuit>
   <MaxPumpsPerCircuit>4</MaxPumpsPerCircuit>
+  <!--
+    A time span indicating the maximum time a Timer can stay active until its automatically deactivated. 
+    Make use of this setting if you encounter performance issues on your server, caused by too many active timers.
+  -->
+  <MaxTimerActivityTime>24h</MaxTimerActivityTime>
   
   <SignConfig>
     <!--

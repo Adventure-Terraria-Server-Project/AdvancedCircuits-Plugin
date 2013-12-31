@@ -18,6 +18,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public int MaxStatuesPerCircuit { get; set; }
     public int MaxPumpsPerCircuit { get; set; }
     public int MaxCircuitLength { get; set; }
+    public TimeSpan MaxTimerActivityTime { get; set; }
     public SignConfig SignConfig { get; set; }
     public BlockActivatorConfig BlockActivatorConfig { get; set; }
     public Dictionary<PaintColor,PumpConfig> PumpConfigs { get; set; }
@@ -36,6 +37,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.MaxStatuesPerCircuit = 10;
       this.MaxPumpsPerCircuit = 4;
       this.MaxCircuitLength = 1200;
+      this.MaxTimerActivityTime = TimeSpan.FromHours(24);
 
       this.SignConfig = new SignConfig();
       this.BlockActivatorConfig = new BlockActivatorConfig();
@@ -99,6 +101,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       resultingConfig.MaxStatuesPerCircuit    = int.Parse(rootElement["MaxStatuesPerCircuit"].InnerText);
       resultingConfig.MaxPumpsPerCircuit      = int.Parse(rootElement["MaxPumpsPerCircuit"].InnerText);
       resultingConfig.MaxCircuitLength        = int.Parse(rootElement["MaxCircuitLength"].InnerText);
+      if (string.IsNullOrWhiteSpace(rootElement["MaxTimerActivityTime"].InnerText)) {
+        resultingConfig.MaxTimerActivityTime = TimeSpan.Zero;
+      } else {
+        TimeSpan maxTimerActivityTime;
+        if (TimeSpanEx.TryParseShort(rootElement["MaxTimerActivityTime"].InnerText, out maxTimerActivityTime))
+          resultingConfig.MaxTimerActivityTime = maxTimerActivityTime;
+      }
       resultingConfig.SignConfig              = SignConfig.FromXmlElement(rootElement["SignConfig"]);
       resultingConfig.BlockActivatorConfig    = BlockActivatorConfig.FromXmlElement(rootElement["BlockActivatorConfig"]);
 

@@ -74,7 +74,6 @@ Version 1.3 Beta [12/31/2013]
    ported to the new version.
   -Added teleporter wire / trigger permissions.
   -Updated to Terraria 1.2.2.
-  -Permission changed: ac_reloadcfg -> ac.reloadcfg
   -Removed the modifiers feature. From now on, components behaviour can be 
    changed by painting them in different colors where no color yields the
    default behaviour.
@@ -83,6 +82,8 @@ Version 1.3 Beta [12/31/2013]
   -Swappers can have up to 6 paints now, where each paint represents a different
    swap count between 2 and 7.
   -New functions for timers: blue and gray - time * 8 and time / 3.
+  -A maximum activity time for timers can now be configured to save perforamance.
+  -Permission changed: ac_reloadcfg -> ac.reloadcfg
   -Removed some config permission settings and added hardcoded permissions 
    instead.
   -Fixed a bug causing wireless transmitters to work even through not wired 

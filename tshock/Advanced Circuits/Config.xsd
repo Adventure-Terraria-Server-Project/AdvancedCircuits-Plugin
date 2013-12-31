@@ -4,7 +4,7 @@
   xmlns="http://github.com/CoderCow/AdvancedCircuits-Plugin"
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
   
-  version="1.2"
+  version="1.3"
   targetNamespace="http://github.com/CoderCow/AdvancedCircuits-Plugin" 
   elementFormDefault="qualified"
 >
@@ -113,18 +113,12 @@
         <xs:element name="MaxStatuesPerCircuit" type="xs:int" />
         <xs:element name="MaxPumpsPerCircuit" type="xs:int" />
         <xs:element name="MaxCircuitLength" type="xs:int" />
-        <xs:element name="BoulderWirePermission" type="xs:string" minOccurs="0" />
-        <xs:element name="TeleporterWirePermission" type="xs:string" minOccurs="0" />
-        <!-- Note that this permission might not be as restrictive as you think  -->
-        <xs:element name="TeleporterTriggerPermission" type="xs:string" minOccurs="0" />
+        <xs:element name="MaxTimerActivityTime" type="xs:string" />
 
         <xs:element name="SignConfig">
           <xs:complexType>
             <xs:all>
               <xs:element name="ReadPrefix" type="xs:string" />
-              <xs:element name="WirePermission" type="xs:string" minOccurs="0" />
-              <xs:element name="PassiveTriggerPermission" type="xs:string" minOccurs="0" />
-              <xs:element name="TriggerSignCommandPermission" type="xs:string" minOccurs="0" />
             </xs:all>
           </xs:complexType>
         </xs:element>
@@ -134,7 +128,6 @@
             <xs:all>
               <xs:element name="MaxChangeableBlocks" type="xs:int" />
               <xs:element name="Cooldown" type="Cooldown" />
-              <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />
             </xs:all>
           </xs:complexType>
         </xs:element>

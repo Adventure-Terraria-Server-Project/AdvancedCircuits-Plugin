@@ -1,16 +1,16 @@
 ﻿=================================================================================
  Advanced Circuits Plugin for Terraria API
-   (c) CoderCow 2012-2013
+   (c) CoderCow 2012-2014
 =================================================================================
 
 The Revolutionized Wiring
 ---------------------------------------------------------------------------------
 
 Advanced Circuits is the long awaited revolution of the Terraria wiring 
-mechanism, adding a completely rewritten and extended wiring engine to 
-TerrariaAPI and TShock driven Terraria servers.
+mechanism, adding a completely rewritten and extended circuit processing engine 
+to TerrariaAPI and TShock driven Terraria servers.
 
-Beside keeping and extending Terraria's Vanilla Circuits and components, a new 
+Beside keeping and extending Terraria's vanilla circuits and components, a new 
 type of circuit is added called "Advanced Circuit" giving players the freedom of 
 building complex systems using binary logic and new types of components.
 
@@ -65,31 +65,33 @@ If Protector is installed, then the "/ac switch" command will not work on
 protected objects.
 
 
-Known Problems
----------------------------------------------------------------------------------
-In order to fully override Terraria's wiring mechanism you will need to replace 
-your TerrariaServer.exe with the custom executable provided with this plugin.
-You can also use the original TerrariaServer.exe included in the TShock package, 
-but AC will then not be able to handle circuits triggered by npcs or projectiles.
-
-
 Changelog
 ---------------------------------------------------------------------------------
-Version 1.3 Beta [12/28/2013]
+Version 1.3 Beta [12/31/2013]
   -Please consider donating to support the developer and for faster updates and
-   feature implementation.
+   faster new feature implementation.
+  -Configuration file structure has changed, your old configuration has to be 
+   ported to the new version.
   -Added teleporter wire / trigger permissions.
-  -Briefly updated to Terraria 1.2.2.
-  -Permission changed: ac_reloadcfg -> ac.reloadcfg
+  -Updated to Terraria 1.2.2.
   -Removed the modifiers feature. From now on, components behaviour can be 
    changed by painting them in different colors where no color yields the
    default behaviour.
+  -New function for grandfather clock: white - will send 1 on full moon night.
+  -New function for switches: white - forward any signal by chance of 50%.
+  -Swappers can have up to 6 paints now, where each paint represents a different
+   swap count between 2 and 7.
+  -New functions for timers: blue and gray - time * 8 and time / 3.
+  -A maximum activity time for timers can now be configured to save perforamance.
+  -Permission changed: ac_reloadcfg -> ac.reloadcfg
   -Removed some config permission settings and added hardcoded permissions 
    instead.
   -Fixed a bug causing wireless transmitters to work even through not wired 
    properly.
   -Fixed a bug causting meteorite to be dropped when a player placed a 
    wireless transmitter on a wire without having permission to wire it.
+  -Timers will now automatically deactivate if their circuit had errors.
+  -Updated for Plugin Common Lib 2.5.
 
 Version 1.2 [05/29/2013]
   -Please consider donating to support the developer.
