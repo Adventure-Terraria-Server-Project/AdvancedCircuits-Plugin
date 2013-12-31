@@ -23,12 +23,17 @@
   <AdvancedCircuitsEnabled>1</AdvancedCircuitsEnabled>
   
   <!--
-    The maximum amount of Dart Traps, Statues and Pumps that can be triggered by one single circuit. 
+    The maximum amount of Traps, Statues and Pumps that can be triggered by one single circuit. 
     For example: If you configure a maximum of 5 Dart Traps and 6 are connected in a circuit, only 5 of them will shoot.
   -->
-  <MaxDartTrapsPerCircuit>10</MaxDartTrapsPerCircuit>
+  <MaxTrapsPerCircuit>10</MaxTrapsPerCircuit>
   <MaxStatuesPerCircuit>10</MaxStatuesPerCircuit>
   <MaxPumpsPerCircuit>4</MaxPumpsPerCircuit>
+  <!--
+    A time span indicating the maximum time a Timer can stay active until its automatically deactivated. 
+    Make use of this setting if you encounter performance issues on your server, caused by too many active timers.
+  -->
+  <MaxTimerActivityTime>24h</MaxTimerActivityTime>
   
   <SignConfig>
     <!--
@@ -113,7 +118,7 @@
       <ProjectileSpeed>5</ProjectileSpeed>
       <ProjectileAngle>0</ProjectileAngle>
       <ProjectileAngleVariance>0</ProjectileAngleVariance>
-      <ProjectileOffset>32</ProjectileOffset>
+      <ProjectileOffset>8</ProjectileOffset>
       <ProjectileLifeTime>60</ProjectileLifeTime>
       <ProjectileKnockback>2</ProjectileKnockback>
       <Cooldown>180</Cooldown>
@@ -122,9 +127,9 @@
       <ProjectileType>185</ProjectileType>
       <ProjectileDamage>40</ProjectileDamage>
       <ProjectileSpeed>0</ProjectileSpeed>
-      <ProjectileAngle>90</ProjectileAngle>
-      <ProjectileAngleVariance>5</ProjectileAngleVariance>
-      <ProjectileOffset>32</ProjectileOffset>
+      <ProjectileAngle>270</ProjectileAngle>
+      <ProjectileAngleVariance>10</ProjectileAngleVariance>
+      <ProjectileOffset>8</ProjectileOffset>
       <ProjectileLifeTime>900</ProjectileLifeTime>
       <ProjectileKnockback>2</ProjectileKnockback>
       <Cooldown>240</Cooldown>
@@ -133,18 +138,7 @@
       <ProjectileType>186</ProjectileType>
       <ProjectileDamage>60</ProjectileDamage>
       <ProjectileSpeed>8</ProjectileSpeed>
-      <ProjectileAngle>90</ProjectileAngle>
-      <ProjectileAngleVariance>0</ProjectileAngleVariance>
-      <ProjectileOffset>20</ProjectileOffset>
-      <ProjectileLifeTime>300</ProjectileLifeTime>
-      <ProjectileKnockback>2</ProjectileKnockback>
-      <Cooldown>90</Cooldown>
-    </TrapConfig>
-    <TrapConfig TrapType="SpearTrap" Paint="None">
-      <ProjectileType>186</ProjectileType>
-      <ProjectileDamage>60</ProjectileDamage>
-      <ProjectileSpeed>8</ProjectileSpeed>
-      <ProjectileAngle>90</ProjectileAngle>
+      <ProjectileAngle>270</ProjectileAngle>
       <ProjectileAngleVariance>0</ProjectileAngleVariance>
       <ProjectileOffset>20</ProjectileOffset>
       <ProjectileLifeTime>300</ProjectileLifeTime>
@@ -191,7 +185,8 @@
     Available Statue Types:
       Armor, Angel, Star, Sword, Slime, Goblin, Shield, Bat, Fish, Bunny, Skeleton, Reaper, Woman, Imp, Gargoyle, Gloom,
       Hornet, Bomb, Crab, Hammer, Potion, Spear, Cross, Jellyfish, Bow, Boomerang, Boot, Chest, Bird, Axe, Corrupt,
-      Tree, Anvil, Pickaxe, Mushroom, Eyeball, Pillar, Heart, Pot, Sunflower, King, Queen, Piranha
+      Tree, Anvil, Pickaxe, Mushroom, Eyeball, Pillar, Heart, Pot, Sunflower, King, Queen, Piranha, Lihzahrd, 
+      LihzahrdGuardian, LihzahrdWatcher, BlueDungeonVase, GreenDungeonVase, PinkDungeonVase, ObsidianVase
     
     PlayerCheckRange is the range in tiles where a player must be present in order to have the statue execute its action
     at all. If no player is inside this range, then the statue will just do nothing.
