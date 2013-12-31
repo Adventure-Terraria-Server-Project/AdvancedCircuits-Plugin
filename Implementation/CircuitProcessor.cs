@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
@@ -190,11 +189,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       DateTime processingStartTime = DateTime.Now;
       BlockType senderBlockType = this.SenderMeasureData.BlockType;
-
-      this.TriggeringPlayer = player;
-      this.IsTriggeredPassively = (senderBlockType == BlockType.XSecondTimer || senderBlockType == BlockType.GrandfatherClock);
-
       SignalType signal = SignalType.Swap;
+
       try {
         if (this.IsAdvancedCircuit) {
           if (!this.CircuitHandler.Config.AdvancedCircuitsEnabled)
@@ -236,6 +232,31 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         if (overrideSignal != null)
           signal = overrideSignal.Value;
         
+        
+        this.TriggeringPlayer = player ?? TSPlayer.Server;
+        if (player != TSPlayer.Server && (senderBlockType == BlockType.XSecondTimer || senderBlockType == BlockType.GrandfatherClock)) {
+          string triggeringPlayerName = null;
+          if (senderBlockType == BlockType.XSecondTimer) {
+            ActiveTimerMetadata activeTimer;
+            if (!this.CircuitHandler.WorldMetadata.ActiveTimers.TryGetValue(this.SenderMeasureData.OriginTileLocation, out activeTimer))
+              return result;
+            
+            triggeringPlayerName = activeTimer.TriggeringPlayerName;
+          } else if (senderBlockType == BlockType.GrandfatherClock) {
+            GrandfatherClockMetadata clock;
+            if (!this.CircuitHandler.WorldMetadata.Clocks.TryGetValue(this.SenderMeasureData.OriginTileLocation, out clock))
+              return result;
+
+            triggeringPlayerName = clock.TriggeringPlayerName;
+          }
+
+          if (triggeringPlayerName != null) { 
+            TSPlayer actualTriggeringPlayer = TShockEx.GetPlayerByName(triggeringPlayerName);
+            this.TriggeringPlayer = player ?? actualTriggeringPlayer;
+          }
+          this.IsTriggeredPassively = true;
+        }
+
         if (
           switchSender && (
             senderBlockType == BlockType.Switch || 
@@ -257,7 +278,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           }
 
           if (senderBlockType == BlockType.XSecondTimer) {
-            this.RegisterUnregisterTimer(this.SenderMeasureData, newSenderState);
+            this.CircuitHandler.RegisterUnregisterTimer(this.TriggeringPlayer, this.SenderMeasureData, newSenderState);
 
             // Timers do not execute circuits when they are switched.
             return this.Result;
@@ -809,7 +830,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               return false;
 
             if (newState != currentState)
-              this.RegisterUnregisterTimer(measureData, newState);
+              this.CircuitHandler.RegisterUnregisterTimer(this.TriggeringPlayer, measureData, newState);
           }
 
           if (newState != currentState)
@@ -908,7 +929,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             )
           ) {
             if (this.Result.SignaledTraps > this.CircuitHandler.Config.MaxTrapsPerCircuit) {
-              this.Result.WarnReason = CircuitWarnReason.SignalesTooManyDartTraps;
+              this.Result.WarnReason = CircuitWarnReason.SignalesTooManyTraps;
               return true;
             }
             if (
@@ -1302,9 +1323,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             TerrariaUtils.Tiles.SetObjectState(measureData, signal);
 
           if (currentState != signal)
-            this.RegisterUnregisterTimer(measureData, signal);
+            this.CircuitHandler.RegisterUnregisterTimer(this.TriggeringPlayer, measureData, signal);
           else if (signal)
-            this.ResetTimer(measureData);
+            this.CircuitHandler.ResetTimer(measureData);
 
           return true;
         }
@@ -1695,28 +1716,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
 
       return true;
-    }
-
-    private void RegisterUnregisterTimer(ObjectMeasureData measureData, bool register) {
-      bool alreadyRegistered = this.CircuitHandler.WorldMetadata.ActiveTimers.ContainsKey(measureData.OriginTileLocation);
-      if (register) {
-        if (!alreadyRegistered) {
-          this.CircuitHandler.WorldMetadata.ActiveTimers.Add(
-            measureData.OriginTileLocation, 
-            new ActiveTimerMetadata(
-              AdvancedCircuits.MeasureTimerFrameTime(measureData.OriginTileLocation), this.TriggeringPlayer.Name
-            )
-          );
-        }
-      } else if (alreadyRegistered) {
-        this.CircuitHandler.WorldMetadata.ActiveTimers.Remove(measureData.OriginTileLocation);
-      }
-    }
-
-    private void ResetTimer(ObjectMeasureData measureData) {
-      ActiveTimerMetadata activeTimer;
-      if (this.CircuitHandler.WorldMetadata.ActiveTimers.TryGetValue(measureData.OriginTileLocation, out activeTimer))
-        activeTimer.FramesLeft = AdvancedCircuits.MeasureTimerFrameTime(measureData.OriginTileLocation);
     }
   }
 }

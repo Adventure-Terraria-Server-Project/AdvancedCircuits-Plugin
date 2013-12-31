@@ -48,11 +48,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
     }
 
-    private void ProcessCircuit(TSPlayer triggerer, DPoint tileLocation, SignalType? overrideSignal = null, bool switchSender = true) {
+    private CircuitProcessingResult ProcessCircuit(TSPlayer triggerer, DPoint tileLocation, SignalType? overrideSignal = null, bool switchSender = true) {
       CircuitProcessor processor = new CircuitProcessor(this.PluginTrace, this, tileLocation);
       CircuitProcessingResult result = processor.ProcessCircuit(triggerer, overrideSignal, switchSender);
 
       this.NotifyPlayer(result);
+      return result;
     }
 
     public void HandleGameUpdate() {
@@ -98,18 +99,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               signalType = SignalType.Swap;
 
             try {
-              TSPlayer triggeringPlayer = null;
-              if (activeTimer.Value.TriggeringPlayerName != null)
-                triggeringPlayer = TShockEx.GetPlayerByName(activeTimer.Value.TriggeringPlayerName);
-              if (triggeringPlayer == null)
-                triggeringPlayer = TSPlayer.Server;
-
-              this.ProcessCircuit(triggeringPlayer, activeTimer.Key, signalType, false);
+              CircuitProcessingResult result = this.ProcessCircuit(null, activeTimer.Key, signalType, false);
+              // If the circuit had errors, deactivate the timer.
+              if (result.CancellationReason != CircuitCancellationReason.None) {
+                ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(activeTimer.Key);
+                this.RegisterUnregisterTimer(result.TriggeringPlayer, measureData, false);
+                TerrariaUtils.Tiles.SetObjectState(measureData, false);
+              }
             } catch (Exception ex) {
-              this.PluginTrace.WriteLineError(
-                "Circuit processing for a Timer at {0} failed. See inner exception for details.\n{1}", 
-                activeTimer.Key, ex.ToString()
-              );
+              this.PluginTrace.WriteLineError("Circuit processing for a Timer at {0} failed. See inner exception for details.\n{1}", activeTimer.Key, ex.ToString());
             }
           }
         }
@@ -201,19 +199,28 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public bool HandleHitSwitch(TSPlayer player, DPoint tileLocation) {
+      Tile tile = TerrariaUtils.Tiles[tileLocation];
       if (
-        TerrariaUtils.Tiles[tileLocation].type == (int)BlockType.PressurePlate &&
-        TerrariaUtils.Tiles.GetPressurePlateKind(TerrariaUtils.Tiles[tileLocation].frameY / 18) == PressurePlateKind.TriggeredByNpcsEnemies
+        tile.type == (int)BlockType.PressurePlate &&
+        TerrariaUtils.Tiles.GetPressurePlateKind(tile.frameY / 18) == PressurePlateKind.TriggeredByNpcsEnemies
       )
         return true;
 
-      try {
-        this.ProcessCircuit(player, tileLocation);
-      } catch (Exception ex) {
-        this.PluginTrace.WriteLineError(
-          "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
-          TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[tileLocation].type), tileLocation, ex.ToString()
-        );
+      if (tile.type == (int)BlockType.XSecondTimer) {
+        ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(tileLocation);
+        bool isActive = TerrariaUtils.Tiles.ObjectHasActiveState(measureData);
+
+        this.RegisterUnregisterTimer(player, measureData, !isActive);
+        TerrariaUtils.Tiles.SetObjectState(measureData, !isActive, false);
+      } else { 
+        try {
+          this.ProcessCircuit(player, tileLocation);
+        } catch (Exception ex) {
+          this.PluginTrace.WriteLineError(
+            "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
+            TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[tileLocation].type), tileLocation, ex.ToString()
+          );
+        }
       }
 
       NetMessage.SendData((int)PacketTypes.HitSwitch, -1, player.Index, string.Empty, tileLocation.X, tileLocation.Y);
@@ -235,14 +242,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return false;
     }
 
-    // TODO: Needs validation under the new Terraria releases
     // This is a work around a lame bug. Each time a door is used, a send tile square packet is sent after the door use packet, 
     // for whatever reason, and thus this tile square contains "older" data than the server might have at this time because 
     // the server might have processed a circuit already before this tile square packet arrives. So we try to check for this 
     // specific packet and ignore it, so that it will not overwrite our and the clients tiles with old data.
     // This might also fix the bug where doors randomly disappear when used.
     public bool HandleSendTileSquare(TSPlayer player, DPoint tileLocation, short size) {
-      return false;
       if (size == 5) {
         int y = tileLocation.Y + 2;
         for (int x = tileLocation.X + 1; x < tileLocation.X + 4; x++) {
@@ -288,9 +293,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             result.SignaledPumps, this.Config.MaxPumpsPerCircuit
           ));
           break;
-        case CircuitWarnReason.SignalesTooManyDartTraps:
+        case CircuitWarnReason.SignalesTooManyTraps:
           player.SendWarningMessage(string.Format(
-            "Warning: This circuit tried to signal {0} Dart Traps, though the allowed maximum is {1}.",
+            "Warning: This circuit tried to signal {0} Traps, though the allowed maximum is {1}.",
             result.SignaledTraps, this.Config.MaxTrapsPerCircuit
           ));
           break;
@@ -316,14 +321,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       switch (result.CancellationReason) {
         case CircuitCancellationReason.ExceededMaxLength:
-          player.SendErrorMessage("Error: Circuit execution was cancelled because it exceeded the maximum length of ");
+          player.SendErrorMessage("Error: Circuit processing cancelled because it exceeded the maximum length of ");
           player.SendErrorMessage(string.Format("{0} wires.", this.Config.MaxCircuitLength));
           break;
         case CircuitCancellationReason.SignaledSameComponentTooOften:
           if (result.CancellationRelatedComponentType == BlockType.Invalid) {
-            player.SendErrorMessage("Error: Circuit execution was cancelled because a component was signaled too often.");
+            player.SendErrorMessage("Error: Circuit processing cancelled because a component was signaled too often.");
           } else {
-            player.SendErrorMessage("Error: Circuit execution was cancelled because the component");
+            player.SendErrorMessage("Error: Circuit processing cancelled because the component");
             player.SendErrorMessage(string.Format(
               "\"{0}\" was signaled too often. Check your circuit for loops.", AdvancedCircuits.GetComponentName(result.CancellationRelatedComponentType)
             ));
@@ -331,6 +336,25 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           
           break;
       }
+    }
+
+    public void RegisterUnregisterTimer(TSPlayer triggeringPlayer, ObjectMeasureData measureData, bool register) {
+      bool alreadyRegistered = this.WorldMetadata.ActiveTimers.ContainsKey(measureData.OriginTileLocation);
+      if (register) {
+        if (!alreadyRegistered) {
+          this.WorldMetadata.ActiveTimers.Add(
+            measureData.OriginTileLocation, new ActiveTimerMetadata(AdvancedCircuits.MeasureTimerFrameTime(measureData.OriginTileLocation), triggeringPlayer.Name)
+          );
+        }
+      } else if (alreadyRegistered) {
+        this.WorldMetadata.ActiveTimers.Remove(measureData.OriginTileLocation);
+      }
+    }
+
+    public void ResetTimer(ObjectMeasureData measureData) {
+      ActiveTimerMetadata activeTimer;
+      if (this.WorldMetadata.ActiveTimers.TryGetValue(measureData.OriginTileLocation, out activeTimer))
+        activeTimer.FramesLeft = AdvancedCircuits.MeasureTimerFrameTime(measureData.OriginTileLocation);
     }
   }
 }

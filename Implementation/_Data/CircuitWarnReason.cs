@@ -4,7 +4,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public enum CircuitWarnReason {
     None,
     SignalesTooManyPumps,
-    SignalesTooManyDartTraps,
+    SignalesTooManyTraps,
     SignalesTooManyStatues,
     InsufficientPermissionToSignalComponent,
     BlockActivatorChangedTooManyBlocks

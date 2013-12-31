@@ -89,6 +89,7 @@ Version 1.3 Beta [12/31/2013]
    properly.
   -Fixed a bug causting meteorite to be dropped when a player placed a 
    wireless transmitter on a wire without having permission to wire it.
+  -Timers will now automatically deactivate if their circuit had errors.
   -Updated for Plugin Common Lib 2.5.
 
 Version 1.2 [05/29/2013]
