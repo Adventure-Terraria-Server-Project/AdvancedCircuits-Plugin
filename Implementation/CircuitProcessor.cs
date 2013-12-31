@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Text;
 using DPoint = System.Drawing.Point;
 
@@ -127,30 +128,28 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     private bool wasExecuted;
-    private WireColor wireColor;
     
 
-    public CircuitProcessor(PluginTrace pluginTrace, CircuitHandler circuitHandler, ObjectMeasureData senderMeasureData, WireColor forWireColor) {
+    public CircuitProcessor(PluginTrace pluginTrace, CircuitHandler circuitHandler, ObjectMeasureData senderMeasureData) {
       Contract.Requires<ArgumentNullException>(pluginTrace != null);
       Contract.Requires<ArgumentNullException>(circuitHandler != null);
 
       this.PluginTrace = pluginTrace;
       this.CircuitHandler = circuitHandler;
       this.SenderMeasureData = senderMeasureData;
-      this.wireColor = forWireColor;
       
       // Is sender directly wired?
       bool isSenderWired;
       if (this.SenderMeasureData.BlockType == BlockType.DoorOpened) {
         isSenderWired = false;
         for (int y = this.SenderMeasureData.OriginTileLocation.Y; y < this.SenderMeasureData.OriginTileLocation.Y + this.SenderMeasureData.Size.Y; y++) {
-          if (TerrariaUtils.Tiles[this.SenderMeasureData.OriginTileLocation.X, y].HasWire(forWireColor)) {
+          if (TerrariaUtils.Tiles[this.SenderMeasureData.OriginTileLocation.X, y].HasWire()) {
             isSenderWired = true;
             break;
           }
         }
       } else {
-        isSenderWired = TerrariaUtils.Tiles.IsObjectWired(this.SenderMeasureData, forWireColor);
+        isSenderWired = TerrariaUtils.Tiles.IsObjectWired(this.SenderMeasureData);
       }
 
       this.result = new CircuitProcessingResult {
@@ -159,8 +158,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       };
     }
 
-    public CircuitProcessor(PluginTrace pluginTrace, CircuitHandler circuitHandler, DPoint senderLocation, WireColor forWireColor): this(
-      pluginTrace, circuitHandler, CircuitProcessor.CircuitProcessorCtor_MeasureSender(senderLocation), forWireColor
+    public CircuitProcessor(PluginTrace pluginTrace, CircuitHandler circuitHandler, DPoint senderLocation): this(
+      pluginTrace, circuitHandler, CircuitProcessor.CircuitProcessorCtor_MeasureSender(senderLocation)
     ) {
       Contract.Requires<ArgumentNullException>(pluginTrace != null);
       Contract.Requires<ArgumentNullException>(circuitHandler != null);
@@ -265,27 +264,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           }
         }
 
-        if (this.IsAdvancedCircuit) {
-          this.PluginTrace.WriteLineVerbose(
-            "Started processing Advanced Circuit at {0} with signal {1}.", 
-            this.SenderMeasureData.OriginTileLocation, signal.ToString()
-          );
-        } else {
-          this.PluginTrace.WriteLineVerbose(
-            "Started processing Vanilla Circuit at {0} with signal {1}.", 
-            this.SenderMeasureData.OriginTileLocation, signal.ToString()
-          );
-        }
-
         foreach (DPoint portLocation in AdvancedCircuits.EnumerateComponentPortLocations(this.SenderMeasureData)) {
           Tile portTile = TerrariaUtils.Tiles[portLocation];
-          if (!portTile.HasWire(this.wireColor))
+          if (!portTile.HasWire())
             continue;
 
-          DPoint portAdjacentTileLocation = AdvancedCircuits.GetPortAdjacentComponentTileLocation(
-            this.SenderMeasureData, portLocation
-          );
-
+          DPoint portAdjacentTileLocation = AdvancedCircuits.GetPortAdjacentComponentTileLocation(this.SenderMeasureData, portLocation);
           SignalType portSignal = signal;
           if (this.IsAdvancedCircuit && portTile.active()) {
             if (portTile.type == (int)AdvancedCircuits.BlockType_NOTGate)
@@ -294,7 +278,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               portSignal = SignalType.Off;
           }
 
-          this.QueuedRootBranches.Add(new RootBranchProcessData(portAdjacentTileLocation, portLocation, portSignal));
+          foreach (WireColor wireColor in AdvancedCircuits.EnumerateWireColors())
+            if (portTile.HasWire(wireColor))
+              this.QueuedRootBranches.Add(new RootBranchProcessData(portAdjacentTileLocation, portLocation, portSignal, wireColor));
         }
 
         if (this.IsAdvancedCircuit) {
@@ -310,14 +296,18 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           // expect the wiring of the sender to be 1.
           this.CircuitLength++;
 
-          RootBranchProcessData dummyRoot = new RootBranchProcessData(
-            this.SenderMeasureData.OriginTileLocation, this.SenderMeasureData.OriginTileLocation, signal
-          );
-          List<BranchProcessData> subBranches = new List<BranchProcessData>(this.QueuedRootBranches.Capacity);
-          foreach (RootBranchProcessData rootBranch in this.QueuedRootBranches)
-            subBranches.Add(rootBranch.ToBranchProcessData());
-
-          this.ProcessSubBranches(dummyRoot, subBranches);
+          foreach (WireColor wireColor in AdvancedCircuits.EnumerateWireColors()) {
+            this.ProcessSubBranches(
+              new RootBranchProcessData(
+                this.SenderMeasureData.OriginTileLocation, this.SenderMeasureData.OriginTileLocation, signal, wireColor
+              ), 
+              new List<BranchProcessData>(
+                from rb in this.QueuedRootBranches
+                where rb.WireColor == wireColor
+                select rb.ToBranchProcessData()
+              )
+            );
+          }
         }
 
         this.PostProcessCircuit();
@@ -328,32 +318,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         this.Result.OriginSignal = signal;
       }
 
-      #if Verbose
-      StringBuilder resultString = new StringBuilder();
-      resultString.AppendFormat(
-        "\nEnded processing circuit:\n  Sender: {0} {1}\n  Advanced Circuit: {2}\n  Processed Branches: {3}\n",
-        TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[this.Result.SenderLocation].type), 
-        this.Result.SenderLocation, this.Result.IsAdvancedCircuit, this.Result.ProcessedBranchCount
-      );
-
-      if (this.Result.WarnReason != CircuitWarnReason.None)
-        resultString.AppendLine("  Warning: " + this.Result.WarnReason);
-
-      if (this.Result.CancellationReason != CircuitCancellationReason.None) {
-        string relatedComponentName;
-        if (this.Result.CancellationRelatedComponentType == BlockType.Invalid)
-          relatedComponentName = "None";
-        else
-          relatedComponentName = TerrariaUtils.Tiles.GetBlockTypeName(this.Result.CancellationRelatedComponentType);
-
-        resultString.AppendFormat(
-          "  Error: {0}\n  Error Related Component: {1}\n", this.Result.CancellationReason, relatedComponentName
-        );
-      }
-
-      this.PluginTrace.WriteLineVerbose(resultString.ToString());
-      #endif
-
       return this.Result;
     }
 
@@ -363,7 +327,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       Tile startTile = TerrariaUtils.Tiles[rootBranch.FirstWireLocation];
       if (
-        !startTile.HasWire(this.wireColor) || (
+        !startTile.HasWire(rootBranch.WireColor) || (
           this.IsAdvancedCircuit && 
           this.SenderMeasureData.BlockType != BlockType.PressurePlate &&
           startTile.type == (int)AdvancedCircuits.BlockType_InputPort
@@ -380,7 +344,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         DPoint previousTileLocation = DPoint.Empty;
         DPoint currentTileLocation = rootBranch.FirstWireLocation;
         Tile currentTile = TerrariaUtils.Tiles[currentTileLocation];
-        while (currentTile.HasWire(this.wireColor) && !this.IsCancellationPending) {
+        while (currentTile.HasWire(rootBranch.WireColor) && !this.IsCancellationPending) {
           this.ProcessTile(rootBranch, currentTileLocation, previousTileLocation, signal);
 
           DPoint adjacentTileLocation1;
@@ -395,12 +359,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           Tile adjacentTile1 = TerrariaUtils.Tiles[adjacentTileLocation1];
           Tile adjacentTile2 = TerrariaUtils.Tiles[adjacentTileLocation2];
-          if (adjacentTile1.HasWire(this.wireColor))
+          if (adjacentTile1.HasWire(rootBranch.WireColor))
             subBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation1, signal));
           else
             this.ProcessTile(rootBranch, adjacentTileLocation1, currentTileLocation, signal);
 
-          if (adjacentTile2.HasWire(this.wireColor))
+          if (adjacentTile2.HasWire(rootBranch.WireColor))
             subBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation2, signal));
           else
             this.ProcessTile(rootBranch, adjacentTileLocation2, currentTileLocation, signal);
@@ -424,23 +388,22 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.ProcessSubBranches(rootBranch, subBranches);
     }
 
-    private void ProcessSubBranches(RootBranchProcessData rootBranch, IEnumerable<BranchProcessData> subBranches) {
+    private void ProcessSubBranches(RootBranchProcessData rootBranch, List<BranchProcessData> subBranches) {
       SignalType signal = rootBranch.Signal;
-      List<BranchProcessData> queuedSubBranches = new List<BranchProcessData>(subBranches);
 
       // Process all Sub-Branches and their Sub-Branches
       List<BranchProcessData> processedSubBranches = new List<BranchProcessData>();
       processedSubBranches.Add(rootBranch.ToBranchProcessData());
 
-      while (queuedSubBranches.Count > 0) {
-        int currentBranchIndex = queuedSubBranches.Count - 1;
-        BranchProcessData currentBranch = queuedSubBranches[currentBranchIndex];
+      while (subBranches.Count > 0) {
+        int currentBranchIndex = subBranches.Count - 1;
+        BranchProcessData currentBranch = subBranches[currentBranchIndex];
         result.ProcessedBranchCount++;
 
         DPoint previousTileLocation = currentBranch.BranchingTileLocation;
         DPoint currentTileLocation = currentBranch.FirstWireLocation;
         Tile currentTile = TerrariaUtils.Tiles[currentTileLocation];
-        while (currentTile.HasWire(this.wireColor) && !this.IsCancellationPending) {
+        while (currentTile.HasWire(rootBranch.WireColor) && !this.IsCancellationPending) {
           bool alreadyProcessed = false;
           for (int i = 0; i < processedSubBranches.Count; i++) {
             if (processedSubBranches[i].IsTileInBetween(currentTileLocation)) {
@@ -463,7 +426,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           Tile adjacentTile1 = TerrariaUtils.Tiles[adjacentTileLocation1];
           Tile adjacentTile2 = TerrariaUtils.Tiles[adjacentTileLocation2];
-          if (adjacentTile1.HasWire(this.wireColor)) {
+          if (adjacentTile1.HasWire(rootBranch.WireColor)) {
             alreadyProcessed = false;
             for (int i = 0; i < processedSubBranches.Count; i++) {
               if (processedSubBranches[i].IsTileInBetween(adjacentTileLocation1)) {
@@ -474,10 +437,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
             if (!alreadyProcessed) {
               bool alreadyQueued = false;
-              for (int i = 0; i < queuedSubBranches.Count; i++) {
+              for (int i = 0; i < subBranches.Count; i++) {
                 if (
-                  queuedSubBranches[i].FirstWireLocation == adjacentTileLocation1 ||
-                  queuedSubBranches[i].LastWireLocation == adjacentTileLocation1
+                  subBranches[i].FirstWireLocation == adjacentTileLocation1 ||
+                  subBranches[i].LastWireLocation == adjacentTileLocation1
                 ) {
                   alreadyQueued = true;
                   break;
@@ -485,12 +448,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               }
 
               if (!alreadyQueued)
-                queuedSubBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation1, signal));
+                subBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation1, signal));
             }
           } else {
             this.ProcessTile(rootBranch, adjacentTileLocation1, currentTileLocation, signal);
           }
-          if (adjacentTile2.HasWire(this.wireColor)) {
+          if (adjacentTile2.HasWire(rootBranch.WireColor)) {
             alreadyProcessed = false;
             for (int i = 0; i < processedSubBranches.Count; i++) {
               if (processedSubBranches[i].IsTileInBetween(adjacentTileLocation2)) {
@@ -501,10 +464,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
             if (!alreadyProcessed) {
               bool alreadyQueued = false;
-              for (int i = 0; i < queuedSubBranches.Count; i++) {
+              for (int i = 0; i < subBranches.Count; i++) {
                 if (
-                  queuedSubBranches[i].FirstWireLocation == adjacentTileLocation2 ||
-                  queuedSubBranches[i].LastWireLocation == adjacentTileLocation2
+                  subBranches[i].FirstWireLocation == adjacentTileLocation2 ||
+                  subBranches[i].LastWireLocation == adjacentTileLocation2
                 ) {
                   alreadyQueued = true;
                   break;
@@ -512,7 +475,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               }
 
               if (!alreadyQueued)
-                queuedSubBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation2, signal));
+                subBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation2, signal));
             }
           } else {
             this.ProcessTile(rootBranch, adjacentTileLocation2, currentTileLocation, signal);
@@ -531,7 +494,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         currentBranch.LastWireLocation = previousTileLocation;
         processedSubBranches.Add(currentBranch);
 
-        queuedSubBranches.RemoveAt(currentBranchIndex);
+        subBranches.RemoveAt(currentBranchIndex);
       }
     }
 
@@ -544,7 +507,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       Tile tile = TerrariaUtils.Tiles[tileLocation];
 
       // If the tile has no wire it might be a AC-Component and thus the adjacent tile would be its port.
-      if (!tile.HasWire(this.wireColor) && tile.active()) {
+      if (!tile.HasWire(rootBranch.WireColor) && tile.active()) {
         if (!this.IsAdvancedCircuit || adjacentTileLocation == DPoint.Empty)
           return;
         if (!AdvancedCircuits.IsPortDefiningComponentBlock((BlockType)tile.type))
@@ -591,7 +554,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
       }
 
-      if (!tile.HasWire(this.wireColor))
+      if (!tile.HasWire(rootBranch.WireColor))
         return;
 
       try {
@@ -1295,7 +1258,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       Tile portTile = TerrariaUtils.Tiles[portLocation];
       Tile componentTile = TerrariaUtils.Tiles[measureData.OriginTileLocation];
-      if (!portTile.HasWire(this.wireColor) || componentTile.HasWire(this.wireColor))
+      if (!portTile.HasWire(rootBranch.WireColor) || componentTile.HasWire())
         return false;
 
       if (portTile.active() && portTile.type == (int)AdvancedCircuits.BlockType_NOTGate && measureData.BlockType != AdvancedCircuits.BlockType_NOTGate)
@@ -1316,7 +1279,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case BlockType.DoorOpened:
         case BlockType.DoorClosed: {
           for (int y = measureData.OriginTileLocation.Y; y < measureData.OriginTileLocation.Y + measureData.Size.Y; y++)
-            if (TerrariaUtils.Tiles[measureData.OriginTileLocation.X, y].HasWire(this.wireColor))
+            if (TerrariaUtils.Tiles[measureData.OriginTileLocation.X, y].HasWire())
               return false;
 
           if (measureData.BlockType == BlockType.DoorOpened) {
@@ -1440,7 +1403,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           for (int i = 0; i < componentPorts.Count; i++) {
             DPoint port = componentPorts[i];
             portTile = TerrariaUtils.Tiles[port];
-            if (portTile.HasWire(this.wireColor) && portTile.active() && portTile.type == (int)AdvancedCircuits.BlockType_InputPort) {
+            if (portTile.HasWire() && portTile.active() && portTile.type == (int)AdvancedCircuits.BlockType_InputPort) {
               inputPorts++;
 
               if (port == portLocation)
@@ -1629,7 +1592,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 continue;
 
               Tile transmitterTile = TerrariaUtils.Tiles[receivingTransmitterLocation];
-              if (!transmitterTile.active() || transmitterTile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter || transmitterTile.HasWire(this.wireColor))
+              if (!transmitterTile.active() || transmitterTile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter || transmitterTile.HasWire())
                 continue;
 
               if (
@@ -1643,7 +1606,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
               DPoint outputPortLocation = receivingTransmitterLocation.OffsetEx(portOffset.X, portOffset.Y);
               Tile outputPortTile = TerrariaUtils.Tiles[outputPortLocation];
-              if (!outputPortTile.HasWire(this.wireColor) || (outputPortTile.active() && outputPortTile.type == (int)AdvancedCircuits.BlockType_InputPort))
+              if (!outputPortTile.HasWire() || (outputPortTile.active() && outputPortTile.type == (int)AdvancedCircuits.BlockType_InputPort))
                 continue;
 
               if (!isBroadcasting) {
@@ -1662,11 +1625,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               else if (outputPortTile.active() && outputPortTile.type == (int)AdvancedCircuits.BlockType_XORGate)
                 portOutputSignal = false;
 
-              this.QueuedRootBranches.Add(new RootBranchProcessData(receivingTransmitterLocation, outputPortLocation, AdvancedCircuits.BoolToSignal(portOutputSignal)) {
-                BlockActivator = rootBranch.BlockActivator,
-                BlockActivatorLocation = rootBranch.BlockActivatorLocation,
-                BlockActivatorMode = rootBranch.BlockActivatorMode
-              });
+              foreach (WireColor wireColor in AdvancedCircuits.EnumerateWireColors()) {
+                if (!outputPortTile.HasWire(wireColor))
+                  continue;
+
+                this.QueuedRootBranches.Add(new RootBranchProcessData(receivingTransmitterLocation, outputPortLocation, AdvancedCircuits.BoolToSignal(portOutputSignal), wireColor) {
+                  BlockActivator = rootBranch.BlockActivator,
+                  BlockActivatorLocation = rootBranch.BlockActivatorLocation,
+                  BlockActivatorMode = rootBranch.BlockActivatorMode
+                });
+              }
             }
 
             return true;
@@ -1690,10 +1658,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
 
         portTile = TerrariaUtils.Tiles[port];
-        if (!portTile.HasWire(this.wireColor) || (portTile.active() && portTile.type == (int)AdvancedCircuits.BlockType_InputPort)) {
+        if (!portTile.HasWire() || (portTile.active() && portTile.type == (int)AdvancedCircuits.BlockType_InputPort))
           componentPorts.RemoveAt(i--);
-          continue;
-        }
       }
 
       foreach (DPoint port in componentPorts) {
@@ -1711,16 +1677,21 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           portOutputSignal = false;
         }
 
-        RootBranchProcessData newRootBranch = new RootBranchProcessData(
-          componentLocation, port, AdvancedCircuits.BoolToSignal(portOutputSignal)
-        );
-        if (blockActivatorToRegister != null) {
-          newRootBranch.BlockActivator = blockActivatorToRegister;
-          newRootBranch.BlockActivatorLocation = blockActivatorLocationToRegister;
-          newRootBranch.BlockActivatorMode = blockActivatorModeToRegister;
-        }
+        foreach (WireColor wireColor in AdvancedCircuits.EnumerateWireColors()) {
+          if (!portTile.HasWire(wireColor))
+            continue;
 
-        this.QueuedRootBranches.Add(newRootBranch);
+          RootBranchProcessData newRootBranch = new RootBranchProcessData(
+            componentLocation, port, AdvancedCircuits.BoolToSignal(portOutputSignal), wireColor
+          );
+          if (blockActivatorToRegister != null) {
+            newRootBranch.BlockActivator = blockActivatorToRegister;
+            newRootBranch.BlockActivatorLocation = blockActivatorLocationToRegister;
+            newRootBranch.BlockActivatorMode = blockActivatorModeToRegister;
+          }
+
+          this.QueuedRootBranches.Add(newRootBranch);
+        }
       }
 
       return true;

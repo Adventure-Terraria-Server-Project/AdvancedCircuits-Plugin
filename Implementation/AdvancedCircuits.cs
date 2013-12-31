@@ -307,5 +307,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return 7;
       }
     }
+
+    public static IEnumerable<WireColor> EnumerateWireColors() {
+      for (int colorIndex = 1; colorIndex <= 3; colorIndex++)
+        yield return (WireColor)colorIndex;
+    } 
   }
 }

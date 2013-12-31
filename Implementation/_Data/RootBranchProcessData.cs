@@ -8,6 +8,7 @@ using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class RootBranchProcessData {
+    public WireColor WireColor { get; set; }
     public DPoint SenderLocation { get; set; }
     public DPoint FirstWireLocation { get; set; }
     public DPoint LastWireLocation { get; set; }
@@ -21,10 +22,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public DPoint TeleporterLocation { get; set; }
 
 
-    public RootBranchProcessData(DPoint senderLocation, DPoint firstWireLocation, SignalType signal) {
+    public RootBranchProcessData(DPoint senderLocation, DPoint firstWireLocation, SignalType signal, WireColor wireColor) {
       this.SenderLocation = senderLocation;
       this.FirstWireLocation = firstWireLocation;
       this.LastWireLocation = firstWireLocation;
+      this.WireColor = wireColor;
       this.Direction = AdvancedCircuits.DirectionFromTileLocations(senderLocation, firstWireLocation);
       this.Signal = signal;
       this.SignaledComponentLocations = new List<DPoint>();
