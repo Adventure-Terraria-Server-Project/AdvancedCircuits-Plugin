@@ -23,10 +23,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public PluginCooperationHandler PluginCooperationHandler { get; private set; }
 
 
-    public CircuitHandler(
-      PluginTrace pluginTrace,
-      Configuration config, WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler
-    ) {
+    public CircuitHandler(PluginTrace pluginTrace,Configuration config, WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler) {
       Contract.Requires<ArgumentNullException>(pluginTrace != null);
       Contract.Requires<ArgumentNullException>(config != null);
       Contract.Requires<ArgumentNullException>(worldMetadata != null);

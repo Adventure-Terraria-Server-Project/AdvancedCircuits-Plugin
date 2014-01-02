@@ -225,13 +225,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             WorldGen.hitSwitch(this.SenderMeasureData.OriginTileLocation.X, this.SenderMeasureData.OriginTileLocation.Y);
             return this.Result;
           }
-
+          
           signal = SignalType.Swap;
         }
 
         if (overrideSignal != null)
           signal = overrideSignal.Value;
-        
         
         this.TriggeringPlayer = player ?? TSPlayer.Server;
         if (player != TSPlayer.Server && (senderBlockType == BlockType.XSecondTimer || senderBlockType == BlockType.GrandfatherClock)) {

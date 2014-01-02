@@ -24,9 +24,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
 
     public static WorldMetadata Read(string filePath) {
-      using (StreamReader fileReader = new StreamReader(filePath)) {
-        return JsonConvert.DeserializeObject<WorldMetadata>(fileReader.ReadToEnd());
-      }
+      WorldMetadata metadata;
+      using (StreamReader fileReader = new StreamReader(filePath))
+        metadata = JsonConvert.DeserializeObject<WorldMetadata>(fileReader.ReadToEnd());
+
+      metadata.EnsureMetadata();
+      return metadata;
     }
 
     public void Write(string filePath) {
