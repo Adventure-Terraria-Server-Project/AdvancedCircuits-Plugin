@@ -313,7 +313,7 @@
 
       <Actions ProcessingMethod="ExecuteAll">
         <SpawnItemAction>
-          <ItemId>28</ItemId>
+          <ItemId>166</ItemId>
           <Amount>1</Amount>
           <CheckRange>25</CheckRange>
           <CheckAmount>4</CheckAmount>
@@ -328,7 +328,7 @@
           <NpcId>67</NpcId>
           <Amount>1</Amount>
           <CheckRange>25</CheckRange>
-          <CheckAmount>3</CheckAmount>
+          <CheckAmount>4</CheckAmount>
         </SpawnNpcAction>
       </Actions>
     </StatueConfig>
