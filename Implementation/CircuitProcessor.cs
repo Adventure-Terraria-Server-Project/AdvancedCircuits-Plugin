@@ -580,10 +580,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       try {
         // Actuator Handling
         if (tile.actuator() && (tile.type != (int)BlockType.LihzahrdBrick || tileLocation.Y <= Main.worldSurface || NPC.downedPlantBoss)) {
-          if (tile.inActive())
-            WorldGen.ReActive(tileLocation.X, tileLocation.Y);
+          bool currentState = tile.inActive();
+          bool newState;
+          if (signal == SignalType.Swap)
+            newState = !currentState;
           else
-            WorldGen.DeActive(tileLocation.X, tileLocation.Y);
+            newState = AdvancedCircuits.SignalToBool(signal).Value;
+
+          if (newState != currentState) { 
+            if (newState)
+              WorldGen.ReActive(tileLocation.X, tileLocation.Y);
+            else
+              WorldGen.DeActive(tileLocation.X, tileLocation.Y);
+          }
         }
 
         // Block Activator tile activation / deactivation.
