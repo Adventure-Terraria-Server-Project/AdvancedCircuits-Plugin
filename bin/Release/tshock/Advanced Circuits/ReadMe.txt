@@ -67,6 +67,11 @@ protected objects.
 
 Changelog
 ---------------------------------------------------------------------------------
+Version 1.3.1 Beta [01/03/2013]
+  -Fixed actuators working inproperly in Advanced Circuits.
+  -Fixed vanilla statue configurations in Config.xml.
+  -Fixed a rare bug where world metadata could get corrupted and cause exceptions.
+
 Version 1.3 Beta [12/31/2013]
   -Please consider donating to support the developer and for faster updates and
    faster new feature implementation.
