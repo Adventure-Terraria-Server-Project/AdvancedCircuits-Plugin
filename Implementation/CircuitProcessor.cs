@@ -1661,7 +1661,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 this.QueuedRootBranches.Add(new RootBranchProcessData(receivingTransmitterLocation, outputPortLocation, AdvancedCircuits.BoolToSignal(portOutputSignal), wireColor) {
                   BlockActivator = rootBranch.BlockActivator,
                   BlockActivatorLocation = rootBranch.BlockActivatorLocation,
-                  BlockActivatorMode = rootBranch.BlockActivatorMode
+                  BlockActivatorMode = rootBranch.BlockActivatorMode,
+                  TeleporterLocation = rootBranch.TeleporterLocation
                 });
               }
             }
@@ -1718,6 +1719,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             newRootBranch.BlockActivatorLocation = blockActivatorLocationToRegister;
             newRootBranch.BlockActivatorMode = blockActivatorModeToRegister;
           }
+          newRootBranch.TeleporterLocation = rootBranch.TeleporterLocation;
 
           this.QueuedRootBranches.Add(newRootBranch);
         }

@@ -67,6 +67,10 @@ protected objects.
 
 Changelog
 ---------------------------------------------------------------------------------
+Version 1.3.2 Beta [01/03/2013]
+  -Fixed a bug causing teleporters not to work if a AC component is inbetween
+   them.
+
 Version 1.3.1 Beta [01/03/2013]
   -Fixed actuators working inproperly in Advanced Circuits.
   -Fixed vanilla statue configurations in Config.xml.
