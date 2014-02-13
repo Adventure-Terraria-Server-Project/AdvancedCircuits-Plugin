@@ -67,11 +67,16 @@ protected objects.
 
 Changelog
 ---------------------------------------------------------------------------------
-Version 1.3.2 Beta [01/03/2013]
+Version 1.3.3 [02/13/2014]
+  -Fixed actuators.
+  -Added some previously unknown tiles causing exceptions and wire placement bugs.
+  -Updated to Plugin Common Lib 2.6.
+
+Version 1.3.2 Beta [01/03/2014]
   -Fixed a bug causing teleporters not to work if a AC component is inbetween
    them.
 
-Version 1.3.1 Beta [01/03/2013]
+Version 1.3.1 Beta [01/03/2014]
   -Fixed actuators working inproperly in Advanced Circuits.
   -Fixed vanilla statue configurations in Config.xml.
   -Fixed a rare bug where world metadata could get corrupted and cause exceptions.
