@@ -589,9 +589,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           if (newState != currentState) { 
             if (newState)
-              WorldGen.ReActive(tileLocation.X, tileLocation.Y);
-            else
               WorldGen.DeActive(tileLocation.X, tileLocation.Y);
+            else
+              WorldGen.ReActive(tileLocation.X, tileLocation.Y);
           }
         }
 
