@@ -251,7 +251,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     // the server might have processed a circuit already before this tile square packet arrives. So we try to check for this 
     // specific packet and ignore it, so that it will not overwrite our and the clients tiles with old data.
     // This might also fix the bug where doors randomly disappear when used.
-    public bool HandleSendTileSquare(TSPlayer player, DPoint tileLocation, short size) {
+    public bool HandleSendTileSquare(TSPlayer player, DPoint tileLocation, int size) {
       if (size == 5) {
         int y = tileLocation.Y + 2;
         for (int x = tileLocation.X + 1; x < tileLocation.X + 4; x++) {

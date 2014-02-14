@@ -67,6 +67,12 @@ protected objects.
 
 Changelog
 ---------------------------------------------------------------------------------
+Version 1.3.4 [02/14/2014]
+  -Updated to Terraria Server 1.2.3.
+  -Fixed a bug causing switch protection not to work when used together with 
+   protector.
+  -Updated to Plugin Common Lib 2.7.
+
 Version 1.3.3 [02/13/2014]
   -Fixed actuators.
   -Added some previously unknown tiles causing exceptions and wire placement bugs.

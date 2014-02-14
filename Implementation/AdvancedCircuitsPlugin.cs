@@ -15,7 +15,7 @@ using TerrariaApi.Server;
 using TShockAPI;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  [ApiVersion(1, 14)]
+  [ApiVersion(1, 15)]
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
     public const string TracePrefix = @"[Advanced Circuits] ";
     public const string ReloadCfg_Permission = "ac.reloadcfg";
@@ -187,7 +187,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.GetDataHookHandler != null)
         throw new InvalidOperationException("Hooks already registered.");
       
-      this.GetDataHookHandler = new GetDataHookHandler(this, true);
+      this.GetDataHookHandler = new GetDataHookHandler(this, true, -10);
       this.GetDataHookHandler.HitSwitch += this.Net_HitSwitch;
       this.GetDataHookHandler.TileEdit += this.Net_TileEdit;
       this.GetDataHookHandler.TilePaint += this.Net_TilePaint;
