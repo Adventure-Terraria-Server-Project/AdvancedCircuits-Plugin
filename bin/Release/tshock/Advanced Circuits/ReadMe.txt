@@ -67,6 +67,10 @@ protected objects.
 
 Changelog
 ---------------------------------------------------------------------------------
+Version 1.3.5 [02/15/2014]
+  -Fixed a bug causing timers to spit loads of exceptions under specific 
+   circumstances.
+
 Version 1.3.4 [02/14/2014]
   -Updated to Terraria Server 1.2.3.
   -Fixed a bug causing switch protection not to work when used together with 

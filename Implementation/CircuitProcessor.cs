@@ -251,7 +251,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           if (triggeringPlayerName != null) { 
             TSPlayer actualTriggeringPlayer = TShockEx.GetPlayerByName(triggeringPlayerName);
-            this.TriggeringPlayer = player ?? actualTriggeringPlayer;
+            this.TriggeringPlayer = player ?? actualTriggeringPlayer ?? TSPlayer.Server;
           }
           this.IsTriggeredPassively = true;
         }
