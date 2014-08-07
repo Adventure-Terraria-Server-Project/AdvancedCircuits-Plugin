@@ -22,14 +22,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           throw new ArgumentException(string.Format("\"{0}\" is not a valid buff name.", buffName));
         if (buffs.Count > 1)
           throw new ArgumentException(string.Format("\"{0}\" matches more than one buff.", buffName));
-        
-        resultingAction.BuffId = buffs[0];
+
+        buffId = buffs[0];
       }
 
       resultingAction.BuffId = buffId;
       resultingAction.BuffTime = int.Parse(xmlData["BuffTime"].InnerText);
       resultingAction.Radius = int.Parse(xmlData["Radius"].InnerText);
-
       return resultingAction;
     }
   }

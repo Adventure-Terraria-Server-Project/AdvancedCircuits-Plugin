@@ -222,7 +222,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return this.Result;
 
           if (!this.CircuitHandler.Config.OverrideVanillaCircuits) {
-            WorldGen.hitSwitch(this.SenderMeasureData.OriginTileLocation.X, this.SenderMeasureData.OriginTileLocation.Y);
+            Wiring.hitSwitch(this.SenderMeasureData.OriginTileLocation.X, this.SenderMeasureData.OriginTileLocation.Y);
             return this.Result;
           }
           
@@ -589,9 +589,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           if (newState != currentState) { 
             if (newState)
-              WorldGen.DeActive(tileLocation.X, tileLocation.Y);
+              Wiring.DeActive(tileLocation.X, tileLocation.Y);
             else
-              WorldGen.ReActive(tileLocation.X, tileLocation.Y);
+              Wiring.ReActive(tileLocation.X, tileLocation.Y);
           }
         }
 
@@ -890,7 +890,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               this.CircuitHandler.Config.PumpConfigs.TryGetValue(PaintColor.None, out pumpConfig)
             ) &&
               pumpConfig.Cooldown == 0 ||
-              WorldGen.checkMech(originX, originY, pumpConfig.Cooldown
+              Wiring.checkMech(originX, originY, pumpConfig.Cooldown
             )
           ) {
             if (this.Result.SignaledPumps > this.CircuitHandler.Config.MaxPumpsPerCircuit) {
@@ -933,7 +933,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               this.CircuitHandler.Config.TrapConfigs.TryGetValue(defaultKey, out trapConfig)
             ) &&
               trapConfig.Cooldown == 0 ||
-              WorldGen.checkMech(originX, originY, trapConfig.Cooldown
+              Wiring.checkMech(originX, originY, trapConfig.Cooldown
             )
           ) {
             if (this.Result.SignaledTraps > this.CircuitHandler.Config.MaxTrapsPerCircuit) {
@@ -1018,7 +1018,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             this.CircuitHandler.Config.StatueConfigs.TryGetValue(statueStyle, out statueConfig) &&
             statueConfig.Actions.Count > 0 && (
               statueConfig.Cooldown == 0 ||
-              WorldGen.checkMech(originX, originY, statueConfig.Cooldown)
+              Wiring.checkMech(originX, originY, statueConfig.Cooldown)
             )
           ) {
             if (this.Result.SignaledStatues > this.CircuitHandler.Config.MaxStatuesPerCircuit) {
@@ -1092,7 +1092,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return true;
           }
 
-          if (!WorldGen.checkMech(originX, originY, 300))
+          if (!Wiring.checkMech(originX, originY, 300))
             return true;
 
           string fullText = this.CircuitHandler.Config.SignConfig.ReadPrefix + signText;
@@ -1160,10 +1160,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (rootBranch.TeleporterLocation == DPoint.Empty) {
             rootBranch.TeleporterLocation = measureData.OriginTileLocation;
           } else {
-            WorldGen.teleport[0] = rootBranch.TeleporterLocation.ToXnaVector2();
-            WorldGen.teleport[1] = measureData.OriginTileLocation.ToXnaVector2();
-            WorldGen.Teleport();
-            WorldGen.teleport[0] = WorldGen.teleport[1] = new Vector2(-1f, -1f);
+            Wiring.teleport[0] = rootBranch.TeleporterLocation.ToXnaVector2();
+            Wiring.teleport[1] = measureData.OriginTileLocation.ToXnaVector2();
+            Wiring.Teleport();
+            Wiring.teleport[0] = Wiring.teleport[1] = new Vector2(-1f, -1f);
 
             rootBranch.TeleporterLocation = DPoint.Empty;
           }
@@ -1209,8 +1209,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 1, doorX, doorY);
         }
 
-        WorldGen.numWire = 0;
-        WorldGen.numNoWire = 0;
+        //Wiring.numWire = 0;
+        //Wiring.numNoWire = 0;
       }
     }
 
@@ -1276,7 +1276,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             continue;
 
           if (Math.Sqrt(Math.Pow(player.TileX - statueLocation.X, 2) + Math.Pow(player.TileY - statueLocation.Y, 2)) <= buffPlayerAction.Radius)
-            player.SetBuff(buffPlayerAction.BuffId, buffPlayerAction.BuffTime);
+          {
+              player.SetBuff(buffPlayerAction.BuffId, buffPlayerAction.BuffTime);
+          }
         }
       }
     }
@@ -1533,8 +1535,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!portTile.active() || portTile.type != (int)AdvancedCircuits.BlockType_InputPort)
             return false;
           if (
-            this.CircuitHandler.Config.BlockActivatorConfig.Cooldown > 0 && 
-            !WorldGen.checkMech(componentLocation.X, componentLocation.Y, this.CircuitHandler.Config.BlockActivatorConfig.Cooldown
+            this.CircuitHandler.Config.BlockActivatorConfig.Cooldown > 0 &&
+            !Wiring.checkMech(componentLocation.X, componentLocation.Y, this.CircuitHandler.Config.BlockActivatorConfig.Cooldown
           ))
             return false;
 
@@ -1588,7 +1590,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(PaintColor.None, out transmitterConfig)
             ) && (
               transmitterConfig.Cooldown == 0 ||
-              WorldGen.checkMech(componentLocation.X, componentLocation.Y, transmitterConfig.Cooldown)
+              Wiring.checkMech(componentLocation.X, componentLocation.Y, transmitterConfig.Cooldown)
             )
           ) {
             if (

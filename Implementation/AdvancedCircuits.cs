@@ -107,7 +107,24 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == BlockType.InactiveStone ||
         blockType == BlockType.DemoniteBrick ||
         blockType == BlockType.Explosives ||
-        (blockType >= BlockType.RedCandyCaneBlock && blockType <= BlockType.SnowBrick)
+        (blockType >= BlockType.RedCandyCaneBlock && blockType <= BlockType.SnowBrick) ||
+        (blockType >= BlockType.AdamantiteBeam && blockType <= BlockType.ChristmasTree) ||
+        (blockType >= BlockType.TinBrick && blockType <= BlockType.PlatinumBrick) ||
+        (blockType >= BlockType.Cactus2 && blockType <= BlockType.IceBrick) ||
+        blockType == BlockType.Shadewood ||
+        blockType == BlockType.Chlorophyte ||
+        (blockType >= BlockType.Palladium && blockType <= BlockType.LihzahrdBrick) ||
+        blockType == BlockType.HoneyBlock ||
+        blockType == BlockType.CrispyHoneyBlock ||
+        blockType == BlockType.WoodenSpike ||
+        blockType == BlockType.CrimsandBlock ||
+        (blockType >= BlockType.PalladiumColumn && blockType <= BlockType.SpookyWood) ||
+        (blockType >= BlockType.Cog && blockType <= BlockType.SandstoneSlab) ||
+        blockType == BlockType.CopperPlating ||
+        (blockType >= BlockType.DynastyWood && blockType <= BlockType.BlueDynastyShingles) ||
+        (blockType >= BlockType.BorealWood && blockType <= BlockType.PalmWood) ||
+        (blockType >= BlockType.TinPlating && blockType <= BlockType.ConfettiBlack) ||
+        blockType == BlockType.LivingFire
       );
     }
 

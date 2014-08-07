@@ -67,6 +67,10 @@ protected objects.
 
 Changelog
 ---------------------------------------------------------------------------------
+Version 1.4.0 [08/07/2014]
+  -Update to 1.2.4.1
+  -Use the Given TerrariaServer.exe
+
 Version 1.3.5 [02/15/2014]
   -Fixed a bug causing timers to spit loads of exceptions under specific 
    circumstances.
