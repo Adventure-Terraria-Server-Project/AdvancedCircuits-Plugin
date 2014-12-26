@@ -185,10 +185,6 @@
       <HintPath>References\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="SignCommands">
-      <HintPath>References\SignCommands.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -259,6 +255,10 @@
     <None Include="Unit Tests.wld" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Essentials-SignCommands-1\SignCommands\SignCommands.csproj">
+      <Project>{ac6a21c4-6efb-414b-bce3-6b8f99f65165}</Project>
+      <Name>SignCommands</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Plugin Common Library\Plugin Common Library.csproj">
       <Project>{1d38e0cf-bf13-4229-860f-3809f39f0892}</Project>
       <Name>Plugin Common Library</Name>

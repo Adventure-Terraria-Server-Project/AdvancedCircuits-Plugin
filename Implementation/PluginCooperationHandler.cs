@@ -21,7 +21,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       Contract.Requires<ArgumentNullException>(pluginTrace != null);
 
       const string ProtectorSomeTypeQualifiedName = "Terraria.Plugins.CoderCow.Protector.ProtectorPlugin, Protector";
-      const string SignCommandsSomeTypeQualifiedName = "SignCommands.scSign, SignCommands";
+      const string SignCommandsSomeTypeQualifiedName = "SignCommands.ScSign, SignCommands";
 
       this.PluginTrace = pluginTrace;
       
@@ -39,19 +39,19 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     public bool SignCommands_CheckIsSignCommand(string text) {
       try {
-        return text.StartsWith(SignCommands.SignCommands.Config.DefineSignCommands, StringComparison.CurrentCultureIgnoreCase);
+        return text.StartsWith(SignCommands.SignCommands.config.DefineSignCommands, StringComparison.CurrentCultureIgnoreCase);
       } catch (Exception ex) {
         throw new CooperatingPluginException(ex);
       }
     }
 
     public void SignCommands_ExecuteSignCommand(TSPlayer player, DPoint signLocation, string text) {
-      scPlayer scPlayer = SignCommands.SignCommands.scPlayers[player.Index];
+      ScPlayer scPlayer = SignCommands.SignCommands.ScPlayers[player.Index];
       if (scPlayer == null)
         throw new InvalidOperationException("Sign Commands does not recognize the given player.");
 
       try {
-        scSign scSign = new scSign(text, new Point(signLocation.X, signLocation.Y));
+        ScSign scSign = new ScSign(text, player,new Point(signLocation.X, signLocation.Y));
         scSign.ExecuteCommands(scPlayer);
       } catch (Exception ex) {
         throw new CooperatingPluginException(null, ex);
