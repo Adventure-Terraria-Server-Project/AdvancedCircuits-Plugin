@@ -15,7 +15,7 @@ using TerrariaApi.Server;
 using TShockAPI;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  [ApiVersion(1, 17)]
+  [ApiVersion(1, 19)]
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
     public const string TracePrefix = @"[Advanced Circuits] ";
     public const string ReloadCfg_Permission = "ac.reloadcfg";
@@ -193,6 +193,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.GetDataHookHandler.TilePaint += this.Net_TilePaint;
       this.GetDataHookHandler.DoorUse += this.Net_DoorUse;
       this.GetDataHookHandler.SendTileSquare += this.Net_SendTileSquare;
+      this.GetDataHookHandler.ObjectPlacement += this.Net_ObjectPlacement;
 
       ServerApi.Hooks.GameUpdate.Register(this, this.Game_Update);
       ServerApi.Hooks.WorldSave.Register(this, this.World_SaveWorld);
@@ -252,6 +253,18 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
       
       e.Handled = this.WorldMetadataHandler.HandleTileEdit(e.Player, e.EditType, e.BlockType, e.Location, e.ObjectStyle);
+    }
+
+    private void Net_ObjectPlacement(object sender, ObjectPlacementEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+        return;
+
+      if (this.UserInteractionHandler.HandleObjectPlacement(e.Player, e.BlockType, e.Location, e.ObjectStyle)) {
+        e.Handled = true;
+        return;
+      }
+
+      e.Handled = this.WorldMetadataHandler.HandleObjectPlacement(e.Player, e.BlockType, e.Location, e.ObjectStyle);
     }
 
     private void Net_TilePaint(object sender, TilePaintEventArgs e) {

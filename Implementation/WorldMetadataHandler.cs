@@ -116,9 +116,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       switch (editType) {
         case TileEditType.PlaceTile: {
           switch (blockType) {
-            case BlockType.GrandfatherClock:
-              this.Metadata.Clocks.Add(new DPoint(location.X, location.Y - 4), new GrandfatherClockMetadata(player.Name));
-              break;
             case AdvancedCircuits.BlockType_WirelessTransmitter:
               if (
                 AdvancedCircuits.IsComponentWiredByPort(location, new DPoint(1, 1)) &&
@@ -194,6 +191,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           break;
         }
+      }
+
+      return false;
+    }
+
+    public bool HandleObjectPlacement(TSPlayer player, BlockType blockType, DPoint location, int objectStyle) {
+      switch (blockType) {
+        case BlockType.GrandfatherClock:
+          this.Metadata.Clocks.Add(new DPoint(location.X, location.Y - 4), new GrandfatherClockMetadata(player.Name));
+          break;
       }
 
       return false;

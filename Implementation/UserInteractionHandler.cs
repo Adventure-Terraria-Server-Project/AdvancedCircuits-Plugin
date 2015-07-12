@@ -508,6 +508,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return !hasPermission;
     }
 
+    public bool HandleObjectPlacement(TSPlayer player, BlockType blockType, DPoint location, int objectStyle) {
+      if (this.IsDisposed)
+        return false;
+
+      bool hasPermission = this.CheckTilePermission(player, location, blockType, objectStyle, (PaintColor)TerrariaUtils.Tiles[location].color());
+      return !hasPermission;
+    }
+
     private bool HandleTileDestruction(TSPlayer player, DPoint location) {
       return false;
     }

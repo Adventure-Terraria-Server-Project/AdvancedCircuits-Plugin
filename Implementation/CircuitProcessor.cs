@@ -222,7 +222,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return this.Result;
 
           if (!this.CircuitHandler.Config.OverrideVanillaCircuits) {
-            Wiring.hitSwitch(this.SenderMeasureData.OriginTileLocation.X, this.SenderMeasureData.OriginTileLocation.Y);
+            Wiring.HitSwitch(this.SenderMeasureData.OriginTileLocation.X, this.SenderMeasureData.OriginTileLocation.Y);
             return this.Result;
           }
           
@@ -890,7 +890,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               this.CircuitHandler.Config.PumpConfigs.TryGetValue(PaintColor.None, out pumpConfig)
             ) &&
               pumpConfig.Cooldown == 0 ||
-              Wiring.checkMech(originX, originY, pumpConfig.Cooldown
+              Wiring.CheckMech(originX, originY, pumpConfig.Cooldown
             )
           ) {
             if (this.Result.SignaledPumps > this.CircuitHandler.Config.MaxPumpsPerCircuit) {
@@ -933,7 +933,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               this.CircuitHandler.Config.TrapConfigs.TryGetValue(defaultKey, out trapConfig)
             ) &&
               trapConfig.Cooldown == 0 ||
-              Wiring.checkMech(originX, originY, trapConfig.Cooldown
+              Wiring.CheckMech(originX, originY, trapConfig.Cooldown
             )
           ) {
             if (this.Result.SignaledTraps > this.CircuitHandler.Config.MaxTrapsPerCircuit) {
@@ -1018,7 +1018,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             this.CircuitHandler.Config.StatueConfigs.TryGetValue(statueStyle, out statueConfig) &&
             statueConfig.Actions.Count > 0 && (
               statueConfig.Cooldown == 0 ||
-              Wiring.checkMech(originX, originY, statueConfig.Cooldown)
+              Wiring.CheckMech(originX, originY, statueConfig.Cooldown)
             )
           ) {
             if (this.Result.SignaledStatues > this.CircuitHandler.Config.MaxStatuesPerCircuit) {
@@ -1092,7 +1092,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return true;
           }
 
-          if (!Wiring.checkMech(originX, originY, 300))
+          if (!Wiring.CheckMech(originX, originY, 300))
             return true;
 
           string fullText = this.CircuitHandler.Config.SignConfig.ReadPrefix + signText;
@@ -1160,10 +1160,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (rootBranch.TeleporterLocation == DPoint.Empty) {
             rootBranch.TeleporterLocation = measureData.OriginTileLocation;
           } else {
-            Wiring.teleport[0] = rootBranch.TeleporterLocation.ToXnaVector2();
-            Wiring.teleport[1] = measureData.OriginTileLocation.ToXnaVector2();
+            Wiring._teleport[0] = rootBranch.TeleporterLocation.ToXnaVector2();
+            Wiring._teleport[1] = measureData.OriginTileLocation.ToXnaVector2();
             Wiring.Teleport();
-            Wiring.teleport[0] = Wiring.teleport[1] = new Vector2(-1f, -1f);
+            Wiring._teleport[0] = Wiring._teleport[1] = new Vector2(-1f, -1f);
 
             rootBranch.TeleporterLocation = DPoint.Empty;
           }
@@ -1536,7 +1536,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return false;
           if (
             this.CircuitHandler.Config.BlockActivatorConfig.Cooldown > 0 &&
-            !Wiring.checkMech(componentLocation.X, componentLocation.Y, this.CircuitHandler.Config.BlockActivatorConfig.Cooldown
+            !Wiring.CheckMech(componentLocation.X, componentLocation.Y, this.CircuitHandler.Config.BlockActivatorConfig.Cooldown
           ))
             return false;
 
@@ -1590,7 +1590,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               this.CircuitHandler.Config.WirelessTransmitterConfigs.TryGetValue(PaintColor.None, out transmitterConfig)
             ) && (
               transmitterConfig.Cooldown == 0 ||
-              Wiring.checkMech(componentLocation.X, componentLocation.Y, transmitterConfig.Cooldown)
+              Wiring.CheckMech(componentLocation.X, componentLocation.Y, transmitterConfig.Cooldown)
             )
           ) {
             if (
