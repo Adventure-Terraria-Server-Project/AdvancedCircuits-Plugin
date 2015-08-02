@@ -240,7 +240,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return;
 
       if (this.CircuitHandler != null)
-        e.Handled = this.CircuitHandler.HandleDoorUse(e.Player, e.Location, e.IsOpening, null, e.Direction);
+        e.Handled = this.CircuitHandler.HandleDoorUse(e.Player, e.Location, e.action, null, e.Direction);
     }
 
     private void Net_TileEdit(object sender, TileEditEventArgs e) {

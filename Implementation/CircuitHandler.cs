@@ -232,9 +232,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public bool HandleDoorUse(
-      TSPlayer player, DPoint tileLocation, bool isOpening, NPC npc = null, Direction direction = Direction.Unknown
+      TSPlayer player, DPoint tileLocation, DoorAction action, NPC npc = null, Direction direction = Direction.Unknown
     ) {
       try {
+        bool isOpening = false;
+        if (action == DoorAction.OpenDoor || action == DoorAction.OpenTallGate || action == DoorAction.OpenTrapdoor)
+          isOpening = true;
         this.ProcessCircuit(player, tileLocation, AdvancedCircuits.BoolToSignal(isOpening), false);
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
@@ -258,7 +261,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (
             TerrariaUtils.Tiles[x, y].active() && (
               TerrariaUtils.Tiles[x, y].type == (int)BlockType.DoorOpened ||
-              TerrariaUtils.Tiles[x, y].type == (int)BlockType.DoorClosed
+              TerrariaUtils.Tiles[x, y].type == (int)BlockType.DoorClosed ||
+              TerrariaUtils.Tiles[x, y].type == (int)BlockType.TrapdoorClosed ||
+              TerrariaUtils.Tiles[x, y].type == (int)BlockType.TrapdoorOpen
             )
           )
             return true;

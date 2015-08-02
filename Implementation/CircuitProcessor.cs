@@ -218,7 +218,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           // Grandfather Clock is an Advanced Circuit component and thus wont work in Vanilla Circuits.
           if (senderBlockType == BlockType.GrandfatherClock)
             return this.Result;
-          if (senderBlockType == BlockType.DoorOpened || senderBlockType == BlockType.DoorClosed)
+          if (senderBlockType == BlockType.DoorOpened || senderBlockType == BlockType.DoorClosed
+            || senderBlockType == BlockType.TallGateOpen || senderBlockType == BlockType.TallGateClosed
+            || senderBlockType == BlockType.TrapdoorOpen || senderBlockType == BlockType.TrapdoorClosed)
             return this.Result;
 
           if (!this.CircuitHandler.Config.OverrideVanillaCircuits) {
@@ -262,7 +264,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             senderBlockType == BlockType.Lever || 
             senderBlockType == BlockType.XSecondTimer ||
             senderBlockType == BlockType.DoorOpened ||
-            senderBlockType == BlockType.DoorClosed
+            senderBlockType == BlockType.DoorClosed ||
+            senderBlockType == BlockType.TrapdoorOpen ||
+            senderBlockType == BlockType.TrapdoorClosed ||
+            senderBlockType == BlockType.TallGateClosed ||
+            senderBlockType == BlockType.TallGateOpen
           )
         ) {
           bool newSenderState;
@@ -870,7 +876,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return true;
         }
         case BlockType.DoorClosed:
-        case BlockType.DoorOpened: {
+        case BlockType.DoorOpened: 
+        case BlockType.TrapdoorClosed:
+        case BlockType.TrapdoorOpen:
+        case BlockType.TallGateClosed:
+        case BlockType.TallGateOpen: {
           if (this.IsAdvancedCircuit)
             return false;
 
@@ -1175,7 +1185,35 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     private void OpenDoor(ObjectMeasureData measureData, SignalType signal) {
-      bool currentState = (measureData.BlockType == BlockType.DoorOpened);
+      bool currentState = false;
+      DoorAction action = DoorAction.Invalid;
+      switch (measureData.BlockType) {
+        case BlockType.DoorClosed:
+          currentState = false;
+          action = DoorAction.OpenDoor;
+          break;
+        case BlockType.DoorOpened:
+          currentState = true;
+          action = DoorAction.CloseDoor;
+          break;
+        case BlockType.TallGateClosed:
+          currentState = false;
+          action = DoorAction.OpenTallGate;
+          break;
+        case BlockType.TallGateOpen:
+          currentState = true;
+          action = DoorAction.CloseTallGate;
+          break;
+        case BlockType.TrapdoorClosed:
+          currentState = false;
+          action = DoorAction.OpenTrapdoor;
+          break;
+        case BlockType.TrapdoorOpen:
+          currentState = true;
+          action = DoorAction.CloseTrapdoor;
+          break;
+      }
+
       bool newState;
       if (signal == SignalType.Swap)
         newState = !currentState;
@@ -1185,10 +1223,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (newState != currentState) {
         int doorX = measureData.OriginTileLocation.X;
         int doorY = measureData.OriginTileLocation.Y;
+        int direction = 1;
 
-        if (newState) {
+        // Tall gates dont care direction
+        if (action == DoorAction.OpenTallGate || action == DoorAction.CloseTallGate) {
+          if(WorldGen.ShiftTallGate(doorX, doorY, action == DoorAction.CloseTallGate))
+            TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, (int)action, doorX, doorY);
+        }
+
+        if (action == DoorAction.OpenDoor) {
           // A door will always try to open to the opposite site of the sender's location that triggered the circuit first.
-          int direction = 1;
           if (doorX < this.SenderMeasureData.OriginTileLocation.X)
             direction = -1;
 
@@ -1198,19 +1242,46 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             direction *= -1;
             currentState = WorldGen.OpenDoor(doorX, doorY, direction);
           }
-
           if (currentState) {
-            TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 0, doorX, doorY, direction);
+            TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, (int)action, doorX, doorY, direction);
+          }
+        }
+        else if (action == DoorAction.CloseDoor) {
+          if (WorldGen.CloseDoor(doorX, doorY, true)) {
+            TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, (int)action, doorX, doorY, direction);
             // Because the door changed its sprite, we have to re-measure it now.
             measureData = TerrariaUtils.Tiles.MeasureObject(measureData.OriginTileLocation);
           }
-        } else {
-          if (WorldGen.CloseDoor(doorX, doorY, true))
-            TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, 1, doorX, doorY);
         }
+        else if (action == DoorAction.OpenTrapdoor) {
+          // A trapdoor will always try to open to the opposite site of the sender's location that triggered the circuit first.
+          // direction: 1 is up, -1 is down;
+          if (doorY < this.SenderMeasureData.OriginTileLocation.Y)
+            direction = -1;
 
-        //Wiring.numWire = 0;
-        //Wiring.numNoWire = 0;
+          // If opening it towards one direction doesn't work, try the other.
+          currentState = WorldGen.ShiftTrapdoor(doorX, doorY, direction == -1);
+          if (!currentState) {
+            direction *= -1;
+            currentState = WorldGen.ShiftTrapdoor(doorX, doorY, direction == -1);
+          }
+
+          if (currentState) {
+            TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, (int)action, doorX, doorY, direction);
+            // Because the door changed its sprite, we have to re-measure it now.
+            measureData = TerrariaUtils.Tiles.MeasureObject(measureData.OriginTileLocation);
+          }
+        }
+        else if (action == DoorAction.CloseTrapdoor) {
+          if (doorY < this.SenderMeasureData.OriginTileLocation.Y)
+            direction = -1;
+          if (WorldGen.ShiftTrapdoor(doorX, doorY, direction == -1)) {
+            direction *= -1;
+            TSPlayer.All.SendData(PacketTypes.DoorUse, string.Empty, (int)action, doorX, doorY, direction);
+            // Because the door changed its sprite, we have to re-measure it now.
+            measureData = TerrariaUtils.Tiles.MeasureObject(measureData.OriginTileLocation);
+          }
+        }
       }
     }
 
@@ -1296,6 +1367,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         signal = !signal;
       else if (portTile.active() && portTile.type == (int)AdvancedCircuits.BlockType_XORGate && measureData.BlockType != AdvancedCircuits.BlockType_XORGate)
         signal = false;
+      else if (portTile.active() && portTile.type == (int)AdvancedCircuits.BlockType_ANDGate && measureData.BlockType != AdvancedCircuits.BlockType_ANDGate)
+        signal = true;
+      else if (portTile.active() && portTile.type == (int)AdvancedCircuits.BlockType_ORGate && measureData.BlockType != AdvancedCircuits.BlockType_ORGate)
+        signal = true;
 
       List<DPoint> componentPorts = null;
       bool outputSignal = signal;
@@ -1308,12 +1383,31 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       switch (measureData.BlockType) {
         case BlockType.DoorOpened:
-        case BlockType.DoorClosed: {
+        case BlockType.DoorClosed: 
+        case BlockType.TallGateClosed:
+        case BlockType.TallGateOpen:{
           for (int y = measureData.OriginTileLocation.Y; y < measureData.OriginTileLocation.Y + measureData.Size.Y; y++)
             if (TerrariaUtils.Tiles[measureData.OriginTileLocation.X, y].HasWire())
               return false;
 
           if (measureData.BlockType == BlockType.DoorOpened) {
+            // Extra check needed if a port of the door is really hit. This is because doors define ports differently than
+            // other components if they are opened.
+            componentPorts = new List<DPoint>(AdvancedCircuits.EnumerateComponentPortLocations(measureData));
+            if (!componentPorts.Contains(portLocation))
+              return false;
+          }
+
+          this.OpenDoor(measureData, AdvancedCircuits.BoolToSignal(signal));
+          break;
+        } 
+        case BlockType.TrapdoorClosed:
+        case BlockType.TrapdoorOpen: {
+          for (int x = measureData.OriginTileLocation.X; x < measureData.OriginTileLocation.X + measureData.Size.X; x++)
+            if (TerrariaUtils.Tiles[x, measureData.OriginTileLocation.Y].HasWire())
+              return false;
+
+          if (measureData.BlockType == BlockType.TrapdoorOpen) {
             // Extra check needed if a port of the door is really hit. This is because doors define ports differently than
             // other components if they are opened.
             componentPorts = new List<DPoint>(AdvancedCircuits.EnumerateComponentPortLocations(measureData));

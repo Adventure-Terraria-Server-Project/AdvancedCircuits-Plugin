@@ -53,6 +53,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == BlockType.XSecondTimer ||
         blockType == BlockType.DoorOpened ||
         blockType == BlockType.DoorClosed ||
+        blockType == BlockType.TrapdoorOpen ||
+        blockType == BlockType.TrapdoorClosed ||
+        blockType == BlockType.TallGateOpen ||
+        blockType == BlockType.TallGateClosed ||
         blockType == AdvancedCircuits.BlockType_ORGate ||
         blockType == AdvancedCircuits.BlockType_ANDGate ||
         blockType == AdvancedCircuits.BlockType_XORGate ||
@@ -144,7 +148,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         blockType == BlockType.PressurePlate ||
         blockType == BlockType.GrandfatherClock ||
         blockType == BlockType.DoorOpened ||
-        blockType == BlockType.DoorClosed
+        blockType == BlockType.DoorClosed ||
+        blockType == BlockType.TallGateClosed ||
+        blockType == BlockType.TallGateOpen ||
+        blockType == BlockType.TrapdoorClosed ||
+        blockType == BlockType.TrapdoorOpen
       );
     }
 
@@ -198,6 +206,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       DPoint size = measureData.Size;
       if (measureData.BlockType == BlockType.DoorOpened)
         size = new DPoint(1, 3);
+      else if (measureData.BlockType == BlockType.TrapdoorOpen)
+        size = new DPoint(2, 2);
 
       if (portLocation.X < origin.X)
         return new DPoint(origin.X, portLocation.Y);
