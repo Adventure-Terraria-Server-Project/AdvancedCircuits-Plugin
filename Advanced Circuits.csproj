@@ -255,7 +255,7 @@
     <None Include="Unit Tests.wld" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Essentials-SignCommands-1\SignCommands\SignCommands.csproj">
+    <ProjectReference Include="..\SignCommands\SignCommands\SignCommands.csproj">
       <Project>{ac6a21c4-6efb-414b-bce3-6b8f99f65165}</Project>
       <Name>SignCommands</Name>
     </ProjectReference>

@@ -632,7 +632,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 if (rootBranch.BlockActivator.RegisteredInactiveBlocks.TryGetValue(tileLocation, out registeredBlockType)) {
                   rootBranch.BlockActivator.RegisteredInactiveBlocks.Remove(tileLocation);
 
-                  tile.type = (byte)registeredBlockType;
+                  tile.type = (ushort)registeredBlockType;
                   tile.active(true);
                   this.TilesToFrameOnPost.Add(tileLocation);
 
