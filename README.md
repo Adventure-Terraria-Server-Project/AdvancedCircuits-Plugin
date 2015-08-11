@@ -9,7 +9,7 @@ Beside keeping and extending Terraria's Vanilla Circuits and components, a new t
 
 Several configuration settings give the server's owner control of wiring limits and capabilities. This also includes a mighty configuration mechanism of Statues and their performed actions when powered.
 
-Note: This plugin requires Terraria Server API 1.12 and TShock 4 in order to work.
+Note: This plugin requires Terraria Server API and TShock in order to work.
 
 More information to this plugin can be found [here](tshock/Advanced Circuits/ReadMe.txt).
 

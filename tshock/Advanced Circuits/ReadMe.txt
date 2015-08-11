@@ -21,7 +21,7 @@ and their performed actions when powered.
 NOTE: Before installing and configuring the plugin, read the "Known Problems" 
 section first!
 
-Note: This plugin requires Terraria Server API 1.14 in order to work.
+Note: This plugin requires Terraria Server API and tshock in order to work.
 
 To learn more about Advanced Circuits, have a look on the official wiki:
 https://github.com/CoderCow/AdvancedCircuits-Plugin/wiki/
@@ -67,6 +67,9 @@ protected objects.
 
 Changelog
 ---------------------------------------------------------------------------------
+See commit log on the GitHub repository for future changes:
+https://github.com/CoderCow/AdvancedCircuits-Plugin/commits/master
+
 Version 1.4.0 [08/07/2014]
   -Update to 1.2.4.1
   -Use the Given TerrariaServer.exe
