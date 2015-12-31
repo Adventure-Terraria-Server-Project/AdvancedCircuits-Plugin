@@ -532,7 +532,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
       Tile tile = TerrariaUtils.Tiles[tileLocation];
 
-      // If the tile has no wire it might be a AC-Component and thus the adjacent tile would be its port.
+      // If the tile has no wire it might be an AC-Component and thus the adjacent tile would be its port.
       if (!tile.HasWire(rootBranch.WireColor) && tile.active()) {
         if (!this.IsAdvancedCircuit || adjacentTileLocation == DPoint.Empty)
           return;
@@ -599,6 +599,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             else
               Wiring.ReActive(tileLocation.X, tileLocation.Y);
           }
+        }
+
+        // Gemspark Blocks Handling
+        if (tile.active() && tile.type >= 255 && tile.type <= 268) {
+          if (tile.type < 262)
+            tile.type = (ushort)(tile.type + 7);
+          else
+            tile.type = (ushort)(tile.type - 7);
+          
+          TSPlayer.All.SendTileSquare(tileLocation.X, tileLocation.Y, 1);
         }
 
         // Block Activator tile activation / deactivation.
