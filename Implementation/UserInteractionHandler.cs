@@ -364,7 +364,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return !hasPermission;
     }
 
-    private bool CheckTilePermission(TSPlayer player, DPoint location, BlockType blockType, int objectStyle, PaintColor paint) {
+    private bool CheckTilePermission(TSPlayer player, DPoint location, BlockType blockType, int objectStyle, PaintColor paint, bool dropItem = false) {
       switch (blockType) {
         case BlockType.Statue: {
           DPoint originTileLocation = new DPoint(location.X, location.Y - 2);
@@ -378,10 +378,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!player.Group.HasPermission(statueConfig.WirePermission)) {
             player.SendTileSquareEx(location, 10);
 
-            ItemType itemTypeToDrop;
-            itemTypeToDrop = TerrariaUtils.Tiles.GetItemTypeFromStatueStyle(statueStyle);
+            if (dropItem) {
+              ItemType itemTypeToDrop;
+              itemTypeToDrop = TerrariaUtils.Tiles.GetItemTypeFromStatueStyle(statueStyle);
 
-            Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)itemTypeToDrop);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)itemTypeToDrop);
+            }
+
             this.TellNoStatueWiringPermission(player, statueStyle);
             return false;
           }
@@ -401,8 +404,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!player.Group.HasPermission(trapConfig.WirePermission)) {
             player.SendTileSquareEx(location, 10);
 
-            ItemType itemTypeToDrop = TerrariaUtils.Tiles.GetItemTypeFromTrapStyle(trapStyle);
-            Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)itemTypeToDrop);
+            if (dropItem) {
+              ItemType itemTypeToDrop = TerrariaUtils.Tiles.GetItemTypeFromTrapStyle(trapStyle);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)itemTypeToDrop);
+            }
+
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
           }
@@ -417,7 +423,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!player.Group.HasPermission(AdvancedCircuitsPlugin.WireBoulder_Permission)) {
             player.SendTileSquareEx(location, 10);
 
-            Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Boulder);
+            if (dropItem)
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Boulder);
+
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
           }
@@ -431,7 +439,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!player.Group.HasPermission(AdvancedCircuitsPlugin.WireSign_Permission)) {
             player.SendTileSquareEx(location, 10);
 
-            Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Sign);
+            if (dropItem)
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Sign);
+
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
           }
@@ -452,11 +462,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!player.Group.HasPermission(pumpConfig.WirePermission)) {
             player.SendTileSquareEx(location, 10);
 
-            ItemType itemTypeToDrop = ItemType.OutletPump;
-            if (blockType == BlockType.InletPump)
-              itemTypeToDrop = ItemType.InletPump;
+            if (dropItem) {
+              ItemType itemTypeToDrop = ItemType.OutletPump;
+              if (blockType == BlockType.InletPump)
+                itemTypeToDrop = ItemType.InletPump;
 
-            Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)itemTypeToDrop);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)itemTypeToDrop);
+            }
+
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
           }
@@ -473,7 +486,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!player.Group.HasPermission(transmitterConfig.WirePermission)) {
             player.SendTileSquareEx(location, 1);
 
-            Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.AdamantiteOre);
+            if (dropItem)
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.AdamantiteOre);
+
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
           }
@@ -488,7 +503,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!player.Group.HasPermission(AdvancedCircuitsPlugin.WireTeleporter_Permission)) {
             player.SendTileSquareEx(location, 10);
 
-            Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Teleporter);
+            if (dropItem)
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Teleporter);
+
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
           }
@@ -504,7 +521,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.IsDisposed)
         return false;
       
-      bool hasPermission = this.CheckTilePermission(player, location, blockType, objectStyle, (PaintColor)TerrariaUtils.Tiles[location].color());
+      bool hasPermission = this.CheckTilePermission(player, location, blockType, objectStyle, (PaintColor)TerrariaUtils.Tiles[location].color(), true);
       return !hasPermission;
     }
 
@@ -512,7 +529,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.IsDisposed)
         return false;
 
-      bool hasPermission = this.CheckTilePermission(player, location, blockType, objectStyle, (PaintColor)TerrariaUtils.Tiles[location].color());
+      bool hasPermission = this.CheckTilePermission(player, location, blockType, objectStyle, (PaintColor)TerrariaUtils.Tiles[location].color(), true);
       return !hasPermission;
     }
 
