@@ -40,9 +40,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
     }
 
-    protected PluginTrace PluginTrace { get; private set; }
-    public CircuitHandler CircuitHandler { get; private set; }
-    protected ObjectMeasureData SenderMeasureData { get; private set; }
+    protected PluginTrace PluginTrace { get; }
+    public CircuitHandler CircuitHandler { get; }
+    protected ObjectMeasureData SenderMeasureData { get; }
 
     protected List<RootBranchProcessData> QueuedRootBranches {
       get {
@@ -99,14 +99,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
     }
 
-    protected CircuitProcessingResult Result {
-      get { return this.result; }
-    }
+    protected CircuitProcessingResult Result => this.result;
+    public bool IsAdvancedCircuit => this.result.IsAdvancedCircuit;
+    public bool IsCancellationPending => (this.result.CancellationReason != CircuitCancellationReason.None);
 
-    public bool IsAdvancedCircuit {
-      get { return this.result.IsAdvancedCircuit; }
-    }
-    
     public TSPlayer TriggeringPlayer {
       get { return this.result.TriggeringPlayer; }
       set { this.result.TriggeringPlayer = value; }
@@ -122,10 +118,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       set { this.result.CircuitLength = value; }
     }
 
-    public bool IsCancellationPending {
-      get { return (this.result.CancellationReason != CircuitCancellationReason.None); }
-    }
-
     private bool wasExecuted;
     
 
@@ -139,7 +131,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       
       // Is sender directly wired?
       bool isSenderWired;
-      if (this.SenderMeasureData.BlockType == BlockType.DoorOpened) {
+      if (
+        this.SenderMeasureData.BlockType == BlockType.DoorOpened ||
+        this.SenderMeasureData.BlockType == BlockType.FakeContainers
+      ) {
         isSenderWired = false;
         for (int y = this.SenderMeasureData.OriginTileLocation.Y; y < this.SenderMeasureData.OriginTileLocation.Y + this.SenderMeasureData.Size.Y; y++) {
           if (TerrariaUtils.Tiles[this.SenderMeasureData.OriginTileLocation.X, y].HasWire()) {
@@ -218,9 +213,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           // Grandfather Clock is an Advanced Circuit component and thus wont work in Vanilla Circuits.
           if (senderBlockType == BlockType.GrandfatherClock)
             return this.Result;
-          if (senderBlockType == BlockType.DoorOpened || senderBlockType == BlockType.DoorClosed
-            || senderBlockType == BlockType.TallGateOpen || senderBlockType == BlockType.TallGateClosed
-            || senderBlockType == BlockType.TrapdoorOpen || senderBlockType == BlockType.TrapdoorClosed)
+          if (
+            senderBlockType == BlockType.DoorOpened || 
+            senderBlockType == BlockType.DoorClosed || 
+            senderBlockType == BlockType.TallGateOpen || 
+            senderBlockType == BlockType.TallGateClosed || 
+            senderBlockType == BlockType.TrapdoorOpen || 
+            senderBlockType == BlockType.TrapdoorClosed
+          )
             return this.Result;
 
           if (!this.CircuitHandler.Config.OverrideVanillaCircuits) {
@@ -235,7 +235,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           signal = overrideSignal.Value;
         
         this.TriggeringPlayer = player ?? TSPlayer.Server;
-        if (player != TSPlayer.Server && (senderBlockType == BlockType.XSecondTimer || senderBlockType == BlockType.GrandfatherClock)) {
+        if (
+          player != TSPlayer.Server && (
+            senderBlockType == BlockType.XSecondTimer || 
+            senderBlockType == BlockType.GrandfatherClock
+          )
+        ) {
           string triggeringPlayerName = null;
           if (senderBlockType == BlockType.XSecondTimer) {
             ActiveTimerMetadata activeTimer;

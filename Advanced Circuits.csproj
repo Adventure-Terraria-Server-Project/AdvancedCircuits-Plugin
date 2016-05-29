@@ -181,6 +181,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -243,6 +247,7 @@
     <Folder Include="Implementation\Test\Test Data\World Data\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="README.md" />
     <None Include="tshock\Advanced Circuits\Config.xsd">
       <SubType>Designer</SubType>
@@ -258,6 +263,7 @@
     <ProjectReference Include="..\Plugin Common Library\Plugin Common Library.csproj">
       <Project>{1d38e0cf-bf13-4229-860f-3809f39f0892}</Project>
       <Name>Plugin Common Library</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Protector\Protector.csproj">
       <Project>{2c69c30b-4fc7-4edf-b9e6-e3b6441f0e84}</Project>
