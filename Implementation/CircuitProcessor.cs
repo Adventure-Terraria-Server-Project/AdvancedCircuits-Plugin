@@ -608,11 +608,20 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
         // Gemspark Blocks Handling
         if (tile.active() && tile.type >= 255 && tile.type <= 268) {
-          if (tile.type < 262)
-            tile.type = (ushort)(tile.type + 7);
+          bool currentState = (tile.type >= 262);
+          bool newState;
+          if (signal == SignalType.Swap)
+            newState = !currentState;
           else
-            tile.type = (ushort)(tile.type - 7);
-          
+            newState = AdvancedCircuits.SignalToBool(signal).Value;
+
+          if (newState != currentState) {
+            if (newState)
+              tile.type = (ushort)(tile.type + 7); // turn online
+            else
+              tile.type = (ushort)(tile.type - 7); // turn offline
+          }
+
           TSPlayer.All.SendTileSquare(tileLocation.X, tileLocation.Y, 1);
         }
 
