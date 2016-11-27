@@ -9,13 +9,12 @@ using DPoint = System.Drawing.Point;
 
 using Terraria.Plugins.Common;
 using Terraria.Plugins.Common.Hooks;
-using Terraria.Plugins.CoderCow.AdvancedCircuits.Test;
 
 using TerrariaApi.Server;
 using TShockAPI;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  [ApiVersion(1, 24)]
+  [ApiVersion(1, 26)]
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
     public const string TracePrefix = @"[Advanced Circuits] ";
     public const string ReloadCfg_Permission = "ac.reloadcfg";
