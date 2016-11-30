@@ -46,13 +46,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public void SignCommands_ExecuteSignCommand(TSPlayer player, DPoint signLocation, string text) {
-      ScPlayer scPlayer = SignCommands.SignCommands.ScPlayers[player.Index];
-      if (scPlayer == null)
-        throw new InvalidOperationException("Sign Commands does not recognize the given player.");
-
       try {
-        ScSign scSign = new ScSign(text, player,new Point(signLocation.X, signLocation.Y));
-        scSign.ExecuteCommands(scPlayer);
+        SignCommands.SignCommands.OnSignHit(signLocation.X, signLocation.Y, text, player.Index);
       } catch (Exception ex) {
         throw new CooperatingPluginException(null, ex);
       }
