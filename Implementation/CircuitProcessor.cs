@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
@@ -1011,7 +1012,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               (originX * TerrariaUtils.TileSize + (trapConfig.ProjectileOffset * normalizedPolarOffset.X)), 
               (originY * TerrariaUtils.TileSize + (trapConfig.ProjectileOffset * normalizedPolarOffset.Y))
             );
-            projectileSpawn = projectileSpawn.Add(new Vector2(
+            projectileSpawn = Vector2.Add(projectileSpawn, new Vector2(
               TerrariaUtils.TileSize / 2 - projectile.width / 2, 
               TerrariaUtils.TileSize / 2 - projectile.height / 2
             ));
