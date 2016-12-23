@@ -19,10 +19,10 @@ Grab the latest release from [bin/Release](https://github.com/CoderCow/AdvancedC
 
 ### Plugin Compatibility
 
-This plugin will cooperate with Sign Commands (by Scavenger) if installed. Wired signs with a sign command can then be triggered by Advanced Circuits to have the commands executed for the player who triggered the circuit.
+This plugin will cooperate with [Sign Commands](https://github.com/CoderCow/Essentials-SignCommands-1) if installed. Wired signs with a sign command can then be triggered by Advanced Circuits to have the commands executed for the player who triggered the circuit.
 Note that this will not work when Infinite Signs is installed.
 
-If Protector is installed, then the `/ac switch` command will not work on protected objects.
+If [Protector](https://github.com/CoderCow/Protector-Plugin) is installed, then the `/ac switch` command will not work on protected objects.
 
 ### Commands
 
