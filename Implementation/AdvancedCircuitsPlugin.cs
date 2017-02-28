@@ -194,6 +194,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.GetDataHookHandler.SendTileSquare += this.Net_SendTileSquare;
       this.GetDataHookHandler.ObjectPlacement += this.Net_ObjectPlacement;
 
+      ServerApi.Hooks.NetSendData.Register(this, this.Net_SendData);
       ServerApi.Hooks.GameUpdate.Register(this, this.Game_Update);
       ServerApi.Hooks.WorldSave.Register(this, this.World_SaveWorld);
 
@@ -209,8 +210,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     private void RemoveHooks() {
-      if (this.GetDataHookHandler != null) 
-        this.GetDataHookHandler.Dispose();
+      this.GetDataHookHandler?.Dispose();
 
       ServerApi.Hooks.GameUpdate.Register(this, this.Game_Update);
       ServerApi.Hooks.WorldSave.Register(this, this.World_SaveWorld);
@@ -304,15 +304,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         e.Handled = this.CircuitHandler.HandleTriggerPressurePlate(TSPlayer.Server, new DPoint(e.TileX, e.TileY), true);
     }
 
-    private void World_SaveWorld(WorldSaveEventArgs e) {
-      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+    private void Net_SendData(SendDataEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled)
         return;
 
-      try {
-        this.WorldMetadataHandler.WriteMetadata();
-      } catch (Exception ex) {
-        this.Trace.WriteLineError("A Save World Handler has thrown an exception:\n{0}", ex.ToString());
-      }
+      e.Handled = this.CircuitHandler.HandleSendData(e);
     }
 
     private void Game_Update(EventArgs e) {
@@ -329,6 +325,17 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         #endif
       } catch (Exception ex) {
         this.Trace.WriteLineError("A Game Update Handler has thrown an exception:\n{0}", ex.ToString());
+      }
+    }
+
+    private void World_SaveWorld(WorldSaveEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+        return;
+
+      try {
+        this.WorldMetadataHandler.WriteMetadata();
+      } catch (Exception ex) {
+        this.Trace.WriteLineError("A Save World Handler has thrown an exception:\n{0}", ex.ToString());
       }
     }
     #endregion

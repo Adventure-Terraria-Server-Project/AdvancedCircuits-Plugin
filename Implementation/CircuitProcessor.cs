@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Terraria.ID;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
@@ -202,6 +203,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               case BlockType.Lever:
               case BlockType.Switch:
               case BlockType.XSecondTimer:
+              case BlockType.LogicSensor:
                 signal = AdvancedCircuits.BoolToSignal(!TerrariaUtils.Tiles.ObjectHasActiveState(this.SenderMeasureData));
                 break;
 
@@ -683,7 +685,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         if (tile.type == (int)BlockType.Switch || tile.type == (int)BlockType.Lever)
           return;
         
-        if (this.SignalComponent(ref componentMeasureData, rootBranch, signal)) {
+        if (this.SignalComponent(ref componentMeasureData, tileLocation, rootBranch, signal)) {
           rootBranch.SignaledComponentLocations.Add(componentMeasureData.OriginTileLocation);
           this.Result.SignaledComponentsCounter++;
         }
@@ -832,7 +834,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       }
     }
 
-    protected bool SignalComponent(ref ObjectMeasureData measureData, RootBranchProcessData rootBranch, SignalType signal, bool localOnly = false) {
+    protected bool SignalComponent(ref ObjectMeasureData measureData, DPoint tileLocation, RootBranchProcessData rootBranch, SignalType signal, bool localOnly = false) {
       int originX = measureData.OriginTileLocation.X;
       int originY = measureData.OriginTileLocation.Y;
 
@@ -932,11 +934,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               this.Result.WarnReason = CircuitWarnReason.SignalesTooManyPumps;
               return true;
             }
-            if (
-              pumpConfig.TriggerPermission != null && 
-              this.TriggeringPlayer != TSPlayer.Server && 
-              !this.TriggeringPlayer.Group.HasPermission(pumpConfig.TriggerPermission)
-            ) {
+            if (!this.CheckTriggerPermission(pumpConfig.TriggerPermission)) {
               this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
               this.Result.WarnRelatedComponentType = measureData.BlockType;
               return true;
@@ -975,11 +973,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               this.Result.WarnReason = CircuitWarnReason.SignalesTooManyTraps;
               return true;
             }
-            if (
-              trapConfig.TriggerPermission != null && 
-              this.TriggeringPlayer != TSPlayer.Server && 
-              !this.TriggeringPlayer.Group.HasPermission(trapConfig.TriggerPermission)
-            ) {
+            if (!this.CheckTriggerPermission(trapConfig.TriggerPermission)) {
               this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
               this.Result.WarnRelatedComponentType = BlockType.DartTrap;
               return true;
@@ -1060,11 +1054,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               this.Result.WarnReason = CircuitWarnReason.SignalesTooManyStatues;
               return true;
             }
-            if (
-              statueConfig.TriggerPermission != null && 
-              this.TriggeringPlayer != TSPlayer.Server && 
-              !this.TriggeringPlayer.Group.HasPermission(statueConfig.TriggerPermission)
-            ) {
+            if (!this.CheckTriggerPermission(statueConfig.TriggerPermission)) {
               this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
               this.Result.WarnRelatedComponentType = BlockType.Statue;
               return true;
@@ -1098,10 +1088,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return true;
         }
         case BlockType.Sign: {
-          if (!this.IsAdvancedCircuit || signal == SignalType.Off || this.TriggeringPlayer == TSPlayer.Server)
+          if (!this.IsAdvancedCircuit || signal == SignalType.Off)
             return false;
 
-          if (this.IsTriggeredPassively && !this.TriggeringPlayer.Group.HasPermission(AdvancedCircuitsPlugin.PassiveTriggerSign_Permission)) {
+          if (this.IsTriggeredPassively && !this.CheckTriggerPermission(AdvancedCircuitsPlugin.PassiveTriggerSign_Permission)) {
             this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
             this.Result.WarnRelatedComponentType = BlockType.Sign;
             return false;
@@ -1115,7 +1105,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             this.CircuitHandler.PluginCooperationHandler.IsSignCommandsAvailable &&
             this.CircuitHandler.PluginCooperationHandler.SignCommands_CheckIsSignCommand(signText)
           ) {
-            if (!this.TriggeringPlayer.Group.HasPermission(AdvancedCircuitsPlugin.TriggerSignCommand_Permission)) {
+            if (!this.CheckTriggerPermission(AdvancedCircuitsPlugin.TriggerSignCommand_Permission)) {
               this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
               this.Result.WarnRelatedComponentType = BlockType.Sign;
               return false;
@@ -1182,11 +1172,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           return true;
         }
         case BlockType.Teleporter: {
-          if (signal == SignalType.Off)
+          if (signal == SignalType.Off || this.TriggeringPlayer == TSPlayer.Server)
             return false;
           if (TerrariaUtils.Tiles[measureData.OriginTileLocation].wall == (int)WallType.LihzahrdBrickWall && !(originY <= Main.worldSurface || NPC.downedPlantBoss))
             return true;
-          if (this.TriggeringPlayer != TSPlayer.Server && !this.TriggeringPlayer.Group.HasPermission(AdvancedCircuitsPlugin.TriggerTeleporter_Permission)) {
+          if (!this.CheckTriggerPermission(AdvancedCircuitsPlugin.TriggerTeleporter_Permission)) {
             this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
             this.Result.WarnRelatedComponentType = BlockType.Teleporter;
             return false;
@@ -1204,9 +1194,54 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           }
           return true;
         }
+        case BlockType.Cannon: {
+          if (signal == SignalType.Off)
+            return false;
+
+          int offsetX = tileLocation.X - measureData.OriginTileLocation.X;
+					int offsetY = tileLocation.Y - measureData.OriginTileLocation.Y;
+          int cannonType = measureData.TextureFrameLocation.X;
+          int cannonOrientation = measureData.TextureFrameLocation.Y;
+          
+          bool isOrientationChange = (offsetX == 0 || offsetX == 3);
+					if (isOrientationChange) {
+            short frameChangeY = 0;
+					  if (offsetX == 3) // most right tile
+						  frameChangeY = (short)(cannonOrientation > 0 ? -54 : 0);
+					  if (offsetX == 0) // most left tile
+						  frameChangeY = (short)(cannonOrientation < 8 ? 54 : 0);
+
+            if (frameChangeY != 0) {
+						  TerrariaUtils.Tiles.EnumerateObjectTiles(measureData).ForEach(cannonTile => cannonTile.frameY += frameChangeY);
+						  TSPlayer.All.SendTileSquare(measureData.OriginTileLocation, 6);
+            }
+            return true;
+					}
+
+          bool isPortalGun = (cannonType == 3 || cannonType == 4);
+					if (isPortalGun && (offsetX == 1 || offsetX == 2) && (offsetY == 0 || offsetY == 1)) { // if top middle part is wired, change portal type
+						short frameChangeX = (short)((cannonType == 3) ? 72 : -72);
+            TerrariaUtils.Tiles.EnumerateObjectTiles(measureData).ForEach(cannonTile => cannonTile.frameX += frameChangeX);
+						TSPlayer.All.SendTileSquare(measureData.OriginTileLocation, 6);
+            return true;
+					}
+
+					if (Wiring.CheckMech(originX, originY, 30))
+						WorldGen.ShootFromCannon(originX, originY, cannonOrientation, cannonType + 1, 0, 0f, this.TriggeringPlayer.Index);
+
+          return true;
+        }
       }
 
       return false;
+    }
+
+    private bool CheckTriggerPermission(string permissionName) {
+      return (
+        permissionName == null ||
+        (this.TriggeringPlayer == TSPlayer.Server && this.SenderMeasureData.BlockType != BlockType.LogicSensor) ||
+        this.TriggeringPlayer.Group.HasPermission(permissionName)
+      );
     }
 
     private void OpenDoor(ObjectMeasureData measureData, SignalType signal) {
@@ -1659,10 +1694,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           ))
             return false;
 
-          if (
-            this.TriggeringPlayer != TSPlayer.Server &&
-            !this.TriggeringPlayer.Group.HasPermission(AdvancedCircuitsPlugin.TriggerBlockActivator_Permission)
-          ) {
+          if (!this.CheckTriggerPermission(AdvancedCircuitsPlugin.TriggerBlockActivator_Permission)) {
             this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
             this.Result.WarnRelatedComponentType = AdvancedCircuits.BlockType_BlockActivator;
             return true;
@@ -1712,11 +1744,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               Wiring.CheckMech(componentLocation.X, componentLocation.Y, transmitterConfig.Cooldown)
             )
           ) {
-            if (
-              transmitterConfig.TriggerPermission != null && 
-              this.TriggeringPlayer != TSPlayer.Server && 
-              !this.TriggeringPlayer.Group.HasPermission(transmitterConfig.TriggerPermission)
-            ) {
+            if (!this.CheckTriggerPermission(transmitterConfig.TriggerPermission)) {
               this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
               this.Result.WarnRelatedComponentType = AdvancedCircuits.BlockType_WirelessTransmitter;
               return true;

@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using Terraria.ID;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
 
 using Terraria.Plugins.Common;
+using TerrariaApi.Server;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class CircuitHandler {
@@ -249,13 +251,32 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return false;
     }
 
-    // This is a work around a lame bug. Each time a door is used, a send tile square packet is sent after the door use packet, 
-    // for whatever reason, and thus this tile square contains "older" data than the server might have at this time because 
-    // the server might have processed a circuit already before this tile square packet arrives. So we try to check for this 
-    // specific packet and ignore it, so that it will not overwrite our and the clients tiles with old data.
-    // This might also fix the bug where doors randomly disappear when used.
+    public bool HandleSendData(SendDataEventArgs e) {
+      if (e.MsgId == PacketTypes.TileSendSquare && e.number == 1) {
+        DPoint tileLocation = new DPoint((int)e.number2, (int)e.number3);
+        if (TerrariaUtils.Tiles.IsValidCoord(tileLocation)) {
+          Tile tile = TerrariaUtils.Tiles[tileLocation];
+          if (tile.type == TileID.LogicSensor && !tile.HasWire())
+            this.ProcessCircuit(TSPlayer.Server, tileLocation, null, false);
+        }
+      }
+
+      return false;
+    }
+
     public bool HandleSendTileSquare(TSPlayer player, DPoint tileLocation, int size) {
-      if (size == 5) {
+      if (size == 1) {
+        Tile tile = TerrariaUtils.Tiles[tileLocation];
+        if (tile.type == TileID.LogicSensor) {
+          Console.WriteLine(tile.type);
+        }
+
+      // This is a work around a lame bug. Each time a door is used, a send tile square packet is sent after the door use packet, 
+      // for whatever reason, and thus this tile square contains "older" data than the server might have at this time because 
+      // the server might have processed a circuit already before this tile square packet arrives. So we try to check for this 
+      // specific packet and ignore it, so that it will not overwrite our and the clients tiles with old data.
+      // This might also fix the bug where doors randomly disappear when used.
+      } else if (size == 5) {
         int y = tileLocation.Y + 2;
         for (int x = tileLocation.X + 1; x < tileLocation.X + 4; x++) {
           if (
