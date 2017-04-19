@@ -1090,6 +1090,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case BlockType.Sign: {
           if (!this.IsAdvancedCircuit || signal == SignalType.Off)
             return false;
+          if (this.TriggeringPlayer == TSPlayer.Server)
+            return false;
 
           if (this.IsTriggeredPassively && !this.CheckTriggerPermission(AdvancedCircuitsPlugin.PassiveTriggerSign_Permission)) {
             this.Result.WarnReason = CircuitWarnReason.InsufficientPermissionToSignalComponent;
