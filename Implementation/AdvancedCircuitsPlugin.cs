@@ -14,7 +14,7 @@ using TerrariaApi.Server;
 using TShockAPI;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
-  [ApiVersion(2, 0)]
+  [ApiVersion(2, 1)]
   public class AdvancedCircuitsPlugin: TerrariaPlugin, IDisposable {
     public const string TracePrefix = @"[Advanced Circuits] ";
     public const string ReloadCfg_Permission = "ac.reloadcfg";

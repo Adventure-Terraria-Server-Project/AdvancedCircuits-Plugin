@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using Terraria.ID;
+using Terraria.Localization;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
@@ -229,7 +230,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
       }
 
-      NetMessage.SendData((int)PacketTypes.HitSwitch, -1, player.Index, string.Empty, tileLocation.X, tileLocation.Y);
+      NetMessage.SendData((int)PacketTypes.HitSwitch, -1, player.Index, NetworkText.Empty, tileLocation.X, tileLocation.Y);
       return true;
     }
 
