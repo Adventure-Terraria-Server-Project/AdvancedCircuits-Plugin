@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using Microsoft.Xna.Framework;
+using Terraria.ID;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
@@ -91,10 +92,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case "ores":
         case "tiles":
           int pageNumber;
-          if (!PaginationUtil.TryParsePageNumber(args.Parameters, 1, args.Player, out pageNumber))
+          if (!PaginationTools.TryParsePageNumber(args.Parameters, 1, args.Player, out pageNumber))
             return true;
 
-          PaginationUtil.SendPage(
+          PaginationTools.SendPage(
             args.Player, pageNumber, 
             new List<string>() {
               "Copper Ore - OR-Gate",
@@ -107,7 +108,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               "Active Stone - Active Stone and Block Activator",
               "Adamantite Ore - Wireless Transmitter"
             },
-            new PaginationUtil.Settings {
+            new PaginationTools.Settings {
               HeaderFormat = "Advanced Circuits Special Blocks (Page {0} of {1})",
               HeaderTextColor = Color.Lime,
               LineTextColor = Color.LightGray,
@@ -159,15 +160,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 return result;
               }
 
-              BlockType hitBlockType = (BlockType)tile.type;
-              if (tile.active() && hitBlockType == BlockType.ActiveStone) {
+              int hitBlockType = tile.type;
+              if (tile.active() && hitBlockType == TileID.ActiveStoneBlock) {
                 if (newState == null || newState == false)
-                  TerrariaUtils.Tiles.SetBlock(location, BlockType.InactiveStone);
+                  TerrariaUtils.Tiles.SetBlock(location, TileID.InactiveStoneBlock);
                 else
                   args.Player.SendTileSquare(location);
-              } else if (hitBlockType == BlockType.InactiveStone) {
+              } else if (hitBlockType == TileID.InactiveStoneBlock) {
                 if (tile.active() &&  newState == null || newState == true)
-                  TerrariaUtils.Tiles.SetBlock(location, BlockType.ActiveStone);
+                  TerrariaUtils.Tiles.SetBlock(location, TileID.ActiveStoneBlock);
                 else
                   args.Player.SendTileSquare(location);
               } else if (tile.active() && TerrariaUtils.Tiles.IsMultistateObject(hitBlockType)) {
@@ -230,7 +231,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               } else if (tile.active() && tile.type == (int)AdvancedCircuits.BlockType_InputPort) {
                 foreach (DPoint adjacentTileLocation in AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1))) {
                   Tile adjacentTile = TerrariaUtils.Tiles[adjacentTileLocation];
-                  if (!adjacentTile.active() || !AdvancedCircuits.IsLogicalGate((BlockType)adjacentTile.type))
+                  if (!adjacentTile.active() || !AdvancedCircuits.IsLogicalGate(adjacentTile.type))
                     continue;
 
                   if (
@@ -290,10 +291,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                   return result;
                 }
 
-                player.SendErrorMessage(string.Format(
-                  "The state of \"{0}\" can not be changed.", TerrariaUtils.Tiles.GetBlockTypeName(hitBlockType)
-                ));
-
+                player.SendErrorMessage($"The state of \"{TerrariaUtils.Tiles.GetBlockTypeName(hitBlockType, 0)}\" can not be changed.");
                 player.SendTileSquare(location);
               }
 
@@ -315,7 +313,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [Hook Handling]
-    public override bool HandleTileEdit(TSPlayer player, TileEditType editType, BlockType blockType, DPoint location, int objectStyle) {
+    public override bool HandleTileEdit(TSPlayer player, TileEditType editType, int blockType, DPoint location, int objectStyle) {
       if (this.IsDisposed)
         return false;
       if (base.HandleTileEdit(player, editType, blockType, location, objectStyle))
@@ -354,20 +352,20 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       
       Tile componentTile = TerrariaUtils.Tiles[location];
       int objectStyle;
-      if (componentTile.type == (int)BlockType.Statue)
+      if (componentTile.type == TileID.Statues)
         objectStyle = componentTile.frameX / 36;
-      else if (componentTile.type == (int)BlockType.DartTrap)
+      else if (componentTile.type == TileID.Traps)
         objectStyle = componentTile.frameY / 18;
       else
         objectStyle = 0;
 
-      bool hasPermission = this.CheckTilePermission(player, location, (BlockType)componentTile.type, objectStyle, paint);
+      bool hasPermission = this.CheckTilePermission(player, location, componentTile.type, objectStyle, paint);
       return !hasPermission;
     }
 
-    private bool CheckTilePermission(TSPlayer player, DPoint location, BlockType blockType, int objectStyle, PaintColor paint, bool dropItem = false) {
+    private bool CheckTilePermission(TSPlayer player, DPoint location, int blockType, int objectStyle, PaintColor paint, bool dropItem = false) {
       switch (blockType) {
-        case BlockType.Statue: {
+        case TileID.Statues: {
           DPoint originTileLocation = new DPoint(location.X, location.Y - 2);
           if (!TerrariaUtils.Tiles.IsObjectWired(originTileLocation, new DPoint(2, 3)))
             break;
@@ -380,10 +378,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             player.SendTileSquareEx(location, 10);
 
             if (dropItem) {
-              ItemType itemTypeToDrop;
+              int itemTypeToDrop;
               itemTypeToDrop = TerrariaUtils.Tiles.GetItemTypeFromStatueStyle(statueStyle);
 
-              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)itemTypeToDrop);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, itemTypeToDrop);
             }
 
             this.TellNoStatueWiringPermission(player, statueStyle);
@@ -392,7 +390,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           break;
         }
-        case BlockType.DartTrap: {
+        case TileID.Traps: {
           Tile destTile = TerrariaUtils.Tiles[location];
           if (!destTile.HasWire())
             break;
@@ -406,8 +404,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             player.SendTileSquareEx(location, 10);
 
             if (dropItem) {
-              ItemType itemTypeToDrop = TerrariaUtils.Tiles.GetItemTypeFromTrapStyle(trapStyle);
-              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)itemTypeToDrop);
+              int itemTypeToDrop = TerrariaUtils.Tiles.GetItemTypeFromTrapStyle(trapStyle);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, itemTypeToDrop);
             }
 
             this.TellMissingComponentWiringPermission(player, blockType);
@@ -416,7 +414,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           break;
         }
-        case BlockType.Boulder: {
+        case TileID.Boulder: {
           DPoint originTileLocation = new DPoint(location.X - 1, location.Y - 1);
           if (!TerrariaUtils.Tiles.IsObjectWired(originTileLocation, new DPoint(2, 2)))
             break;
@@ -425,7 +423,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             player.SendTileSquareEx(location, 10);
 
             if (dropItem)
-              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Boulder);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, ItemID.Boulder);
 
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
@@ -433,7 +431,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           break;
         }
-        case BlockType.Sign: {
+        case TileID.Signs: {
           if (!TerrariaUtils.Tiles.IsObjectWired(location, new DPoint(2, 2)))
             break;
 
@@ -441,7 +439,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             player.SendTileSquareEx(location, 10);
 
             if (dropItem)
-              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Sign);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, ItemID.Sign);
 
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
@@ -449,8 +447,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           break;
         }
-        case BlockType.InletPump:
-        case BlockType.OutletPump: {
+        case TileID.InletPump:
+        case TileID.OutletPump: {
           DPoint originTileLocation = new DPoint(location.X - 1, location.Y - 1);
           if (!TerrariaUtils.Tiles.IsObjectWired(originTileLocation, new DPoint(2, 2)))
             break;
@@ -464,11 +462,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             player.SendTileSquareEx(location, 10);
 
             if (dropItem) {
-              ItemType itemTypeToDrop = ItemType.OutletPump;
-              if (blockType == BlockType.InletPump)
-                itemTypeToDrop = ItemType.InletPump;
+              int itemTypeToDrop = ItemID.OutletPump;
+              if (blockType == ItemID.InletPump)
+                itemTypeToDrop = ItemID.InletPump;
 
-              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)itemTypeToDrop);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, itemTypeToDrop);
             }
 
             this.TellMissingComponentWiringPermission(player, blockType);
@@ -488,7 +486,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             player.SendTileSquareEx(location, 1);
 
             if (dropItem)
-              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.AdamantiteOre);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, ItemID.AdamantiteOre);
 
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
@@ -496,7 +494,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           break;
         }
-        case BlockType.Teleporter: {
+        case ItemID.Teleporter: {
           DPoint originTileLocation = new DPoint(location.X - 1, location.Y - 1);
           if (!TerrariaUtils.Tiles.IsObjectWired(originTileLocation, new DPoint(3, 1)))
             break;
@@ -505,7 +503,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             player.SendTileSquareEx(location, 10);
 
             if (dropItem)
-              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Teleporter);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, ItemID.Teleporter);
 
             this.TellMissingComponentWiringPermission(player, blockType);
             return false;
@@ -518,7 +516,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return true;
     }
 
-    private bool HandleTilePlace(TSPlayer player, BlockType blockType, DPoint location, int objectStyle) {
+    private bool HandleTilePlace(TSPlayer player, int blockType, DPoint location, int objectStyle) {
       if (this.IsDisposed)
         return false;
       
@@ -526,7 +524,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return !hasPermission;
     }
 
-    public bool HandleObjectPlacement(TSPlayer player, BlockType blockType, DPoint location, int objectStyle) {
+    public bool HandleObjectPlacement(TSPlayer player, int blockType, DPoint location, int objectStyle) {
       if (this.IsDisposed)
         return false;
 
@@ -554,14 +552,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         Tile tile = TerrariaUtils.Tiles[tileToCheck];
         if (!tile.active())
           continue;
-        if (tileToCheck != location && tile.type != (int)AdvancedCircuits.BlockType_WirelessTransmitter)
+        if (tileToCheck != location && tile.type != AdvancedCircuits.BlockType_WirelessTransmitter)
           continue;
 
         bool hasPermission = true;
         ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(tileToCheck);
         PaintColor componentPaint = (PaintColor)TerrariaUtils.Tiles[measureData.OriginTileLocation].color();
-        switch ((BlockType)tile.type) {
-          case BlockType.Statue: {
+        switch (tile.type) {
+          case TileID.Statues: {
             StatueStyle statueStyle = TerrariaUtils.Tiles.GetStatueStyle(tile);
             StatueConfig statueConfig;
             if (!this.Config.StatueConfigs.TryGetValue(statueStyle, out statueConfig))
@@ -573,13 +571,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             if (!hasPermission) {
               this.TellNoStatueWiringPermission(player, statueStyle);
               player.SendTileSquare(location, 1);
-              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Wire);
+              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, ItemID.Wire);
 
               return true;
             }
             break;
           }
-          case BlockType.DartTrap: {
+          case TileID.Traps: {
             TrapConfig trapConfig;
             TrapConfigKey configKey = new TrapConfigKey(TerrariaUtils.Tiles.GetTrapStyle(TerrariaUtils.Tiles[location].frameY / 18), componentPaint);
             if (!this.Config.TrapConfigs.TryGetValue(configKey, out trapConfig))
@@ -590,16 +588,16 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             hasPermission = player.Group.HasPermission(trapConfig.WirePermission);
             break;
           }
-          case BlockType.Boulder: {
+          case TileID.Boulder: {
             hasPermission = player.Group.HasPermission(AdvancedCircuitsPlugin.WireBoulder_Permission);
             break;
           }
-          case BlockType.Sign: {
+          case TileID.Signs: {
             hasPermission = player.Group.HasPermission(AdvancedCircuitsPlugin.WireSign_Permission);
             break;
           }
-          case BlockType.InletPump:
-          case BlockType.OutletPump: {
+          case TileID.InletPump:
+          case TileID.OutletPump: {
             PumpConfig pumpConfig;
             if (!this.Config.PumpConfigs.TryGetValue(componentPaint, out pumpConfig))
               break;
@@ -615,17 +613,17 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             hasPermission = player.Group.HasPermission(transmitterConfig.WirePermission);
             break;
           }
-          case BlockType.Teleporter: {
+          case TileID.Teleporter: {
             hasPermission = player.Group.HasPermission(AdvancedCircuitsPlugin.WireTeleporter_Permission);
             break;
           }
         }
 
         if (!hasPermission) {
-          this.TellMissingComponentWiringPermission(player, (BlockType)tile.type);
+          this.TellMissingComponentWiringPermission(player, tile.type);
           
           player.SendTileSquare(location, 1);
-          Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, (int)ItemType.Wire);
+          Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, ItemID.Wire);
 
           return true;
         }
@@ -634,8 +632,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return false;
     }
 
-    private void TellMissingComponentWiringPermission(TSPlayer player, BlockType blockType) {
-      string blockName = TerrariaUtils.Tiles.GetBlockTypeName(blockType);
+    private void TellMissingComponentWiringPermission(TSPlayer player, int blockType) {
+      string blockName = TerrariaUtils.Tiles.GetBlockTypeName(blockType, 0);
       player.SendErrorMessage("You don't have the required permission to wire up components of type " + blockName);
       
       this.PluginTrace.WriteLineInfo(

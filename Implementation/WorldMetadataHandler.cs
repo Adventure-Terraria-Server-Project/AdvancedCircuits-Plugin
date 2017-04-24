@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using Terraria.ID;
 using DPoint = System.Drawing.Point;
 
 using TShockAPI;
@@ -27,8 +28,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             continue;
 
           DPoint tileLocation = new DPoint(x, y);
-          switch ((BlockType)TerrariaUtils.Tiles[x, y].type) {
-            case BlockType.XSecondTimer: {
+          switch (TerrariaUtils.Tiles[x, y].type) {
+            case TileID.Timers: {
               // Is active timer?
               if (TerrariaUtils.Tiles[x, y].frameY > 0)
                 if (!metadata.ActiveTimers.ContainsKey(tileLocation))
@@ -36,7 +37,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
               break;
             }
-            case BlockType.GrandfatherClock: {
+            case TileID.GrandfatherClocks: {
               ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(tileLocation);
 
               if (!metadata.Clocks.ContainsKey(measureData.OriginTileLocation))
@@ -80,7 +81,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       List<DPoint> activeTimerLocations = new List<DPoint>(metadata.ActiveTimers.Keys);
       foreach (DPoint activeTimerLocation in activeTimerLocations) {
         Tile tile = TerrariaUtils.Tiles[activeTimerLocation];
-        if (!tile.active() || tile.type != (int)BlockType.XSecondTimer)
+        if (!tile.active() || tile.type != TileID.Timers)
           metadata.ActiveTimers.Remove(activeTimerLocation);
       }
 
@@ -88,7 +89,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       List<DPoint> clockLocations = new List<DPoint>(metadata.Clocks.Keys);
       for (int i = 0; i < clockLocations.Count; i++) {
         Tile tile = TerrariaUtils.Tiles[clockLocations[i]];
-        if (!tile.active() || tile.type != (int)BlockType.GrandfatherClock)
+        if (!tile.active() || tile.type != TileID.GrandfatherClocks)
           clockLocations.RemoveAt(i--);
       }
 
@@ -112,7 +113,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     #region [Hook Handlers]
-    public bool HandleTileEdit(TSPlayer player, TileEditType editType, BlockType blockType, DPoint location, int objectStyle) {
+    public bool HandleTileEdit(TSPlayer player, TileEditType editType, int blockType, DPoint location, int objectStyle) {
       switch (editType) {
         case TileEditType.PlaceTile: {
           switch (blockType) {
@@ -134,7 +135,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           // Check if we just wired an unregistered component's port.
           foreach (DPoint adjacentTileLocation in AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1))) {
             Tile tile = TerrariaUtils.Tiles[adjacentTileLocation];
-            if (tile.active() && tile.type == (int)AdvancedCircuits.BlockType_WirelessTransmitter) {
+            if (tile.active() && tile.type == AdvancedCircuits.BlockType_WirelessTransmitter) {
               if (!this.Metadata.WirelessTransmitters.ContainsKey(adjacentTileLocation))
                 this.Metadata.WirelessTransmitters.Add(adjacentTileLocation, player.Name);
             }
@@ -147,14 +148,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           if (!TerrariaUtils.Tiles[location].active())
             break;
 
-          switch ((BlockType)TerrariaUtils.Tiles[location].type) {
-            case BlockType.XSecondTimer: {
+          switch (TerrariaUtils.Tiles[location].type) {
+            case TileID.Timers: {
               if (this.Metadata.ActiveTimers.ContainsKey(location))
                 this.Metadata.ActiveTimers.Remove(location);
 
               break;
             }
-            case BlockType.GrandfatherClock: {
+            case TileID.GrandfatherClocks: {
               ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(location);
               if (this.Metadata.Clocks.ContainsKey(measureData.OriginTileLocation))
                 this.Metadata.Clocks.Remove(measureData.OriginTileLocation);
@@ -196,9 +197,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return false;
     }
 
-    public bool HandleObjectPlacement(TSPlayer player, BlockType blockType, DPoint location, int objectStyle) {
+    public bool HandleObjectPlacement(TSPlayer player, int blockType, DPoint location, int objectStyle) {
       switch (blockType) {
-        case BlockType.GrandfatherClock:
+        case TileID.GrandfatherClocks:
           this.Metadata.Clocks.Add(new DPoint(location.X, location.Y - 4), new GrandfatherClockMetadata(player.Name));
           break;
       }

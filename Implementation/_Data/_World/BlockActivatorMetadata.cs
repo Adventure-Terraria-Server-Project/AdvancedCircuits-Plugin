@@ -9,11 +9,11 @@ using Terraria.Plugins.Common;
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class BlockActivatorMetadata {
     public bool IsActivated { get; set; }
-    public Dictionary<DPoint,BlockType> RegisteredInactiveBlocks { get; private set; }
+    public Dictionary<DPoint,int> RegisteredInactiveBlocks { get; private set; }
 
 
     public BlockActivatorMetadata() {
-      this.RegisteredInactiveBlocks = new Dictionary<DPoint,BlockType>();
+      this.RegisteredInactiveBlocks = new Dictionary<DPoint,int>();
     }
   }
 }

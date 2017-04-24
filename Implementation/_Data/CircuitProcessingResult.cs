@@ -26,13 +26,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public int TransferedWater { get; set; }
     public int TransferedLava { get; set; }
     public CircuitWarnReason WarnReason { get; set; }
-    public BlockType WarnRelatedComponentType { get; set; }
-    public BlockType CancellationRelatedComponentType { get; set; }
+    public int WarnRelatedComponentType { get; set; }
+    public int CancellationRelatedComponentType { get; set; }
     public CircuitCancellationReason CancellationReason { get; set; }
 
 
     public CircuitProcessingResult() {
-      this.CancellationRelatedComponentType = BlockType.Invalid;
+      this.CancellationRelatedComponentType = -1;
     }
   }
 }

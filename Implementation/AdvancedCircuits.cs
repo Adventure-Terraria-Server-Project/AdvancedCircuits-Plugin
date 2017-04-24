@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
+using Terraria.ID;
 using DPoint = System.Drawing.Point;
 
 using Terraria.Plugins.Common;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public static class AdvancedCircuits {
-    public const BlockType BlockType_ORGate              = BlockType.CopperOre;
-    public const BlockType BlockType_ANDGate             = BlockType.SilverOre;
-    public const BlockType BlockType_XORGate             = BlockType.GoldOre;
-    public const BlockType BlockType_NOTGate             = BlockType.Obsidian;
-    public const BlockType BlockType_Swapper             = BlockType.IronOre;
-    public const BlockType BlockType_CrossoverBridge     = BlockType.Spike;
-    public const BlockType BlockType_InputPort           = BlockType.Glass;
-    public const BlockType BlockType_BlockActivator      = BlockType.ActiveStone;
-    public const BlockType BlockType_WirelessTransmitter = BlockType.AdamantiteOre;
+    public const int BlockType_ORGate              = TileID.Copper;
+    public const int BlockType_ANDGate             = TileID.Silver;
+    public const int BlockType_XORGate             = TileID.Gold;
+    public const int BlockType_NOTGate             = TileID.Obsidian;
+    public const int BlockType_Swapper             = TileID.Iron;
+    public const int BlockType_CrossoverBridge     = TileID.Spikes;
+    public const int BlockType_InputPort           = TileID.Glass;
+    public const int BlockType_BlockActivator      = TileID.ActiveStoneBlock;
+    public const int BlockType_WirelessTransmitter = TileID.Adamantite;
 
     public const PaintColor Paint_Timer_Mul2 = PaintColor.Red;
     public const PaintColor Paint_Timer_Mul4 = PaintColor.Green;
@@ -45,94 +44,117 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     public const PaintColor Paint_BlockActivator_Replace = PaintColor.Red;
 
-
-    public static bool IsPortDefiningComponentBlock(BlockType blockType) {
-      return (
-        blockType == BlockType.Switch ||
-        blockType == BlockType.Lever ||
-        blockType == BlockType.XSecondTimer ||
-        blockType == BlockType.DoorOpened ||
-        blockType == BlockType.DoorClosed ||
-        blockType == BlockType.TrapdoorOpen ||
-        blockType == BlockType.TrapdoorClosed ||
-        blockType == BlockType.TallGateOpen ||
-        blockType == BlockType.TallGateClosed ||
-        blockType == AdvancedCircuits.BlockType_ORGate ||
-        blockType == AdvancedCircuits.BlockType_ANDGate ||
-        blockType == AdvancedCircuits.BlockType_XORGate ||
-        blockType == AdvancedCircuits.BlockType_NOTGate ||
-        blockType == AdvancedCircuits.BlockType_Swapper ||
-        blockType == AdvancedCircuits.BlockType_CrossoverBridge ||
-        blockType == BlockType.GrandfatherClock ||
-        blockType == AdvancedCircuits.BlockType_BlockActivator ||
-        blockType == AdvancedCircuits.BlockType_WirelessTransmitter
-      );
+    private static readonly HashSet<int> portDefiningComponents = new HashSet<int> {
+      TileID.Switches,
+      TileID.Lever,
+      TileID.Timers,
+      TileID.OpenDoor,
+      TileID.ClosedDoor,
+      TileID.TrapdoorOpen,
+      TileID.TrapdoorClosed,
+      TileID.TallGateOpen,
+      TileID.TallGateClosed,
+      AdvancedCircuits.BlockType_ORGate,
+      AdvancedCircuits.BlockType_ANDGate,
+      AdvancedCircuits.BlockType_XORGate,
+      AdvancedCircuits.BlockType_NOTGate,
+      AdvancedCircuits.BlockType_Swapper,
+      AdvancedCircuits.BlockType_CrossoverBridge,
+      TileID.GrandfatherClocks,
+      AdvancedCircuits.BlockType_BlockActivator,
+      AdvancedCircuits.BlockType_WirelessTransmitter,
+    };
+    public static bool IsPortDefiningComponentBlock(int blockType) {
+      return AdvancedCircuits.portDefiningComponents.Contains(blockType);
     }
 
-    public static bool IsPaintSupportingComponent(BlockType blockType) {
-      return (
-        blockType == BlockType.XSecondTimer ||
-        blockType == BlockType.Switch ||
-        blockType == BlockType.Lever ||
-        blockType == BlockType.GrandfatherClock ||
-        blockType == AdvancedCircuits.BlockType_ANDGate ||
-        blockType == AdvancedCircuits.BlockType_XORGate ||
-        blockType == AdvancedCircuits.BlockType_ORGate ||
-        blockType == BlockType.DartTrap ||
-        blockType == BlockType.InletPump ||
-        blockType == BlockType.OutletPump ||
-        blockType == AdvancedCircuits.BlockType_WirelessTransmitter
-      );
+    private static readonly HashSet<int> modifyableComponents = new HashSet<int> {
+      TileID.Timers,
+      TileID.Switches,
+      TileID.Lever,
+      TileID.GrandfatherClocks,
+      AdvancedCircuits.BlockType_ANDGate,
+      AdvancedCircuits.BlockType_XORGate,
+      AdvancedCircuits.BlockType_ORGate,
+      TileID.Traps,
+      TileID.InletPump,
+      TileID.OutletPump,
+      AdvancedCircuits.BlockType_WirelessTransmitter,
+    };
+    public static bool IsPaintSupportingComponent(int blockType) {
+      return AdvancedCircuits.modifyableComponents.Contains(blockType);
     }
 
-    public static bool IsCustomActivatableBlock(BlockType blockType) {
-      return (
-        blockType == BlockType.DirtBlock ||
-        blockType == BlockType.StoneBlock ||
-        blockType == BlockType.WoodPlatform ||
-        blockType == BlockType.DemoniteOre ||
-        blockType == BlockType.CorruptGrass ||
-        blockType == BlockType.EbonstoneBlock ||
-        blockType == BlockType.Wood ||
-        (blockType >= BlockType.GrayBrick && blockType <= BlockType.BlueBrick) ||
-        (blockType >= BlockType.GreenBrick && blockType <= BlockType.WaterCandle) ||
-        (blockType >= BlockType.Cobweb && blockType <= BlockType.Glass) ||
-        (blockType >= BlockType.Obsidian && blockType <= BlockType.JungleGrass) ||
-        blockType == BlockType.JungleVine ||
-        (blockType >= BlockType.SapphireBlock && blockType <= BlockType.MushroomGrass) ||
-        blockType == BlockType.ObsidianBrick ||
-        blockType == BlockType.HellstoneBrick ||
-        blockType == BlockType.HallowedGrass ||
-        blockType == BlockType.EbonsandBlock ||
-        blockType == BlockType.HallowedVine ||
-        (blockType >= BlockType.PearlsandBlock && blockType <= BlockType.WoodenBeam) ||
-        blockType == BlockType.IceRodBlock ||
-        blockType == BlockType.ActiveStone ||
-        blockType == BlockType.InactiveStone ||
-        blockType == BlockType.DemoniteBrick ||
-        blockType == BlockType.Explosives ||
-        (blockType >= BlockType.RedCandyCaneBlock && blockType <= BlockType.SnowBrick) ||
-        (blockType >= BlockType.AdamantiteBeam && blockType <= BlockType.ChristmasTree) ||
-        (blockType >= BlockType.TinBrick && blockType <= BlockType.PlatinumBrick) ||
-        (blockType >= BlockType.Cactus2 && blockType <= BlockType.IceBrick) ||
-        blockType == BlockType.Shadewood ||
-        blockType == BlockType.Chlorophyte ||
-        (blockType >= BlockType.Palladium && blockType <= BlockType.LihzahrdBrick) ||
-        blockType == BlockType.HoneyBlock ||
-        blockType == BlockType.CrispyHoneyBlock ||
-        blockType == BlockType.WoodenSpike ||
-        blockType == BlockType.CrimsandBlock ||
-        (blockType >= BlockType.PalladiumColumn && blockType <= BlockType.SpookyWood) ||
-        (blockType >= BlockType.Cog && blockType <= BlockType.SandstoneSlab) ||
-        blockType == BlockType.CopperPlating ||
-        (blockType >= BlockType.DynastyWood && blockType <= BlockType.BlueDynastyShingles) ||
-        (blockType >= BlockType.BorealWood && blockType <= BlockType.PalmWood) ||
-        (blockType >= BlockType.TinPlating && blockType <= BlockType.ConfettiBlack) ||
-        blockType == BlockType.LivingFire
-      );
+    private static HashSet<int> customActivatableBlocks = null;
+    public static bool IsCustomActivatableBlock(int blockType) {
+      if (AdvancedCircuits.customActivatableBlocks == null) {
+        AdvancedCircuits.customActivatableBlocks = new HashSet<int> {
+          TileID.Dirt,
+          TileID.Stone,
+          TileID.Platforms,
+          TileID.Demonite,
+          TileID.CorruptGrass,
+          TileID.Ebonstone,
+          TileID.WoodBlock,
+          TileID.JungleVines,
+          TileID.ObsidianBrick,
+          TileID.HellstoneBrick,
+          TileID.HallowedGrass,
+          TileID.Ebonsand,
+          TileID.HallowedVines,
+          TileID.MagicalIceBlock,
+          TileID.ActiveStoneBlock,
+          TileID.InactiveStoneBlock,
+          TileID.DemoniteBrick,
+          TileID.Explosives,
+          TileID.Shadewood,
+          TileID.Chlorophyte,
+          TileID.HoneyBlock,
+          TileID.CrispyHoneyBlock,
+          TileID.WoodenSpikes,
+          TileID.Crimsand,
+          TileID.CopperPlating,
+          TileID.LivingFire,
+        };
+
+        for (int blockId = TileID.GrayBrick; blockId <= TileID.BlueDungeonBrick; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.GreenDungeonBrick; blockId <= TileID.Spikes; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.Cobweb; blockId <= TileID.Glass; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.Obsidian; blockId <= TileID.JungleGrass; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.Sapphire; blockId <= TileID.MushroomGrass; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.Pearlsand; blockId <= TileID.WoodenBeam; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.CandyCaneBlock; blockId <= TileID.SnowBrick; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.AdamantiteBeam; blockId <= TileID.ChristmasTree; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.TinBrick; blockId <= TileID.PlatinumBrick; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.CactusBlock; blockId <= TileID.IceBrick; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.Palladium; blockId <= TileID.LihzahrdBrick; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.PalladiumColumn; blockId <= TileID.SpookyWood; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.Cog; blockId <= TileID.SandStoneSlab; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.DynastyWood; blockId <= TileID.BlueDynastyShingles; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.BorealWood; blockId <= TileID.PalmWood; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.TinPlating; blockId <= TileID.ConfettiBlack; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+      }
+
+      return AdvancedCircuits.customActivatableBlocks.Contains(blockType);
     }
 
-    public static bool IsLogicalGate(BlockType blockType) {
+    public static bool IsLogicalGate(int blockType) {
       return (
         blockType == AdvancedCircuits.BlockType_ORGate ||
         blockType == AdvancedCircuits.BlockType_ANDGate ||
@@ -140,23 +162,24 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       );
     }
 
-    public static bool IsOriginSenderComponent(BlockType blockType) {
-      return (
-        blockType == BlockType.XSecondTimer ||
-        blockType == BlockType.Switch ||
-        blockType == BlockType.Lever ||
-        blockType == BlockType.PressurePlate ||
-        blockType == BlockType.GrandfatherClock ||
-        blockType == BlockType.DoorOpened ||
-        blockType == BlockType.DoorClosed ||
-        blockType == BlockType.TallGateClosed ||
-        blockType == BlockType.TallGateOpen ||
-        blockType == BlockType.TrapdoorClosed ||
-        blockType == BlockType.TrapdoorOpen
-      );
+    private static readonly HashSet<int> senderComponents = new HashSet<int> {
+      TileID.Timers,
+      TileID.Switches,
+      TileID.Lever,
+      TileID.PressurePlates,
+      TileID.GrandfatherClocks,
+      TileID.OpenDoor,
+      TileID.ClosedDoor,
+      TileID.TallGateClosed,
+      TileID.TallGateOpen,
+      TileID.TrapdoorClosed,
+      TileID.TrapdoorOpen,
+    };
+    public static bool IsOriginSenderComponent(int blockType) {
+      return AdvancedCircuits.senderComponents.Contains(blockType);
     }
 
-    public static string GetComponentName(BlockType blockType) {
+    public static string GetComponentName(int blockType) {
       switch (blockType) {
         case AdvancedCircuits.BlockType_ORGate:
           return "OR-Gate";
@@ -173,7 +196,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         case AdvancedCircuits.BlockType_WirelessTransmitter:
           return "Wireless Transmitter";
         default:
-          return TerrariaUtils.Tiles.GetBlockTypeName(blockType);
+          return TerrariaUtils.Tiles.GetBlockTypeName(blockType, 0);
       }
     }
 
@@ -195,7 +218,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public static IEnumerable<DPoint> EnumerateComponentPortLocations(ObjectMeasureData measureData) {
       DPoint componentOriginLocation = measureData.OriginTileLocation;
       DPoint componentSize = measureData.Size;
-      if (measureData.BlockType == BlockType.DoorOpened)
+      if (measureData.BlockType == TileID.OpenDoor)
         componentSize = new DPoint(1, 3);
 
       return AdvancedCircuits.EnumerateComponentPortLocations(componentOriginLocation, componentSize);
@@ -204,9 +227,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public static DPoint GetPortAdjacentComponentTileLocation(ObjectMeasureData measureData, DPoint portLocation) {
       DPoint origin = measureData.OriginTileLocation;
       DPoint size = measureData.Size;
-      if (measureData.BlockType == BlockType.DoorOpened)
+      if (measureData.BlockType == TileID.OpenDoor)
         size = new DPoint(1, 3);
-      else if (measureData.BlockType == BlockType.TrapdoorOpen)
+      else if (measureData.BlockType == TileID.TrapdoorOpen)
         size = new DPoint(2, 2);
 
       if (portLocation.X < origin.X)
@@ -277,13 +300,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (direction == Direction.Down)
         return Direction.Up;
 
-      throw new ArgumentException("The given direction can not be inverted because it is invalid.", "direction");
+      throw new ArgumentException("The given direction can not be inverted because it is invalid.", nameof(direction));
     }
 
     public static int MeasureTimerFrameTime(DPoint timerLocation) {
       Tile timerTile = TerrariaUtils.Tiles[timerLocation];
-      if (!timerTile.active() || timerTile.type != (int)BlockType.XSecondTimer)
-        throw new ArgumentException("The tile is not active or no timer.", "timerLocation");
+      if (!timerTile.active() || timerTile.type != TileID.Timers)
+        throw new ArgumentException("The tile is not active or no timer.", nameof(timerLocation));
 
       int frames = -1;
       switch (TerrariaUtils.Tiles[timerLocation].frameX) {
@@ -336,7 +359,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public static IEnumerable<WireColor> EnumerateWireColors() {
-      for (int colorIndex = 1; colorIndex <= 3; colorIndex++)
+      for (int colorIndex = 1; colorIndex <= 4; colorIndex++)
         yield return (WireColor)colorIndex;
     } 
   }

@@ -68,7 +68,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           ActiveTimerMetadata timerMetadata = activeTimer.Value;
 
           Tile timerTile = TerrariaUtils.Tiles[timerLocation];
-          if (timerMetadata == null || !timerTile.active() || timerTile.type != (int)BlockType.XSecondTimer) {
+          if (timerMetadata == null || !timerTile.active() || timerTile.type != TileID.Timers) {
             if (timersToDelete == null)
               timersToDelete = new List<DPoint>();
 
@@ -137,7 +137,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             DPoint clockLocation = clock.Key;
             Tile clockTile = TerrariaUtils.Tiles[clockLocation];
 
-            if (!clockTile.active() || clockTile.type != (int)BlockType.GrandfatherClock) {
+            if (!clockTile.active() || clockTile.type != TileID.GrandfatherClocks) {
               if (clocksToRemove == null)
                 clocksToRemove = new List<DPoint>();
 
@@ -208,12 +208,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public bool HandleHitSwitch(TSPlayer player, DPoint tileLocation) {
       Tile tile = TerrariaUtils.Tiles[tileLocation];
       if (
-        tile.type == (int)BlockType.PressurePlate &&
+        tile.type == TileID.PressurePlates &&
         TerrariaUtils.Tiles.GetPressurePlateKind(tile.frameY / 18) == PressurePlateKind.TriggeredByNpcsEnemies
       )
         return true;
 
-      if (tile.type == (int)BlockType.XSecondTimer) {
+      if (tile.type == TileID.Timers) {
         ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(tileLocation);
         bool isActive = TerrariaUtils.Tiles.ObjectHasActiveState(measureData);
 
@@ -225,7 +225,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         } catch (Exception ex) {
           this.PluginTrace.WriteLineError(
             "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
-            TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[tileLocation].type), tileLocation, ex.ToString()
+            TerrariaUtils.Tiles.GetBlockTypeName(TerrariaUtils.Tiles[tileLocation]), tileLocation, ex.ToString()
           );
         }
       }
@@ -238,14 +238,12 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       TSPlayer player, DPoint tileLocation, DoorAction action, NPC npc = null, Direction direction = Direction.Unknown
     ) {
       try {
-        bool isOpening = false;
-        if (action == DoorAction.OpenDoor || action == DoorAction.OpenTallGate || action == DoorAction.OpenTrapdoor)
-          isOpening = true;
+        bool isOpening = (action == DoorAction.OpenDoor || action == DoorAction.OpenTallGate || action == DoorAction.OpenTrapdoor);
         this.ProcessCircuit(player, tileLocation, AdvancedCircuits.BoolToSignal(isOpening), false);
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
           "DoorUse for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
-          TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[tileLocation].type), tileLocation, ex.ToString()
+          TerrariaUtils.Tiles.GetBlockTypeName(TerrariaUtils.Tiles[tileLocation]), tileLocation, ex.ToString()
         );
       }
 
@@ -280,12 +278,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       } else if (size == 5) {
         int y = tileLocation.Y + 2;
         for (int x = tileLocation.X + 1; x < tileLocation.X + 4; x++) {
+          Tile tile = TerrariaUtils.Tiles[x, y];
           if (
-            TerrariaUtils.Tiles[x, y].active() && (
-              TerrariaUtils.Tiles[x, y].type == (int)BlockType.DoorOpened ||
-              TerrariaUtils.Tiles[x, y].type == (int)BlockType.DoorClosed ||
-              TerrariaUtils.Tiles[x, y].type == (int)BlockType.TrapdoorClosed ||
-              TerrariaUtils.Tiles[x, y].type == (int)BlockType.TrapdoorOpen
+            tile.active() && (
+              tile.type == TileID.OpenDoor ||
+              tile.type == TileID.ClosedDoor ||
+              tile.type == TileID.TrapdoorClosed ||
+              tile.type == TileID.TrapdoorOpen
             )
           )
             return true;
@@ -305,7 +304,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       } catch (Exception ex) {
         this.PluginTrace.WriteLineError(
           "HitSwitch for \"{0}\" at {1} failed. See inner exception for details.\n{2}", 
-          TerrariaUtils.Tiles.GetBlockTypeName((BlockType)TerrariaUtils.Tiles[tileLocation].type), tileLocation, ex.ToString()
+          TerrariaUtils.Tiles.GetBlockTypeName(TerrariaUtils.Tiles[tileLocation]), tileLocation, ex.ToString()
         );
       }
 
@@ -356,7 +355,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           player.SendErrorMessage(string.Format("{0} wires.", this.Config.MaxCircuitLength));
           break;
         case CircuitCancellationReason.SignaledSameComponentTooOften:
-          if (result.CancellationRelatedComponentType == BlockType.Invalid) {
+          if (result.CancellationRelatedComponentType == -1) {
             player.SendErrorMessage("Error: Circuit processing cancelled because a component was signaled too often.");
           } else {
             player.SendErrorMessage("Error: Circuit processing cancelled because the component");
