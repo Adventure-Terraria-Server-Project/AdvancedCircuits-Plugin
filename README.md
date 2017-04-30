@@ -48,3 +48,7 @@ To get more information about a command type `/<command> help` ingame.
 * **ac.passivetrigger.sign** - to passively trigger signs.
 
 Aswell as self defined permissions in the configuration file.
+
+### Credits
+
+Icon made by [freepik](http://www.freepik.com/)
