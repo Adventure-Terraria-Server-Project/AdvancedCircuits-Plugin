@@ -24,7 +24,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;Verbose</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Debug\Advanced Circuits Plugin.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
@@ -183,11 +183,11 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="OTAPI">
       <HintPath>..\TShock\TerrariaServerAPI\TerrariaServerAPI\bin\Debug\OTAPI.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -249,7 +249,9 @@
     <Folder Include="Implementation\Test\Test Data\World Data\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CONTRIBUTING.md" />
     <None Include="packages.config" />
+    <None Include="publish.ps1" />
     <None Include="README.md" />
     <None Include="tshock\Advanced Circuits\Config.xsd">
       <SubType>Designer</SubType>
@@ -261,7 +263,7 @@
     <ProjectReference Include="..\SignCommands\SignCommands\SignCommands.csproj">
       <Project>{ac6a21c4-6efb-414b-bce3-6b8f99f65165}</Project>
       <Name>SignCommands</Name>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Plugin Common Library\Plugin Common Library.csproj">
       <Project>{1d38e0cf-bf13-4229-860f-3809f39f0892}</Project>
@@ -271,17 +273,17 @@
     <ProjectReference Include="..\Protector\Protector.csproj">
       <Project>{2c69c30b-4fc7-4edf-b9e6-e3b6441f0e84}</Project>
       <Name>Protector</Name>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\TShock\TerrariaServerAPI\TerrariaServerAPI\TerrariaServerAPI.csproj">
       <Project>{6877506e-adc6-4142-98a6-79e4fa02855a}</Project>
       <Name>TerrariaServerAPI</Name>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\TShock\TShockAPI\TShockAPI.csproj">
       <Project>{49606449-072b-4cf5-8088-aa49da586694}</Project>
       <Name>TShockAPI</Name>
-      <Private>False</Private>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
