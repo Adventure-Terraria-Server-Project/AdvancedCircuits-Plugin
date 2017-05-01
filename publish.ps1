@@ -58,6 +58,7 @@ $targetName = "Advanced Circuits"
 $projectFile = "$PSScriptRoot\$targetName.csproj"
 $commitMessageFormat = "chore(version): tick plugin version {0}"
 $tagNameFormat = "release {0} for Terraria {1} (API {2})"
+$outZipFileNameFormat = "AdvancedCircuits_{0}_API_{2}.zip"
 
 $gitHubUser = "CoderCow"
 $gitHubRepoOwner = "CoderCow"
@@ -90,7 +91,7 @@ function Main {
   $outChangelogFile = "$outDir\changelog.md"
   Generate-Changelog $pluginApiVersion $tshockVersion $terrariaVersion $outChangelogFile
 
-  $outZipFile = "$outDir\$targetName $releaseVersion (Terraria $terrariaVersion, API $pluginApiVersion).zip"
+  $outZipFile = "$outDir\" + ($outZipFileNameFormat -f $releaseVersion,$terrariaVersion,$pluginApiVersion)
   Package-Files $outZipFile
 
   Create-Commit $releaseVersion $terrariaVersion $pluginApiVersion
