@@ -11,6 +11,8 @@ Several configuration settings give the server's owner control of wiring limits 
 
 To learn more about how to use Advanced Circuits, have a look on this more or less up-to-date guide [here](https://docs.google.com/document/d/16bM21SvoxrumdX1ZUnVoutRlK8w8QWEtqLnCJ96Piak) or the older guide in the wiki.
 
+Note that this plugin doesn't support all vanilla Terraria wiring features. It doesn't currently work with Terraria's logic gates and some other objects.
+
 ### How to Install
 
 Note: This plugin requires [TerrariaAPI-Server](https://github.com/NyxStudios/TerrariaAPI-Server) and [TShock](https://github.com/NyxStudios/TShock) in order to work. You can't use this with a vanilla Terraria server.

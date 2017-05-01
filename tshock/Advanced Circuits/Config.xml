@@ -12,10 +12,10 @@
   Version="1.3"
 >
   <!-- 
-    Sets whether usual Terraria circuits are overriden by this plugin to extend / limit their functionalities as configured
-    below.
+    Sets whether usual Terraria circuits are overriden by this plugin to extend / limit their functionalities as configured below.
+    NOTE: AC doesn't support all of the Terraria wiring features, so enabling this will greatly limit the wiring capabilities on your server. It's therefore not recommended to enable this feature in this version of AC.
   -->
-  <OverrideVanillaCircuits>1</OverrideVanillaCircuits>
+  <OverrideVanillaCircuits>0</OverrideVanillaCircuits>
 
   <!--
     Sets whether Advanced Circuits can be executed at all.
