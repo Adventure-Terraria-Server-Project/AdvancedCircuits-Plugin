@@ -273,7 +273,7 @@
     <ProjectReference Include="..\Protector\Protector.csproj">
       <Project>{2c69c30b-4fc7-4edf-b9e6-e3b6441f0e84}</Project>
       <Name>Protector</Name>
-      <Private>True</Private>
+      <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\TShock\TerrariaServerAPI\TerrariaServerAPI\TerrariaServerAPI.csproj">
       <Project>{6877506e-adc6-4142-98a6-79e4fa02855a}</Project>
