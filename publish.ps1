@@ -46,6 +46,7 @@
 
 $ErrorActionPreference = "Stop"
 
+$outDir = "$PSScriptRoot\bin\Release"
 $assemblyInfoPath = "$PSScriptRoot\Properties\AssemblyInfo.cs"
 # the *.cs file which contains the main plugin class annontated with the ApiVersion attribute
 $pluginSourceFilePath = "$PSScriptRoot\Implementation\AdvancedCircuitsPlugin.cs"
@@ -53,7 +54,6 @@ $pluginSourceFilePath = "$PSScriptRoot\Implementation\AdvancedCircuitsPlugin.cs"
 $tshockBinaryPath = "$outDir\TShockAPI.dll"
 # the OTAPI binary is used to determine the Terraria version this plugin was built against
 $otapiBinaryPath = "$outDir\OTAPI.dll"
-$outDir = "$PSScriptRoot\bin\Release"
 $targetName = "Advanced Circuits"
 $projectFile = "$PSScriptRoot\$targetName.csproj"
 $commitMessageFormat = "chore(version): tick plugin version {0}"
