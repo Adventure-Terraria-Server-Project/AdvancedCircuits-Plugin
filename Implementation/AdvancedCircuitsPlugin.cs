@@ -32,24 +32,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endif
 
     public static AdvancedCircuitsPlugin LatestInstance { get; private set; }
-
-    public static string AdvancedCircuitsDataDirectory {
-      get {
-        return Path.Combine(TShock.SavePath, "Advanced Circuits");
-      }
-    }
-
-    public static string ConfigFilePath {
-      get {
-        return Path.Combine(AdvancedCircuitsPlugin.AdvancedCircuitsDataDirectory, "Config.xml");
-      }
-    }
-
-    public static string WorldMetadataDirectory {
-      get {
-        return Path.Combine(AdvancedCircuitsPlugin.AdvancedCircuitsDataDirectory, "World Data");
-      }
-    }
+    public static string AdvancedCircuitsDataDirectory => Path.Combine(TShock.SavePath, "Advanced Circuits");
+    public static string ConfigFilePath => Path.Combine(AdvancedCircuitsPlugin.AdvancedCircuitsDataDirectory, "Config.xml");
+    public static string WorldMetadataDirectory => Path.Combine(AdvancedCircuitsPlugin.AdvancedCircuitsDataDirectory, "World Data");
 
     public PluginTrace Trace { get; private set; }
     protected PluginInfo PluginInfo { get; private set; }
@@ -341,29 +326,15 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     #endregion
 
     #region [TerrariaPlugin Overrides]
-    public override string Name {
-      get { return this.PluginInfo.PluginName; }
-    }
-
-    public override Version Version {
-      get { return this.PluginInfo.VersionNumber; }
-    }
-
-    public override string Author {
-      get { return this.PluginInfo.Author; }
-    }
-
-    public override string Description {
-      get { return this.PluginInfo.Description; }
-    }
+    public override string Name => this.PluginInfo.PluginName;
+    public override Version Version => this.PluginInfo.VersionNumber;
+    public override string Author => this.PluginInfo.Author;
+    public override string Description => this.PluginInfo.Description;
     #endregion
 
     #region [IDisposable Implementation]
     private bool isDisposed;
-
-    public bool IsDisposed {
-      get { return this.isDisposed; } 
-    }
+    public bool IsDisposed => this.isDisposed;
 
     protected override void Dispose(bool isDisposing) {
       if (this.IsDisposed)
