@@ -17,7 +17,7 @@ Note that this plugin doesn't support all vanilla Terraria wiring features. It d
 
 Note: This plugin requires [TerrariaAPI-Server](https://github.com/NyxStudios/TerrariaAPI-Server) and [TShock](https://github.com/NyxStudios/TShock) in order to work. You can't use this with a vanilla Terraria server.
 
-Grab the latest release from [bin/Release](https://github.com/CoderCow/AdvancedCircuits-Plugin/tree/master/bin/Release) and put the _.dll_ files into your server's _ServerPlugins_ directory. Also put the contents of the _tshock/_ folder into your server's _tshock_ folder. You may change the configuration options to your needs by editing the _tshock/Advanced Circuits/Config.xml_ file.
+Grab the latest release and put the _.dll_ files into your server's _ServerPlugins_ directory. Also put the contents of the _tshock/_ folder into your server's _tshock_ folder. You may change the configuration options to your needs by editing the _tshock/Advanced Circuits/Config.xml_ file.
 
 ### Plugin Compatibility
 
