@@ -178,6 +178,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       this.GetDataHookHandler.DoorUse += this.Net_DoorUse;
       this.GetDataHookHandler.SendTileSquare += this.Net_SendTileSquare;
       this.GetDataHookHandler.ObjectPlacement += this.Net_ObjectPlacement;
+      this.GetDataHookHandler.MassWireOperation += this.Net_MassWireOperation;
 
       ServerApi.Hooks.NetSendData.Register(this, this.Net_SendData);
       ServerApi.Hooks.GameUpdate.Register(this, this.Game_Update);
@@ -265,6 +266,13 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       e.Handled = this.CircuitHandler.HandleSendTileSquare(e.Player, e.Location, e.Size);
     }
 
+    private void Net_MassWireOperation(object sender, MassWireOperationEventArgs e) {
+      if (this.isDisposed || !this.hooksEnabled || e.Handled)
+        return;
+
+      e.Handled = this.UserInteractionHandler.HandleMassWireOperation(e.Player, e);
+    }
+
     private void Npc_TriggerPressurePlate(TriggerPressurePlateEventArgs<NPC> e) {
       if (this.isDisposed || !this.hooksEnabled || e.Handled)
         return;
@@ -288,7 +296,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.CircuitHandler != null)
         e.Handled = this.CircuitHandler.HandleTriggerPressurePlate(TSPlayer.Server, new DPoint(e.TileX, e.TileY), true);
     }
-
+    
     private void Net_SendData(SendDataEventArgs e) {
       if (this.isDisposed || !this.hooksEnabled)
         return;

@@ -9,6 +9,7 @@ using DPoint = System.Drawing.Point;
 using TShockAPI;
 
 using Terraria.Plugins.Common;
+using Terraria.Plugins.Common.Hooks;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
   public class UserInteractionHandler: UserInteractionHandlerBase, IDisposable {
@@ -536,6 +537,18 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       return false;
     }
 
+    public bool HandleMassWireOperation(TSPlayer player, MassWireOperationEventArgs e) {
+      if (this.IsDisposed)
+        return false;
+
+      var wireLocations = TShock.Utils.GetMassWireOperationRange(e.StartLocation.ToXnaPoint(), e.EndLocation.ToXnaPoint(), e.Player.TPlayer.direction == 1);
+      foreach (Point wireLocation in wireLocations)
+        if (this.HandleWirePlace(player, new DPoint(wireLocation.X, wireLocation.Y)))
+          return true;
+
+      return false;
+    }
+
     private bool HandleWirePlace(TSPlayer player, DPoint location) {
       if (this.IsDisposed)
         return false;
@@ -571,7 +584,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             if (!hasPermission) {
               this.TellNoStatueWiringPermission(player, statueStyle);
               player.SendTileSquare(location, 1);
-              Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, ItemID.Wire);
 
               return true;
             }
@@ -623,8 +635,6 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           this.TellMissingComponentWiringPermission(player, tile.type);
           
           player.SendTileSquare(location, 1);
-          Item.NewItem(location.X * TerrariaUtils.TileSize, location.Y * TerrariaUtils.TileSize, 0, 0, ItemID.Wire);
-
           return true;
         }
       }

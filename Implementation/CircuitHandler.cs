@@ -9,6 +9,7 @@ using DPoint = System.Drawing.Point;
 using TShockAPI;
 
 using Terraria.Plugins.Common;
+using Terraria.Plugins.Common.Hooks;
 using TerrariaApi.Server;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
