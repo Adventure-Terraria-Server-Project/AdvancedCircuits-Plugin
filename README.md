@@ -5,9 +5,9 @@ Advanced Circuits Plugin
 
 Advanced Circuits is the long awaited revolution of the Terraria wiring mechanism, adding a completely rewritten and extended wiring engine to TerrariaAPI and TShock driven Terraria servers.
 
-Beside keeping and extending Terraria's Vanilla Circuits and components, a new type of circuit is added called "Advanced Circuit" giving players the freedom of building complex systems using binary logic and new types of components.
+Beside keeping and extending Terraria's vanilla circuits and components, a new type of circuit is added called "advanced circuit" giving players the freedom of building complex systems using two state signals with binary logic and new types of components.
 
-Several configuration settings give the server's owner control of wiring limits and capabilities. This also includes a mighty configuration mechanism of Statues and their performed actions when powered.
+Several configuration settings allow you to get the most out of this plugin. This includes a mighty configuration mechanism of statues and traps and their performed actions when powered.
 
 To learn more about how to use Advanced Circuits, have a look on this more or less up-to-date guide [here](https://docs.google.com/document/d/16bM21SvoxrumdX1ZUnVoutRlK8w8QWEtqLnCJ96Piak) or the older guide in the wiki.
 
