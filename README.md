@@ -13,6 +13,8 @@ To learn more about how to use Advanced Circuits, have a look on this more or le
 
 Note that this plugin doesn't support all vanilla Terraria wiring features. It doesn't currently work with Terraria's logic gates and some other objects.
 
+Releases of this plugin use [Semantic Versioning](http://semver.org/).
+
 ### How to Install
 
 Note: This plugin requires [TerrariaAPI-Server](https://github.com/NyxStudios/TerrariaAPI-Server) and [TShock](https://github.com/NyxStudios/TShock) in order to work. You can't use this with a vanilla Terraria server.
