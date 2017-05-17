@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using Microsoft.Xna.Framework;
+using OTAPI.Tile;
 using Terraria.ID;
 using DPoint = System.Drawing.Point;
 
@@ -148,7 +149,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               editType != TileEditType.PlaceActuator
             ) {
               CommandInteractionResult result = new CommandInteractionResult { IsHandled = true, IsInteractionCompleted = true };
-              Tile tile = TerrariaUtils.Tiles[location];
+              ITile tile = TerrariaUtils.Tiles[location];
 
               if (
                 TShock.CheckTilePermission(args.Player, location.X, location.Y) || (
@@ -212,7 +213,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
                 List<DPoint> gatePortLocations = new List<DPoint>(AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1)));
                 for (int i = 0; i < 4; i++) {
-                  Tile gatePort = TerrariaUtils.Tiles[gatePortLocations[i]];
+                  ITile gatePort = TerrariaUtils.Tiles[gatePortLocations[i]];
                   if (!gatePort.active() || gatePort.type != (int)AdvancedCircuits.BlockType_InputPort)
                     continue;
 
@@ -231,7 +232,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 args.Player.SendTileSquare(location);
               } else if (tile.active() && tile.type == (int)AdvancedCircuits.BlockType_InputPort) {
                 foreach (DPoint adjacentTileLocation in AdvancedCircuits.EnumerateComponentPortLocations(location, new DPoint(1, 1))) {
-                  Tile adjacentTile = TerrariaUtils.Tiles[adjacentTileLocation];
+                  ITile adjacentTile = TerrariaUtils.Tiles[adjacentTileLocation];
                   if (!adjacentTile.active() || !AdvancedCircuits.IsLogicalGate(adjacentTile.type))
                     continue;
 
@@ -351,7 +352,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.IsDisposed)
         return false;
       
-      Tile componentTile = TerrariaUtils.Tiles[location];
+      ITile componentTile = TerrariaUtils.Tiles[location];
       int objectStyle;
       if (componentTile.type == TileID.Statues)
         objectStyle = componentTile.frameX / 36;
@@ -392,7 +393,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           break;
         }
         case TileID.Traps: {
-          Tile destTile = TerrariaUtils.Tiles[location];
+          ITile destTile = TerrariaUtils.Tiles[location];
           if (!destTile.HasWire())
             break;
           TrapConfig trapConfig;
@@ -562,7 +563,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       };
 
       foreach (DPoint tileToCheck in tilesToCheck) {
-        Tile tile = TerrariaUtils.Tiles[tileToCheck];
+        ITile tile = TerrariaUtils.Tiles[tileToCheck];
         if (!tile.active())
           continue;
         if (tileToCheck != location && tile.type != AdvancedCircuits.BlockType_WirelessTransmitter)

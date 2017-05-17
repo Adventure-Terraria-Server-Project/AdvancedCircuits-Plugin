@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using OTAPI.Tile;
 using Terraria.ID;
 using Terraria.Localization;
 using DPoint = System.Drawing.Point;
@@ -68,7 +69,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           DPoint timerLocation = activeTimer.Key;
           ActiveTimerMetadata timerMetadata = activeTimer.Value;
 
-          Tile timerTile = TerrariaUtils.Tiles[timerLocation];
+          ITile timerTile = TerrariaUtils.Tiles[timerLocation];
           if (timerMetadata == null || !timerTile.active() || timerTile.type != TileID.Timers) {
             if (timersToDelete == null)
               timersToDelete = new List<DPoint>();
@@ -136,7 +137,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
           foreach (KeyValuePair<DPoint,GrandfatherClockMetadata> clock in this.WorldMetadata.Clocks) {
             DPoint clockLocation = clock.Key;
-            Tile clockTile = TerrariaUtils.Tiles[clockLocation];
+            ITile clockTile = TerrariaUtils.Tiles[clockLocation];
 
             if (!clockTile.active() || clockTile.type != TileID.GrandfatherClocks) {
               if (clocksToRemove == null)
@@ -207,7 +208,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public bool HandleHitSwitch(TSPlayer player, DPoint tileLocation) {
-      Tile tile = TerrariaUtils.Tiles[tileLocation];
+      ITile tile = TerrariaUtils.Tiles[tileLocation];
       if (
         tile.type == TileID.PressurePlates &&
         TerrariaUtils.Tiles.GetPressurePlateKind(tile.frameY / 18) == PressurePlateKind.TriggeredByNpcsEnemies
@@ -255,7 +256,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (e.MsgId == PacketTypes.TileSendSquare && e.number == 1) {
         DPoint tileLocation = new DPoint((int)e.number2, (int)e.number3);
         if (TerrariaUtils.Tiles.IsValidCoord(tileLocation)) {
-          Tile tile = TerrariaUtils.Tiles[tileLocation];
+          ITile tile = TerrariaUtils.Tiles[tileLocation];
           if (tile.type == TileID.LogicSensor && !tile.HasWire())
             this.ProcessCircuit(TSPlayer.Server, tileLocation, null, false);
         }
@@ -266,7 +267,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
     public bool HandleSendTileSquare(TSPlayer player, DPoint tileLocation, int size) {
       if (size == 1) {
-        Tile tile = TerrariaUtils.Tiles[tileLocation];
+        ITile tile = TerrariaUtils.Tiles[tileLocation];
         if (tile.type == TileID.LogicSensor) {
           Console.WriteLine(tile.type);
         }
@@ -279,7 +280,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       } else if (size == 5) {
         int y = tileLocation.Y + 2;
         for (int x = tileLocation.X + 1; x < tileLocation.X + 4; x++) {
-          Tile tile = TerrariaUtils.Tiles[x, y];
+          ITile tile = TerrariaUtils.Tiles[x, y];
           if (
             tile.active() && (
               tile.type == TileID.OpenDoor ||

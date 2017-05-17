@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using OTAPI.Tile;
 using Terraria.ID;
 using DPoint = System.Drawing.Point;
 
@@ -304,7 +305,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     public static int MeasureTimerFrameTime(DPoint timerLocation) {
-      Tile timerTile = TerrariaUtils.Tiles[timerLocation];
+      ITile timerTile = TerrariaUtils.Tiles[timerLocation];
       if (!timerTile.active() || timerTile.type != TileID.Timers)
         throw new ArgumentException("The tile is not active or no timer.", nameof(timerLocation));
 

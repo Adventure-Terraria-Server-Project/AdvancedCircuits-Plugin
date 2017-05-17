@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using OTAPI.Tile;
 using Terraria.ID;
 using DPoint = System.Drawing.Point;
 
@@ -163,7 +164,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     }
 
     private static ObjectMeasureData CircuitProcessorCtor_MeasureSender(DPoint senderLocation) {
-      Tile senderTile = TerrariaUtils.Tiles[senderLocation];
+      ITile senderTile = TerrariaUtils.Tiles[senderLocation];
       if (!senderTile.active())
         throw new ArgumentException("No tile at the given sender location.", "senderLocation");
 
@@ -300,7 +301,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         }
 
         foreach (DPoint portLocation in AdvancedCircuits.EnumerateComponentPortLocations(this.SenderMeasureData)) {
-          Tile portTile = TerrariaUtils.Tiles[portLocation];
+          ITile portTile = TerrariaUtils.Tiles[portLocation];
           if (!portTile.HasWire())
             continue;
 
@@ -360,7 +361,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.IsCancellationPending)
         return;
 
-      Tile startTile = TerrariaUtils.Tiles[rootBranch.FirstWireLocation];
+      ITile startTile = TerrariaUtils.Tiles[rootBranch.FirstWireLocation];
       if (
         !startTile.HasWire(rootBranch.WireColor) || (
           this.IsAdvancedCircuit && 
@@ -378,7 +379,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       {
         DPoint previousTileLocation = DPoint.Empty;
         DPoint currentTileLocation = rootBranch.FirstWireLocation;
-        Tile currentTile = TerrariaUtils.Tiles[currentTileLocation];
+        ITile currentTile = TerrariaUtils.Tiles[currentTileLocation];
         while (currentTile.HasWire(rootBranch.WireColor) && !this.IsCancellationPending) {
           this.ProcessTile(rootBranch, currentTileLocation, previousTileLocation, signal);
 
@@ -392,8 +393,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             adjacentTileLocation2 = new DPoint(currentTileLocation.X - 1, currentTileLocation.Y);
           }
 
-          Tile adjacentTile1 = TerrariaUtils.Tiles[adjacentTileLocation1];
-          Tile adjacentTile2 = TerrariaUtils.Tiles[adjacentTileLocation2];
+          ITile adjacentTile1 = TerrariaUtils.Tiles[adjacentTileLocation1];
+          ITile adjacentTile2 = TerrariaUtils.Tiles[adjacentTileLocation2];
           if (adjacentTile1.HasWire(rootBranch.WireColor))
             subBranches.Add(new BranchProcessData(currentTileLocation, adjacentTileLocation1, signal));
           else
@@ -437,7 +438,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
         DPoint previousTileLocation = currentBranch.BranchingTileLocation;
         DPoint currentTileLocation = currentBranch.FirstWireLocation;
-        Tile currentTile = TerrariaUtils.Tiles[currentTileLocation];
+        ITile currentTile = TerrariaUtils.Tiles[currentTileLocation];
         while (currentTile.HasWire(rootBranch.WireColor) && !this.IsCancellationPending) {
           bool alreadyProcessed = false;
           for (int i = 0; i < processedSubBranches.Count; i++) {
@@ -459,8 +460,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             adjacentTileLocation2 = new DPoint(currentTileLocation.X - 1, currentTileLocation.Y);
           }
 
-          Tile adjacentTile1 = TerrariaUtils.Tiles[adjacentTileLocation1];
-          Tile adjacentTile2 = TerrariaUtils.Tiles[adjacentTileLocation2];
+          ITile adjacentTile1 = TerrariaUtils.Tiles[adjacentTileLocation1];
+          ITile adjacentTile2 = TerrariaUtils.Tiles[adjacentTileLocation2];
           if (adjacentTile1.HasWire(rootBranch.WireColor)) {
             alreadyProcessed = false;
             for (int i = 0; i < processedSubBranches.Count; i++) {
@@ -539,7 +540,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (this.IsCancellationPending)
         return;
 
-      Tile tile = TerrariaUtils.Tiles[tileLocation];
+      ITile tile = TerrariaUtils.Tiles[tileLocation];
 
       // If the tile has no wire it might be an AC-Component and thus the adjacent tile would be its port.
       if (!tile.HasWire(rootBranch.WireColor) && tile.active()) {
@@ -631,9 +632,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
         // Block Activator tile activation / deactivation.
         if (rootBranch.BlockActivator != null) {
-          Tile blockActivatorTile = TerrariaUtils.Tiles[rootBranch.BlockActivatorLocation];
+          ITile blockActivatorTile = TerrariaUtils.Tiles[rootBranch.BlockActivatorLocation];
           if (tile.wall == blockActivatorTile.wall) {
-            Tile tileAbove = TerrariaUtils.Tiles[tileLocation.OffsetEx(0, -1)];
+            ITile tileAbove = TerrariaUtils.Tiles[tileLocation.OffsetEx(0, -1)];
             if (!tileAbove.active() || tileAbove.type != TileID.Containers || tileAbove.type != TileID.Containers2) {
               if (
                 signal == SignalType.Off && tile.active() && AdvancedCircuits.IsCustomActivatableBlock(tile.type)
@@ -726,7 +727,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             pumpConfig = this.CircuitHandler.Config.PumpConfigs[PaintColor.None];
 
           bool hasLiquid = false;
-          foreach (Tile pumpTile in TerrariaUtils.Tiles.EnumerateObjectTiles(measureData)) {
+          foreach (ITile pumpTile in TerrariaUtils.Tiles.EnumerateObjectTiles(measureData)) {
             if (pumpTile.liquid > 0) {
               if (!transferWater.HasValue)
                 transferWater = !pumpTile.lava();
@@ -766,7 +767,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(outletPumpLocation);
 
             bool canOutput = false;
-            foreach (Tile pumpTile in TerrariaUtils.Tiles.EnumerateObjectTiles(measureData)) {
+            foreach (ITile pumpTile in TerrariaUtils.Tiles.EnumerateObjectTiles(measureData)) {
               if (pumpTile.liquid > 0 && transferWater.Value == pumpTile.lava())
                 continue;
               if (pumpTile.liquid == 255)
@@ -794,7 +795,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(inletPumpLocation);
 
                 foreach (DPoint pumpTileLocation in TerrariaUtils.Tiles.EnumerateObjectTileLocations(measureData)) {
-                  Tile pumpTile = TerrariaUtils.Tiles[pumpTileLocation];
+                  ITile pumpTile = TerrariaUtils.Tiles[pumpTileLocation];
                   if (pumpTile.liquid <= liquidToInput) {
                     liquidToInput -= pumpTile.liquid;
                     pumpTile.liquid = 0;
@@ -816,7 +817,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 for (int y = 1; y >= 0; y--) {
                   for (int x = 0; x < 2; x++) {
                     DPoint pumpTileLocation = new DPoint(outletPumpLocation.X + x, outletPumpLocation.Y + y);
-                    Tile pumpTile = TerrariaUtils.Tiles[pumpTileLocation];
+                    ITile pumpTile = TerrariaUtils.Tiles[pumpTileLocation];
                     if (pumpTile.liquid == 255)
                       continue;
 
@@ -953,7 +954,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             return false;
 
           TrapConfig trapConfig;
-          Tile componentTile = TerrariaUtils.Tiles[measureData.OriginTileLocation];
+          ITile componentTile = TerrariaUtils.Tiles[measureData.OriginTileLocation];
           PaintColor componentPaint = (PaintColor)componentTile.color();
           TrapStyle trapStyle = TerrariaUtils.Tiles.GetTrapStyle(componentTile.frameY / 18);
           TrapConfigKey configKey = new TrapConfigKey(trapStyle, componentPaint);
@@ -1418,8 +1419,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       if (!this.IsAdvancedCircuit)
         throw new InvalidOperationException("This is no advanced circuit.");
 
-      Tile portTile = TerrariaUtils.Tiles[portLocation];
-      Tile componentTile = TerrariaUtils.Tiles[measureData.OriginTileLocation];
+      ITile portTile = TerrariaUtils.Tiles[portLocation];
+      ITile componentTile = TerrariaUtils.Tiles[measureData.OriginTileLocation];
       if (!portTile.HasWire(rootBranch.WireColor) || componentTile.HasWire())
         return false;
 
@@ -1769,7 +1770,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               if (receivingTransmitterOwner != sendingTransmitterOwner)
                 continue;
 
-              Tile transmitterTile = TerrariaUtils.Tiles[receivingTransmitterLocation];
+              ITile transmitterTile = TerrariaUtils.Tiles[receivingTransmitterLocation];
               if (!transmitterTile.active() || transmitterTile.type != AdvancedCircuits.BlockType_WirelessTransmitter || transmitterTile.HasWire())
                 continue;
 
@@ -1783,7 +1784,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 continue;
 
               DPoint outputPortLocation = receivingTransmitterLocation.OffsetEx(portOffset.X, portOffset.Y);
-              Tile outputPortTile = TerrariaUtils.Tiles[outputPortLocation];
+              ITile outputPortTile = TerrariaUtils.Tiles[outputPortLocation];
               if (!outputPortTile.HasWire() || (outputPortTile.active() && outputPortTile.type == AdvancedCircuits.BlockType_InputPort))
                 continue;
 
