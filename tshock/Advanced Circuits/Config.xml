@@ -368,12 +368,12 @@
       <Cooldown>600</Cooldown>
 
       <Actions ProcessingMethod="ExecuteAll">
-        <SpawnNpcAction>
-          <NpcId>58</NpcId>
+        <SpawnItemAction>
+          <ItemId>58</ItemId>
           <Amount>1</Amount>
           <CheckRange>25</CheckRange>
           <CheckAmount>3</CheckAmount>
-        </SpawnNpcAction>
+        </SpawnItemAction>
       </Actions>
     </StatueConfig>
     <StatueConfig StatueType="King">
