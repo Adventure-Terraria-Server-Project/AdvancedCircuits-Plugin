@@ -325,7 +325,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         return this.HandleTilePlace(player, blockType, location, objectStyle);
       if (editType == TileEditType.TileKill || editType == TileEditType.TileKillNoItem)
         return this.HandleTileDestruction(player, location);
-      if (editType == TileEditType.PlaceWire || editType == TileEditType.PlaceWireBlue || editType == TileEditType.PlaceWireGreen)
+      if (editType == TileEditType.PlaceWire || editType == TileEditType.PlaceWireBlue || editType == TileEditType.PlaceWireGreen || editType == TileEditType.PlaceWireYellow)
         return this.HandleWirePlace(player, location);
 
       #if DEBUG || Testrun
