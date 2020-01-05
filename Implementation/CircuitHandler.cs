@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using OTAPI.Tile;
 using Terraria.ID;
 using Terraria.Localization;
@@ -29,10 +27,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
 
     public CircuitHandler(PluginTrace pluginTrace,Configuration config, WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler) {
-      Contract.Requires<ArgumentNullException>(pluginTrace != null);
-      Contract.Requires<ArgumentNullException>(config != null);
-      Contract.Requires<ArgumentNullException>(worldMetadata != null);
-      Contract.Requires<ArgumentNullException>(pluginCooperationHandler != null);
+      if (pluginTrace == null) throw new ArgumentNullException();
+      if (config == null) throw new ArgumentNullException();
+      if (worldMetadata == null) throw new ArgumentNullException();
+      if (pluginCooperationHandler == null) throw new ArgumentNullException();
 
       this.PluginTrace = pluginTrace;
       this.Config = config;

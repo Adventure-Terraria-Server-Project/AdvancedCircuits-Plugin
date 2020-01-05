@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Xml;
 
 namespace Terraria.Plugins.CoderCow.AdvancedCircuits {

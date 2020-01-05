@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using Microsoft.Xna.Framework;
 using OTAPI.Tile;
 using Terraria.ID;
@@ -25,11 +23,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       PluginTrace pluginTrace, PluginInfo pluginInfo, Configuration config, 
       WorldMetadata worldMetadata, PluginCooperationHandler pluginCooperationHandler, Action reloadConfigurationCallback
     ): base(pluginTrace) {
-      Contract.Requires<ArgumentNullException>(pluginTrace != null);
-      Contract.Requires<ArgumentNullException>(config != null);
-      Contract.Requires<ArgumentNullException>(worldMetadata != null);
-      Contract.Requires<ArgumentNullException>(pluginCooperationHandler != null);
-      Contract.Requires<ArgumentNullException>(reloadConfigurationCallback != null);
+      if (pluginTrace == null) throw new ArgumentNullException();
+      if (config == null) throw new ArgumentNullException();
+      if (worldMetadata == null) throw new ArgumentNullException();
+      if (pluginCooperationHandler == null) throw new ArgumentNullException();
+      if (reloadConfigurationCallback == null) throw new ArgumentNullException();
 
       this.PluginInfo = pluginInfo;
       this.Config = config;

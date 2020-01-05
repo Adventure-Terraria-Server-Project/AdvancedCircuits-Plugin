@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using DPoint = System.Drawing.Point;
 
 using SignCommands;
@@ -18,7 +16,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
 
     public PluginCooperationHandler(PluginTrace pluginTrace) {
-      Contract.Requires<ArgumentNullException>(pluginTrace != null);
+      if (pluginTrace == null) throw new ArgumentNullException();
 
       const string ProtectorSomeTypeQualifiedName = "Terraria.Plugins.CoderCow.Protector.ProtectorPlugin, Protector";
       const string SignCommandsSomeTypeQualifiedName = "SignCommands.ScSign, SignCommands";

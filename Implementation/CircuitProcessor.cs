@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using OTAPI.Tile;
@@ -125,8 +123,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     
 
     public CircuitProcessor(PluginTrace pluginTrace, CircuitHandler circuitHandler, ObjectMeasureData senderMeasureData) {
-      Contract.Requires<ArgumentNullException>(pluginTrace != null);
-      Contract.Requires<ArgumentNullException>(circuitHandler != null);
+      if (pluginTrace == null) throw new ArgumentNullException();
+      if (circuitHandler == null) throw new ArgumentNullException();
 
       this.PluginTrace = pluginTrace;
       this.CircuitHandler = circuitHandler;
@@ -159,8 +157,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     public CircuitProcessor(PluginTrace pluginTrace, CircuitHandler circuitHandler, DPoint senderLocation): this(
       pluginTrace, circuitHandler, CircuitProcessor.CircuitProcessorCtor_MeasureSender(senderLocation)
     ) {
-      Contract.Requires<ArgumentNullException>(pluginTrace != null);
-      Contract.Requires<ArgumentNullException>(circuitHandler != null);
+      if (pluginTrace == null) throw new ArgumentNullException();
+      if (circuitHandler == null) throw new ArgumentNullException();
     }
 
     private static ObjectMeasureData CircuitProcessorCtor_MeasureSender(DPoint senderLocation) {
@@ -743,7 +741,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             continue;
           }
 
-          Contract.Assert(transferWater.HasValue);
+          //Contract.Assert(transferWater.HasValue);
 
           int maxTransferableLiquid;
           if (transferWater.Value) 
@@ -758,7 +756,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           inputableLiquid = Math.Min(inputableLiquid, maxTransferableLiquid);
         }
         if (this.SignaledInletPumps.Count > 0) {
-          Contract.Assert(transferWater.HasValue);
+          //Contract.Assert(transferWater.HasValue);
 
           // Measure the outputable liquid.
           int outputableLiquid = 0;

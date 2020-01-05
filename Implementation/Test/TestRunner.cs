@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.IO;
 using DPoint = System.Drawing.Point;
 
@@ -41,9 +39,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits.Test {
     public TestRunner(
       PluginTrace pluginTrace, WorldMetadataHandler metadataHandler, PluginCooperationHandler cooperationHandler
     ): base(pluginTrace) {
-      Contract.Requires<ArgumentNullException>(pluginTrace != null);
-      Contract.Requires<ArgumentNullException>(metadataHandler != null);
-      Contract.Requires<ArgumentNullException>(cooperationHandler != null);
+      if (pluginTrace == null) throw new ArgumentNullException();
+      if (metadataHandler == null) throw new ArgumentNullException();
+      if (cooperationHandler == null) throw new ArgumentNullException();
 
       this.PluginTrace = pluginTrace;
       this.MetadataHandler = metadataHandler;
