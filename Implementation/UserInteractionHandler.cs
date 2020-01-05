@@ -152,11 +152,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
               ITile tile = TerrariaUtils.Tiles[location];
 
               if (
-                TShock.CheckTilePermission(args.Player, location.X, location.Y) || (
-                  this.PluginCooperationHandler.IsProtectorAvailable &&
-                  this.PluginCooperationHandler.Protector_CheckProtected(args.Player, location, false)
-                )
-              ) {
+                !args.Player.HasBuildPermission(location.X, location.Y) || (
+                this.PluginCooperationHandler.IsProtectorAvailable &&
+                this.PluginCooperationHandler.Protector_CheckProtected(args.Player, location, false)
+              )) {
                 player.SendErrorMessage("This object is protected.");
                 player.SendTileSquare(location, 1);
                 return result;
@@ -189,7 +188,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                 hitBlockType == AdvancedCircuits.BlockType_XORGate
               ) {
                 if (
-                  TShock.CheckTilePermission(args.Player, location.X, location.Y) || (
+                  !args.Player.HasBuildPermission(location.X, location.Y) || (
                   this.PluginCooperationHandler.IsProtectorAvailable &&
                   this.PluginCooperationHandler.Protector_CheckProtected(args.Player, location, false)
                 )) {
@@ -237,11 +236,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                     continue;
 
                   if (
-                    TShock.CheckTilePermission(args.Player, adjacentTileLocation.X, adjacentTileLocation.Y) || (
-                      this.PluginCooperationHandler.IsProtectorAvailable &&
-                      this.PluginCooperationHandler.Protector_CheckProtected(args.Player, adjacentTileLocation, false)
-                    )
-                  ) {
+                    !args.Player.HasBuildPermission(adjacentTileLocation.X, adjacentTileLocation.Y) || (
+                    this.PluginCooperationHandler.IsProtectorAvailable &&
+                    this.PluginCooperationHandler.Protector_CheckProtected(args.Player, adjacentTileLocation, false)
+                  )) {
                     player.SendErrorMessage("This gate is protected.");
                     player.SendTileSquare(location);
                     return result;
@@ -337,10 +335,10 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
         ObjectMeasureData measureData = TerrariaUtils.Tiles.MeasureObject(location);
         player.SendInfoMessage(string.Format(
-          "X: {0}, Y: {1}, FrameX: {2}, FrameY: {3}, Origin X: {4}, Origin Y: {5}, Active State: {6}", 
+          "X: {0}, Y: {1}, FrameX: {2}, FrameY: {3}, Origin X: {4}, Origin Y: {5}, Active State: {6} Paint:{7}", 
           location.X, location.Y, TerrariaUtils.Tiles[location].frameX, TerrariaUtils.Tiles[location].frameY,
           measureData.OriginTileLocation.X, measureData.OriginTileLocation.Y, 
-          TerrariaUtils.Tiles.ObjectHasActiveState(measureData)
+          TerrariaUtils.Tiles.ObjectHasActiveState(measureData), TerrariaUtils.Tiles[location].color()
         ));
       }
       #endif
@@ -368,7 +366,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
     private bool CheckTilePermission(TSPlayer player, DPoint location, int blockType, int objectStyle, PaintColor paint, bool dropItem = false) {
       switch (blockType) {
         case TileID.Statues: {
-          DPoint originTileLocation = new DPoint(location.X, location.Y - 2);
+          DPoint originTileLocation = new DPoint(location.X - 1, location.Y - 2);
           if (!TerrariaUtils.Tiles.IsObjectWired(originTileLocation, new DPoint(2, 3)))
             break;
           StatueStyle statueStyle = TerrariaUtils.Tiles.GetStatueStyle(objectStyle);
@@ -398,6 +396,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
             break;
           TrapConfig trapConfig;
           TrapStyle trapStyle = TerrariaUtils.Tiles.GetTrapStyle(destTile.frameY / 18);
+
           TrapConfigKey configKey = new TrapConfigKey(trapStyle, paint);
           if (!this.Config.TrapConfigs.TryGetValue(configKey, out trapConfig))
             break;
