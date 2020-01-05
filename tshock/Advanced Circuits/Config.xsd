@@ -140,6 +140,7 @@
                   <xs:all>
                     <xs:element name="TransferableWater" type="PumpLiquidAmount" />
                     <xs:element name="TransferableLava" type="PumpLiquidAmount" />
+                    <xs:element name="TransferableHoney" type="PumpLiquidAmount" />
                     <xs:element name="LossValue" type="PumpLiquidLossValue" />
                     <xs:element name="Cooldown" type="Cooldown" />
                     <xs:element name="TriggerPermission" type="xs:string" minOccurs="0" />

@@ -711,7 +711,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
       // Transfer Liquid
       if (this.SignaledInletPumps.Count > 0 && this.SignaledOutletPumps.Count > 0) {
         // The first liquid kind we encounter will be only liquid to be transfered.
-        bool? transferWater = null;
+        byte? transferLiquid = null;
 
         // Measure the inputable liquid.
         int inputableLiquid = 0;
@@ -727,9 +727,9 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           bool hasLiquid = false;
           foreach (ITile pumpTile in TerrariaUtils.Tiles.EnumerateObjectTiles(measureData)) {
             if (pumpTile.liquid > 0) {
-              if (!transferWater.HasValue)
-                transferWater = !pumpTile.lava();
-              if (transferWater.Value && pumpTile.lava())
+              if (!transferLiquid.HasValue)
+                transferLiquid = pumpTile.liquidType();
+              if (transferLiquid.Value != pumpTile.liquidType())
                 continue;
 
               hasLiquid = true;
@@ -744,10 +744,14 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           //Contract.Assert(transferWater.HasValue);
 
           int maxTransferableLiquid;
-          if (transferWater.Value) 
+          if (transferLiquid.Value == Tile.Liquid_Water) 
             maxTransferableLiquid = pumpConfig.TransferableWater;
-          else
+          else if (transferLiquid.Value == Tile.Liquid_Lava) 
             maxTransferableLiquid = pumpConfig.TransferableLava;
+          else if (transferLiquid.Value == Tile.Liquid_Honey) 
+            maxTransferableLiquid = pumpConfig.TransferableHoney;
+          else
+            maxTransferableLiquid = 0;
 
           totalLoss += pumpConfig.LossValue;
           if (totalLoss < 0)
@@ -766,7 +770,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
 
             bool canOutput = false;
             foreach (ITile pumpTile in TerrariaUtils.Tiles.EnumerateObjectTiles(measureData)) {
-              if (pumpTile.liquid > 0 && transferWater.Value == pumpTile.lava())
+              if (pumpTile.liquid > 0 && 
+                (transferLiquid.Value == Tile.Liquid_Lava || transferLiquid.Value == Tile.Liquid_Honey) )
                 continue;
               if (pumpTile.liquid == 255)
                 continue;
@@ -820,7 +825,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
                       continue;
 
                     byte transferedLiquid = (byte)Math.Min(liquidToTransfer, 255 - pumpTile.liquid);
-                    pumpTile.lava(!transferWater.Value);
+                    pumpTile.lava(transferLiquid.Value == Tile.Liquid_Lava);
+                    pumpTile.honey(transferLiquid.Value == Tile.Liquid_Honey);
                     pumpTile.liquid += transferedLiquid;
                     liquidToTransfer = Math.Max(liquidToTransfer - transferedLiquid, 0);
 

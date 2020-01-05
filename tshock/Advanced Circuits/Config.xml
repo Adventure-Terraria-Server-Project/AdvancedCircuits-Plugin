@@ -70,6 +70,7 @@
     <PumpConfig Paint="None">
       <TransferableWater>1020</TransferableWater>
       <TransferableLava>1020</TransferableLava>
+      <TransferableHoney>1020</TransferableHoney>
       <LossValue>0</LossValue>
       <Cooldown>5</Cooldown>
       <TriggerPermission></TriggerPermission>
