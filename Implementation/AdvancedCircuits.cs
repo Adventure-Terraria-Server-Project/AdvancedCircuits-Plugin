@@ -92,6 +92,7 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         AdvancedCircuits.customActivatableBlocks = new HashSet<int> {
           TileID.Dirt,
           TileID.Stone,
+          TileID.Grass,
           TileID.Platforms,
           TileID.Demonite,
           TileID.CorruptGrass,
@@ -116,8 +117,11 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           TileID.Crimsand,
           TileID.CopperPlating,
           TileID.LivingFire,
+          TileID.MarbleBlock,
         };
 
+        for (int blockId = TileID.Iron; blockId <= TileID.Silver; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
         for (int blockId = TileID.GrayBrick; blockId <= TileID.BlueDungeonBrick; blockId++)
           AdvancedCircuits.customActivatableBlocks.Add(blockId);
         for (int blockId = TileID.GreenDungeonBrick; blockId <= TileID.Spikes; blockId++)
@@ -138,6 +142,8 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
           AdvancedCircuits.customActivatableBlocks.Add(blockId);
         for (int blockId = TileID.CactusBlock; blockId <= TileID.IceBrick; blockId++)
           AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.Rope; blockId <= TileID.Chain; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
         for (int blockId = TileID.Palladium; blockId <= TileID.LihzahrdBrick; blockId++)
           AdvancedCircuits.customActivatableBlocks.Add(blockId);
         for (int blockId = TileID.PalladiumColumn; blockId <= TileID.SpookyWood; blockId++)
@@ -149,6 +155,32 @@ namespace Terraria.Plugins.CoderCow.AdvancedCircuits {
         for (int blockId = TileID.BorealWood; blockId <= TileID.PalmWood; blockId++)
           AdvancedCircuits.customActivatableBlocks.Add(blockId);
         for (int blockId = TileID.TinPlating; blockId <= TileID.ConfettiBlack; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.LivingCursedFire; blockId <= TileID.ShroomitePlating; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.MartianConduitPlating; blockId <= TileID.VineRope; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.SilkRope; blockId <= TileID.PinkSlimeBlock; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.Bubble; blockId <= TileID.PinkSlimeBlock; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.LivingMahogany; blockId <= TileID.CrystalBlock; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.Sandstone; blockId <= TileID.DesertFossil; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.FossilOre; blockId <= TileID.LunarBrick; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.LunarBlockSolar; blockId <= TileID.LunarBlockStardust; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.ConveyorBeltLeft; blockId <= TileID.ConveyorBeltRight; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.TeamBlockRed; blockId <= TileID.TeamBlockRedPlatform; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.TeamBlockGreen; blockId <= TileID.TeamBlockWhitePlatform; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.SillyBalloonPink; blockId <= TileID.SillyStreamerPink; blockId++)
+          AdvancedCircuits.customActivatableBlocks.Add(blockId);
+        for (int blockId = TileID.SandFallBlock; blockId <= TileID.SnowCloud; blockId++)
           AdvancedCircuits.customActivatableBlocks.Add(blockId);
       }
 
